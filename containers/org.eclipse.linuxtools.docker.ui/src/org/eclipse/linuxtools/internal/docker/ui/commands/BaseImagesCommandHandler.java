@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,7 +27,6 @@ import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -69,9 +68,14 @@ public abstract class BaseImagesCommandHandler extends AbstractHandler {
 	}
 
 	void openError(final String errorMessage, final Exception e) {
-		Display.getDefault().syncExec(() -> MessageDialog.openError(
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-				errorMessage, e.getMessage()));
+		Display.getDefault().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				MessageDialog.openError(Display.getCurrent().getActiveShell(),
+						errorMessage,
+						e.getMessage());
+			}
+		});
 	}
 
 	// allow commands to add confirmation dialog

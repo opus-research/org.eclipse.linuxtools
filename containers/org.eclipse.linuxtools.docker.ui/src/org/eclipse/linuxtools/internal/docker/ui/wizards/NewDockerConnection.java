@@ -17,7 +17,7 @@ import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * Wizard to add a Docker daemon connection
@@ -48,9 +48,7 @@ public class NewDockerConnection extends Wizard {
 			DockerConnectionManager.getInstance().addConnection(dockerConnection);
 			return true;
 		} catch (DockerException e) {
-			new MessageDialog(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getShell(),
+			new MessageDialog(Display.getDefault().getActiveShell(),
 					WizardMessages.getString("NewDockerConnection.failure"), //$NON-NLS-1$
 					null,
 					WizardMessages.getString("NewDockerConnection.failMessage"), //$NON-NLS-1$

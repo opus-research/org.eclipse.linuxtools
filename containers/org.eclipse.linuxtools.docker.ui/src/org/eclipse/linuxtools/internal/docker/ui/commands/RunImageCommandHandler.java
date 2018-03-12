@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRun;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -89,15 +90,13 @@ public class RunImageCommandHandler extends AbstractHandler {
 		final IDockerConnection connection = image.getConnection();
 		if (containerConfig.tty()) {
 			// show the console view
-			Display.getDefault().asyncExec(() -> {
-				try {
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage()
-							.showView(IConsoleConstants.ID_CONSOLE_VIEW);
-				} catch (Exception e) {
-					Activator.log(e);
-				}
-			});
+			try {
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+						.getActivePage()
+						.showView(IConsoleConstants.ID_CONSOLE_VIEW);
+			} catch (PartInitException e) {
+				Activator.log(e);
+			}
 		}
 
 		// Create the container in a non-UI thread.
@@ -144,18 +143,26 @@ public class RunImageCommandHandler extends AbstractHandler {
 					}
 					startContainerMonitor.done();
 					// create a launch configuration from the container
-					LaunchConfigurationUtils.createLaunchConfiguration(image,
+					LaunchConfigurationUtils.createLaunchConfiguration(
+image,
 							containerConfig,
 							hostConfig, containerName,
 							removeWhenExits);
 				} catch (final DockerException | InterruptedException e) {
-					Display.getDefault().syncExec(() -> MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
-							DVMessages.getFormattedString(
-									ERROR_CREATING_CONTAINER,
-									containerConfig.image()),
-							e.getMessage()));
+					Display.getDefault().syncExec(new Runnable() {
+
+						@Override
+						public void run() {
+							MessageDialog.openError(
+									Display.getCurrent().getActiveShell(),
+									DVMessages.getFormattedString(
+											ERROR_CREATING_CONTAINER,
+											containerConfig.image()),
+									e.getMessage());
+
+						}
+
+					});
 				} finally {
 					if (removeWhenExits) {
 						try {
@@ -184,15 +191,21 @@ public class RunImageCommandHandler extends AbstractHandler {
 										.removeContainer(containerId);
 						} catch (DockerException | InterruptedException e) {
 							final String id = containerId;
-							Display.getDefault()
-									.syncExec(() -> MessageDialog.openError(
-											PlatformUI.getWorkbench()
-													.getActiveWorkbenchWindow()
-													.getShell(),
+							Display.getDefault().syncExec(new Runnable() {
+
+								@Override
+								public void run() {
+									MessageDialog.openError(
+											Display.getCurrent()
+													.getActiveShell(),
 											DVMessages.getFormattedString(
 													ERROR_REMOVING_CONTAINER,
 													id),
-											e.getMessage()));
+											e.getMessage());
+
+								}
+
+							});
 						}
 					}
 

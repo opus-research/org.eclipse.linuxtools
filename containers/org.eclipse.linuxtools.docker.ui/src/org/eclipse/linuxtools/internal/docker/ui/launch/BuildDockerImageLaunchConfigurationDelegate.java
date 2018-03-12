@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * The {@link ILaunchConfigurationDelegate} to trigger the build of a Docker
@@ -88,12 +87,17 @@ public class BuildDockerImageLaunchConfigurationDelegate
 				final ILaunchGroup launchGroup = DebugUITools
 						.getLaunchGroup(configuration, "run"); //$NON-NLS-1$
 				// prompt the user with the launch configuration editor
-				Display.getDefault().syncExec(
-						() -> DebugUITools.openLaunchConfigurationDialog(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow().getShell(),
+				Display.getDefault().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						DebugUITools.openLaunchConfigurationDialog(
+								Display.getDefault().getActiveShell(),
 								configuration, launchGroup.getIdentifier(),
-								null));
+								null);
+					}
+
+				});
 
 			}
 		} catch (DockerException e) {

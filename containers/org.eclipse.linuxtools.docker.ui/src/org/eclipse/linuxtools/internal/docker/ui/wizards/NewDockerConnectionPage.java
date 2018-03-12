@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,11 +24,13 @@ import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
+import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -38,6 +40,7 @@ import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -71,7 +74,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -417,46 +419,50 @@ public class NewDockerConnectionPage extends WizardPage {
 		// progressbar
 		try {
 			getWizard().getContainer().run(true, true,
-					monitor -> {
-						monitor.beginTask(
-								WizardMessages.getString(
-										"NewDockerConnectionPage.retrieveTask"), //$NON-NLS-1$
-								1);
-						final List<IDockerConnectionSettings> defaults = DockerConnectionManager
-								.getInstance().findConnectionSettings();
-						if (!defaults.isEmpty()) {
-							final IDockerConnectionSettings defaultConnectionSettings = defaults
-									.get(0);
-							model.setCustomSettings(!defaultConnectionSettings
-									.isSettingsResolved());
-							model.setConnectionName(
-									defaultConnectionSettings.getName());
-							switch (defaultConnectionSettings.getType()) {
-							case TCP_CONNECTION:
-								final TCPConnectionSettings tcpConnectionSettings = (TCPConnectionSettings) defaultConnectionSettings;
-								model.setTcpConnectionBindingMode(true);
-								model.setTcpCertPath(tcpConnectionSettings
-										.getPathToCertificates());
-								model.setTcpTLSVerify(
-										tcpConnectionSettings.isTlsVerify());
-								model.setTcpHost(
-										tcpConnectionSettings.getHost());
-								break;
-							case UNIX_SOCKET_CONNECTION:
+					new IRunnableWithProgress() {
+						@Override
+						public void run(final IProgressMonitor monitor) {
+							monitor.beginTask(WizardMessages.getString(
+									"NewDockerConnectionPage.retrieveTask"), //$NON-NLS-1$
+									1);
+							final List<IDockerConnectionSettings> defaults = DockerConnectionManager
+									.getInstance().findConnectionSettings();
+							if (!defaults.isEmpty()) {
+								final IDockerConnectionSettings defaultConnectionSettings = defaults
+										.get(0);
+								model.setCustomSettings(
+										!defaultConnectionSettings
+												.isSettingsResolved());
+								model.setConnectionName(
+										defaultConnectionSettings.getName());
+								switch (defaultConnectionSettings.getType()) {
+								case TCP_CONNECTION:
+									final TCPConnectionSettings tcpConnectionSettings = (TCPConnectionSettings) defaultConnectionSettings;
+									model.setTcpConnectionBindingMode(true);
+									model.setTcpCertPath(tcpConnectionSettings
+											.getPathToCertificates());
+									model.setTcpTLSVerify(tcpConnectionSettings
+											.isTlsVerify());
+									model.setTcpHost(
+											tcpConnectionSettings.getHost());
+									break;
+								case UNIX_SOCKET_CONNECTION:
+									model.setUnixSocketBindingMode(true);
+									final UnixSocketConnectionSettings unixSocketConnectionSettings = (UnixSocketConnectionSettings) defaultConnectionSettings;
+									model.setUnixSocketPath(
+											unixSocketConnectionSettings
+													.getPath());
+									break;
+								}
+							} else {
+								// fall-back to custom settings, suggesting a
+								// Unix Socket connection to the user.
+								model.setCustomSettings(true);
 								model.setUnixSocketBindingMode(true);
-								final UnixSocketConnectionSettings unixSocketConnectionSettings = (UnixSocketConnectionSettings) defaultConnectionSettings;
-								model.setUnixSocketPath(
-										unixSocketConnectionSettings.getPath());
-								break;
 							}
-						} else {
-							// fall-back to custom settings, suggesting a
-							// Unix Socket connection to the user.
-							model.setCustomSettings(true);
-							model.setUnixSocketBindingMode(true);
-						}
 
-						monitor.done();
+							monitor.done();
+						}
 					});
 		} catch (InvocationTargetException | InterruptedException e) {
 			Activator.log(e);
@@ -487,37 +493,58 @@ public class NewDockerConnectionPage extends WizardPage {
 			final Control[] unixSocketControls, final Control[] tcpAuthControls,
 			final Control[] tcpConnectionControls) {
 
-		return event -> updateWidgetsState(bindingModeSelectionControls,
-				unixSocketControls, tcpConnectionControls, tcpAuthControls);
+		return new IValueChangeListener() {
+			@Override
+			public void handleValueChange(final ValueChangeEvent event) {
+				updateWidgetsState(bindingModeSelectionControls,
+						unixSocketControls, tcpConnectionControls,
+						tcpAuthControls);
+			}
+		};
 	}
 
 	private IChangeListener onUnixSocketBindingSelection(
 			final Control[] unixSocketControls) {
-		return event -> setWidgetsEnabled(
-				model.isCustomSettings() && model.isUnixSocketBindingMode(),
-				unixSocketControls);
+		return new IChangeListener() {
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				setWidgetsEnabled(
+						model.isCustomSettings()
+								&& model.isUnixSocketBindingMode(),
+						unixSocketControls);
+			}
+		};
 	}
 
 	private IChangeListener onTcpConnectionBindingSelection(
 			final Control[] tcpConnectionControls,
 			final Control[] tcpAuthControls) {
-		return event -> {
-			setWidgetsEnabled(model.isCustomSettings()
-					&& model.isTcpConnectionBindingMode()
-					&& model.isTcpTLSVerify(), tcpAuthControls);
-			// and give focus to the first given control (if applicable)
-			setWidgetsEnabled(
-					model.isCustomSettings()
-							&& model.isTcpConnectionBindingMode(),
-					tcpConnectionControls);
+		return new IChangeListener() {
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				setWidgetsEnabled(model.isCustomSettings()
+						&& model.isTcpConnectionBindingMode()
+						&& model.isTcpTLSVerify(), tcpAuthControls);
+				// and give focus to the first given control (if applicable)
+				setWidgetsEnabled(
+						model.isCustomSettings()
+								&& model.isTcpConnectionBindingMode(),
+						tcpConnectionControls);
+			}
 		};
 	}
 
 	private IValueChangeListener onTcpAuthSelection(
 			final Control[] tcpAuthControls) {
-		return event -> setWidgetsEnabled(model.isCustomSettings()
-				&& model.isTcpConnectionBindingMode() && model.isTcpTLSVerify(),
-				tcpAuthControls);
+		return new IValueChangeListener() {
+
+			@Override
+			public void handleValueChange(final ValueChangeEvent event) {
+				setWidgetsEnabled(model.isCustomSettings()
+						&& model.isTcpConnectionBindingMode()
+						&& model.isTcpTLSVerify(), tcpAuthControls);
+			}
+		};
 	}
 
 	private void setWidgetsEnabled(final boolean enabled,
@@ -549,25 +576,30 @@ public class NewDockerConnectionPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					getWizard().getContainer().run(true, false,
-							monitor -> {
-								monitor.beginTask(WizardMessages.getString(
-										"NewDockerConnectionPage.pingTask"), //$NON-NLS-1$
-										IProgressMonitor.UNKNOWN);
-								try {
-									final DockerConnection dockerConnection = getDockerConnection();
-									dockerConnection.open(false);
-									dockerConnection.ping();
-									dockerConnection.close();
-									// ping succeeded
-									displaySuccessDialog();
-								} catch (DockerException e1) {
-									// only log if there's an underlying cause.
-									if (e1.getCause() != null) {
-										Activator.log(e1);
-									}
-									displayErrorDialog();
+							new IRunnableWithProgress() {
+						@Override
+						public void run(final IProgressMonitor monitor) {
+							monitor.beginTask(
+									WizardMessages.getString(
+											"NewDockerConnectionPage.pingTask"), //$NON-NLS-1$
+									IProgressMonitor.UNKNOWN);
+							try {
+								final DockerConnection dockerConnection = getDockerConnection();
+								dockerConnection.open(false);
+								dockerConnection.ping();
+								dockerConnection.close();
+								// ping succeeded
+								displaySuccessDialog();
+							} catch (DockerException e) {
+								// only log if there's an underlying cause.
+								if (e.getCause() != null) {
+									Activator.log(e);
 								}
-							});
+								displayErrorDialog();
+							}
+						}
+
+					});
 				} catch (InvocationTargetException | InterruptedException o_O) {
 					Activator.log(o_O);
 				}
@@ -601,12 +633,15 @@ public class NewDockerConnectionPage extends WizardPage {
 			private void displayDialog(final String dialogTitle,
 					final String dialogMessage, final int icon,
 					final String[] buttonLabels) {
-				Display.getDefault()
-						.syncExec(() -> new MessageDialog(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow().getShell(),
+				Display.getDefault().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						new MessageDialog(Display.getDefault().getActiveShell(),
 								dialogTitle, null, dialogMessage, icon,
-								buttonLabels, 0).open());
+								buttonLabels, 0).open();
+					}
+				});
 			}
 
 		};

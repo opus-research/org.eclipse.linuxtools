@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImagePushProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePush;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -58,13 +57,15 @@ public class PushImageCommandHandler extends AbstractHandler {
 	private void performPushImage(final ImagePush wizard,
 			final IDockerConnection connection) {
 		if (connection == null) {
-			Display.getDefault()
-					.syncExec(() -> MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
-							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
-									wizard.getImageTag()),
-							DVMessages.getFormattedString(NO_CONNECTION)));
+			Display.getDefault().syncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					MessageDialog.openError(
+							Display.getDefault().getActiveShell(), "Error",
+							DVMessages.getFormattedString(NO_CONNECTION));
+				}
+			});
 			return;
 		}
 		final Job pushImageJob = new Job(DVMessages.getFormattedString(
@@ -81,12 +82,18 @@ public class PushImageCommandHandler extends AbstractHandler {
 					((DockerConnection) connection).pushImage(tag,
 							new ImagePushProgressHandler(connection, tag));
 				} catch (final DockerException e) {
-					Display.getDefault().syncExec(() -> MessageDialog.openError(
-							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(),
-							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
-									tag),
-							e.getMessage()));
+					Display.getDefault().syncExec(new Runnable() {
+
+						@Override
+						public void run() {
+							MessageDialog.openError(Display.getCurrent()
+									.getActiveShell(), DVMessages
+									.getFormattedString(ERROR_PUSHING_IMAGE,
+											tag), e.getMessage());
+
+						}
+
+					});
 					// for now
 				} catch (InterruptedException e) {
 					// do nothing

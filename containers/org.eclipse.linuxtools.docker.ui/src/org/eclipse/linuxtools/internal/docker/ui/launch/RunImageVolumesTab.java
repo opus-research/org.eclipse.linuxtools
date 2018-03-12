@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat Inc. and others.
+ * Copyright (c) 2015, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -29,6 +31,7 @@ import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -39,10 +42,12 @@ import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -182,16 +187,20 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 	}
 
 	private ICheckStateListener onCheckStateChanged() {
-		return e -> {
-			DataVolumeModel element = (DataVolumeModel) e.getElement();
-			if (e.getChecked()) {
-				model.getSelectedDataVolumes().add(element);
-				element.setSelected(true);
-			} else {
-				model.getSelectedDataVolumes().remove(element);
-				element.setSelected(false);
+		return new ICheckStateListener() {
+
+			@Override
+			public void checkStateChanged(final CheckStateChangedEvent e) {
+				DataVolumeModel element = (DataVolumeModel) e.getElement();
+				if (e.getChecked()) {
+					model.getSelectedDataVolumes().add(element);
+					element.setSelected(true);
+				} else {
+					model.getSelectedDataVolumes().remove(element);
+					element.setSelected(false);
+				}
+				updateLaunchConfigurationDialog();
 			}
-			updateLaunchConfigurationDialog();
 		};
 	}
 
@@ -223,14 +232,19 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return e -> {
-			if (e.getSelection().isEmpty()) {
-				setControlsEnabled(targetButtons, false);
-				updateLaunchConfigurationDialog();
-			} else {
-				setControlsEnabled(targetButtons, true);
-				updateLaunchConfigurationDialog();
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(targetButtons, false);
+					updateLaunchConfigurationDialog();
+				} else {
+					setControlsEnabled(targetButtons, true);
+					updateLaunchConfigurationDialog();
+				}
 			}
+
 		};
 	}
 
@@ -467,8 +481,7 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 						+ volume.isReadOnly());
 				if (selectedVolumes.contains(volume)) {
 					selectedVolumesSet.add(volume.toString());
-					String bind = LaunchConfigurationUtils
-							.convertToUnixPath(volume.getHostPathMount())
+					String bind = convertToUnixPath(volume.getHostPathMount())
 							+ ':' + volume.getContainerPath() + ':' + 'Z';
 					if (volume.isReadOnly()) {
 						bind += ",ro"; //$NON-NLS-1$
@@ -494,6 +507,28 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.DATA_VOLUMES,
 				volumesList);
+	}
+
+	private String convertToUnixPath(String path) {
+		String unixPath = path;
+
+		if (Platform.OS_WIN32.equals(Platform.getOS())) {
+			// replace backslashes with slashes
+			unixPath = unixPath.replaceAll("\\\\", "/");
+
+			// replace "C:/" with "/c/"
+			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath);
+			if (m.find()) {
+				StringBuffer b = new StringBuffer();
+				b.append('/');
+				m.appendReplacement(b, m.group(1).toLowerCase());
+				b.append('/');
+				m.appendTail(b);
+				unixPath = b.toString();
+			}
+		}
+
+		return unixPath;
 	}
 
 	@Override
