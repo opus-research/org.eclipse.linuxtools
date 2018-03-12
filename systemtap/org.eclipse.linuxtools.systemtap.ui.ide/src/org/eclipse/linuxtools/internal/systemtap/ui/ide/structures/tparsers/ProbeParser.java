@@ -179,9 +179,11 @@ public final class ProbeParser extends TreeTapsetParser {
             return false;
         }
         // Check just the first probe printed
-        try (Scanner scanner = new Scanner(probeDump)) {
-            return Pattern.matches(PROBE_FORM_CHECK_REGEX, scanner.nextLine());
+        int end = probeDump.indexOf('\n');
+        if (end != -1) {
+            probeDump = probeDump.substring(0, end);
         }
+        return Pattern.matches(PROBE_FORM_CHECK_REGEX, probeDump);
     }
 
     /**
