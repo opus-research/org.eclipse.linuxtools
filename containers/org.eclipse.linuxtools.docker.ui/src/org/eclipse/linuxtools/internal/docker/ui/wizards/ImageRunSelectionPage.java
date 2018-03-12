@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ALLOCATE_PSEUDO_CONSOLE;
@@ -30,12 +31,10 @@ import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.CoreException;
@@ -115,10 +114,6 @@ public class ImageRunSelectionPage extends WizardPage {
 	private final ImageRunSelectionModel model;
 
 	private final ILaunchConfiguration lastLaunchConfiguration;
-
-	private Link pullImageLink;
-
-	private WritableValue<String> writeValue;
 	private static final int COLUMNS = 3;
 
 	/**
@@ -199,10 +194,8 @@ public class ImageRunSelectionPage extends WizardPage {
 				.observe(model);
 		imageSelectionObservable
 				.addValueChangeListener(onImageSelectionChange());
-		writeValue = new WritableValue<>("", String.class); //$NON-NLS-1$
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
-
 		// set validation
 		final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
 				imageSelectionObservable);
@@ -311,7 +304,7 @@ public class ImageRunSelectionPage extends WizardPage {
 		final Label fillerLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).span(1, 1).applyTo(fillerLabel);
-		pullImageLink = new Link(container, SWT.NONE);
+		final Link pullImageLink = new Link(container, SWT.NONE);
 		pullImageLink.setText(
 				WizardMessages.getString("ImageRunSelectionPage.pullImage")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -967,14 +960,6 @@ public class ImageRunSelectionPage extends WizardPage {
 					model.refreshImageNames();
 					if (model.getImageNames().contains(imageName)) {
 						model.setSelectedImageName(imageName);
-						model.setSelectedImageNeedsPulling(false);
-						// Force revalidation by changing writeValue which
-						// is made to be a dependency of the ImageCombo
-						// MultiValidator.
-						Display.getDefault().syncExec(() -> {
-							writeValue.setValue(
-									Long.toString(System.currentTimeMillis()));
-						});
 					}
 				}
 			});
@@ -1001,8 +986,6 @@ public class ImageRunSelectionPage extends WizardPage {
 
 		@Override
 		protected IStatus validate() {
-			ObservableTracker.getterCalled(writeValue);
-
 			final String selectedImageName = imageSelectionObservable
 					.getValue();
 			if (selectedImageName.isEmpty()) {

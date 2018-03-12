@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -96,6 +98,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerClient.AttachParameter;
 import com.spotify.docker.client.DockerClient.BuildParam;
 import com.spotify.docker.client.DockerClient.ExecCreateParam;
+import com.spotify.docker.client.DockerClient.ExecStartParameter;
 import com.spotify.docker.client.DockerClient.LogsParam;
 import com.spotify.docker.client.DockerTimeoutException;
 import com.spotify.docker.client.LogStream;
@@ -346,21 +349,7 @@ public class DockerConnection
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
-	}
-
-	@Override
 	public void close() {
-		// stop and remove all logging threads
-		for (String key : loggingThreads.keySet()) {
-			LogThread t = loggingThreads.get(key);
-			if (t != null) {
-				t.kill();
-			}
-			loggingThreads.remove(key);
-		}
 		synchronized (clientLock) {
 			if (this.client != null) {
 				this.client.close();
@@ -621,7 +610,6 @@ public class DockerConnection
 
 		@Override
 		public void execute() throws InterruptedException, IOException {
-			LogStream stream = null;
 			try {
 				// Add timestamps to log based on user preference
 				IEclipsePreferences preferences = InstanceScope.INSTANCE
@@ -630,6 +618,7 @@ public class DockerConnection
 				boolean timestamps = preferences.getBoolean(
 						"logTimestamp", true); //$NON-NLS-1$
 
+				LogStream stream = null;
 
 				if (timestamps)
 					stream = copyClient.logs(id, LogsParam.follow(),
@@ -1279,8 +1268,20 @@ public class DockerConnection
 			final DockerProgressHandler d = new DockerProgressHandler(handler);
 			final java.nio.file.Path p = FileSystems.getDefault()
 					.getPath(path.makeAbsolute().toOSString());
+			/*
+			 * Workaround error message thrown to stderr due to
+			 * lack of Guava 18.0. Remove this when we begin
+			 * using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			String res = getClientCopy().build(p, d,
 					BuildParam.create("forcerm", "true")); //$NON-NLS-1$ //$NON-NLS-2$
+			System.setErr(oldErr);
 			return res;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -1298,8 +1299,20 @@ public class DockerConnection
 			DockerProgressHandler d = new DockerProgressHandler(handler);
 			java.nio.file.Path p = FileSystems.getDefault().getPath(
 					path.makeAbsolute().toOSString());
+			/*
+			 * Workaround error message thrown to stderr due to
+			 * lack of Guava 18.0. Remove this when we begin
+			 * using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			String res = getClientCopy().build(p, name, d,
 					BuildParam.create("forcerm", "true")); //$NON-NLS-1$ $NON-NLS-2$
+			System.setErr(oldErr);
 			return res;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -1335,8 +1348,20 @@ public class DockerConnection
 			final DockerProgressHandler d = new DockerProgressHandler(handler);
 			final java.nio.file.Path p = FileSystems.getDefault()
 					.getPath(path.makeAbsolute().toOSString());
+			/*
+			 * Workaround error message thrown to stderr due to
+			 * lack of Guava 18.0. Remove this when we begin
+			 * using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			String res = getClientCopy().build(p, name, d,
 					getBuildParameters(buildOptions));
+			System.setErr(oldErr);
 			return res;
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
@@ -1390,6 +1415,25 @@ public class DockerConnection
 		DockerConnectionManager.getInstance().saveConnections();
 	}
 	
+	@Override
+	@Deprecated
+	public String createContainer(IDockerContainerConfig c)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc);
+	}
+
+	@Override
+	@Deprecated
+	public String createContainer(final IDockerContainerConfig c,
+			final String containerName)
+			throws DockerException, InterruptedException {
+		IDockerHostConfig hc = new DockerHostConfig(HostConfig.builder()
+				.build());
+		return createContainer(c, hc, containerName);
+	}
+
 	@Override
 	public String createContainer(final IDockerContainerConfig c,
 			final IDockerHostConfig hc) throws DockerException,
@@ -1491,12 +1535,24 @@ public class DockerConnection
 				builder = builder.onBuild(c.onBuild());
 			}
 
+			/*
+			 * Workaround error message thrown to stderr due to
+			 * lack of Guava 18.0. Remove this when we begin
+			 * using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			// create container with default random name if an empty/null
 			// containerName argument was passed
 			final ContainerCreation creation = client
 					.createContainer(builder.build(),
 					(containerName != null && !containerName.isEmpty())
 							? containerName : null);
+			System.setErr(oldErr);
 			final String id = creation.id();
 			// force a refresh of the current containers to include the new one
 			listContainers();
@@ -1621,29 +1677,30 @@ public class DockerConnection
 		}
 	}
 
-	private String getCmdString(IDockerContainerInfo info) {
-		if (info == null) {
-			return "";
-		}
-		List<String> cmd = info.config().cmd();
-		StringBuffer b = new StringBuffer();
-		cmd.stream().forEach(s -> b.append(s + " "));
-		b.deleteCharAt(b.length() - 1);
-		return b.toString();
+	@Override
+	@Deprecated
+	public void startContainer(String id, IDockerHostConfig config,
+			OutputStream stream)
+			throws DockerException, InterruptedException {
+		startContainer(id, stream);
+	}
+
+	@Override
+	@Deprecated
+	public void startContainer(String id, String loggingId,
+			IDockerHostConfig config, OutputStream stream)
+			throws DockerException, InterruptedException {
+		startContainer(id, loggingId, stream);
 	}
 
 	@Override
 	public void startContainer(final String id, final OutputStream stream)
 			throws DockerException, InterruptedException {
-		final IDockerContainerInfo containerInfo = getContainerInfo(id);
-		if (containerInfo == null) {
-			throw new DockerException(DockerMessages
-					.getFormattedString("DockerContainerNotFound.error", id)); //$NON-NLS-1$
-		}
 		try {
 			// start container
 			client.startContainer(id);
 			// Log the started container if a stream is provided
+			final IDockerContainerInfo containerInfo = getContainerInfo(id);
 			if (stream != null && containerInfo != null
 					&& containerInfo.config() != null
 					&& !containerInfo.config().tty()) {
@@ -1661,11 +1718,7 @@ public class DockerConnection
 			// list of containers needs to be refreshed once the container started, to reflect it new state.
 			listContainers(); 
 		} catch (ContainerNotFoundException e) {
-			// if we get here, it means that the command failed...the actual
-			// message is buried in the throwable cause and isn't actually
-			// clearly stated so report there was a problem starting the command
-			throw new DockerException(DockerMessages.getFormattedString(
-					"DockerStartContainer.error", getCmdString(containerInfo))); //$NON-NLS-1$
+			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1676,11 +1729,6 @@ public class DockerConnection
 	@Override
 	public void startContainer(String id, String loggingId, OutputStream stream)
 			throws DockerException, InterruptedException {
-		final IDockerContainerInfo containerInfo = getContainerInfo(id);
-		if (containerInfo == null) {
-			throw new DockerException(DockerMessages
-					.getFormattedString("DockerContainerNotFound.error", id)); //$NON-NLS-1$
-		}
 		try {
 			// start container with host config
 			client.startContainer(id);
@@ -1692,7 +1740,7 @@ public class DockerConnection
 
 			boolean autoLog = preferences.getBoolean("autoLogOnStart", true); //$NON-NLS-1$
 
-			if (autoLog && !containerInfo.config().tty()) {
+			if (autoLog && !getContainerInfo(id).config().tty()) {
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(loggingId);
 					if (t == null || !t.isAlive()) {
@@ -1706,11 +1754,7 @@ public class DockerConnection
 			// update container list
 			listContainers();
 		} catch (ContainerNotFoundException e) {
-			// if we get here, it means that the command failed...the actual
-			// message is buried in the throwable cause and isn't actually
-			// clearly stated so report there was a problem starting the command
-			throw new DockerException(DockerMessages.getFormattedString(
-					"DockerStartContainer.error", getCmdString(containerInfo))); //$NON-NLS-1$
+			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
 			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
@@ -1765,8 +1809,19 @@ public class DockerConnection
 		ContainerInfo info;
 		try {
 			info = client.inspectContainer(id);
+			/*
+			 * Workaround error message thrown to stderr due to lack of Guava
+			 * 18.0. Remove this when we begin using Guava 18.0.
+			 */
+			PrintStream oldErr = System.err;
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) {
+				}
+			}));
 			client.commitContainer(id, repo, tag, info.config(), comment,
 					author);
+			System.setErr(oldErr);
 			// update images list
 			// FIXME: are we refreshing the list of images twice ?
 			listImages();
@@ -2072,9 +2127,21 @@ public class DockerConnection
 					ExecCreateParam.attachStderr(),
 					ExecCreateParam.attachStdin(),
 					ExecCreateParam.tty());
-
+			/*
+			 * Temporary workaround for lack of support for 'Tty'.
+			 * We do not use DETACH so modify it in this scope to
+			 * pass 'Tty' to the execStart call.
+			 * This can be removed once
+			 * https://github.com/spotify/docker-client/pull/351
+			 * is accepted.
+			 */
+			String realValue = ExecStartParameter.DETACH.getName();
+			Field fname = ExecStartParameter.class.getDeclaredField("name"); //$NON-NLS-1$
+			fname.setAccessible(true);
+			fname.set(ExecStartParameter.DETACH, "Tty"); //$NON-NLS-1$
 			final LogStream pty_stream = client.execStart(execId,
-					DockerClient.ExecStartParameter.TTY);
+					DockerClient.ExecStartParameter.DETACH);
+			fname.set(ExecStartParameter.DETACH, realValue);
 			final IDockerContainerInfo info = getContainerInfo(id);
 			openTerminal(pty_stream, info.name() + " [shell]"); //$NON-NLS-1$
 		} catch (Exception e) {
