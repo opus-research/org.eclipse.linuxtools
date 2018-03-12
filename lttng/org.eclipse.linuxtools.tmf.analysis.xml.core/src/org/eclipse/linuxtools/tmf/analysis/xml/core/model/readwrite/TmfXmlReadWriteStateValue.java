@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.statesystem.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlModelFactory;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlStateAttribute;
+import org.eclipse.linuxtools.tmf.analysis.xml.core.model.ITmfXmlStateValue;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.model.TmfXmlStateValue;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.IXmlStateSystemContainer;
 import org.eclipse.linuxtools.tmf.analysis.xml.core.module.XmlUtils;
@@ -42,6 +43,19 @@ import org.w3c.dom.Element;
  * @author Geneviève Bastien
  */
 public class TmfXmlReadWriteStateValue extends TmfXmlStateValue {
+
+    /**
+     * @author naser
+     * @since 2.0
+     *
+     */
+    protected enum MathOperator {
+        ADD,
+        SUB,
+        MUL,
+        DIV,
+    }
+    MathOperator mOperator;
 
     /**
      * Constructor where the path to the value is a list of state attributes
@@ -137,6 +151,37 @@ public class TmfXmlReadWriteStateValue extends TmfXmlStateValue {
                 childAttributes.add(queryAttribute);
             }
             stateValueType = new TmfXmlStateValueQuery(childAttributes);
+            break;
+        case TmfXmlStrings.TYPE_MATH:
+            /* Value is the result of a mathematical operation */
+            Element rootNode = node;
+            /* Process the conditions: in each case, only process Element nodes */
+            List<Element> childElements = XmlUtils.getChildElements(rootNode);
+            rootNode = childElements.get(0);
+            childElements = XmlUtils.getChildElements(rootNode);
+            switch (rootNode.getNodeName()) {
+            case TmfXmlStrings.ADD:
+                mOperator = MathOperator.ADD;
+                 break;
+            case TmfXmlStrings.SUB:
+                mOperator = MathOperator.SUB;
+                 break;
+            case TmfXmlStrings.MUL:
+                mOperator = MathOperator.MUL;
+                 break;
+            case TmfXmlStrings.DIV:
+                mOperator = MathOperator.DIV;
+                 break;
+            default:
+                throw new IllegalArgumentException("TmfXmlCondition constructor: XML node is of the wrong type"); //$NON-NLS-1$
+            }
+
+            List<ITmfXmlStateValue> mathAttributes = new ArrayList<>();
+            for (Element child : childElements) {
+                ITmfXmlStateValue mathAttribute = modelFactory.createStateValue(child, getSsContainer(), value); //createStateValue(node, container, attributes)
+                mathAttributes.add(mathAttribute);
+            }
+            stateValueType = new TmfXmlStateValueMath(mathAttributes, mOperator);
             break;
         default:
             throw new IllegalArgumentException(String.format("TmfXmlStateValue constructor: unexpected element %s for stateValue type", type)); //$NON-NLS-1$
@@ -341,6 +386,136 @@ public class TmfXmlReadWriteStateValue extends TmfXmlStateValue {
                 value = ss.queryOngoingState(quarkQuery);
             }
             return value;
+        }
+
+        @Override
+        public void incrementValue(ITmfEvent event, int quark, long timestamp) throws StateValueTypeException, TimeRangeException, AttributeNotFoundException {
+            ITmfStateSystem ss = getStateSystem();
+            ITmfStateValue incrementValue = getValue(event);
+            switch (incrementValue.getType()) {
+            case INTEGER: {
+                int increment = incrementValue.unboxInt();
+                int currentValue = ss.queryOngoingState(quark).unboxInt();
+                ITmfStateValue value = TmfStateValue.newValueInt(increment + currentValue);
+                processValue(quark, timestamp, value);
+                break;
+            }
+            case LONG: {
+                long incrementLong = incrementValue.unboxLong();
+                long currentValue = ss.queryOngoingState(quark).unboxLong();
+                ITmfStateValue value = TmfStateValue.newValueLong(incrementLong + currentValue);
+                processValue(quark, timestamp, value);
+                break;
+            }
+            case DOUBLE:
+            case NULL:
+            case STRING:
+            default:
+                Activator.logWarning("TmfXmlStateValue: The query result increment is not a number type"); //$NON-NLS-1$
+                break;
+            }
+        }
+    }
+    /* The state value uses the result of a Math operation */
+    private class TmfXmlStateValueMath extends TmfXmlStateValueTypeReadWrite {
+
+        private final List<ITmfXmlStateValue> fMathValue;
+        private final MathOperator operator;
+
+        public TmfXmlStateValueMath(List<ITmfXmlStateValue> childAttributes, MathOperator mOperator) {
+            fMathValue = childAttributes;
+            operator = mOperator;
+        }
+
+        @Override
+        public ITmfStateValue getValue(ITmfEvent event) throws AttributeNotFoundException {
+            /* Query the state system for the value */
+            ITmfStateValue finalValue = TmfStateValue.nullValue();
+            int quarkQuery = IXmlStateSystemContainer.ROOT_QUARK;
+            ITmfStateSystem ss = getStateSystem();
+
+            for (ITmfXmlStateValue stateVal : fMathValue) {
+                ITmfStateValue value = stateVal.getValue(event);
+                //ITmfStateValue value = TmfStateValue.nullValue();
+                List<ITmfXmlStateAttribute> attributes = stateVal.getAttributes();
+                for (ITmfXmlStateAttribute attribute : attributes) {
+                    quarkQuery = attribute.getAttributeQuark(event, quarkQuery);
+                    if (quarkQuery == IXmlStateSystemContainer.ERROR_QUARK) {
+                        /* the query is not valid, we stop the state change */
+                        break;
+                    }
+                }
+                if (quarkQuery != IXmlStateSystemContainer.ERROR_QUARK) {
+                    value = ss.queryOngoingState(quarkQuery);
+                }
+                //FIXME: we MUST change this part completely
+                if (event == null) {
+                    continue;
+                }
+                switch (value.getType()) {
+                case INTEGER: {
+                    int currentValue = value.unboxInt();
+                    if (finalValue.isNull()) {
+                        finalValue = TmfStateValue.newValueInt(currentValue);
+                    } else {
+                        switch (operator) {
+                        case ADD:
+                            finalValue = TmfStateValue.newValueInt(finalValue.unboxInt() + currentValue);
+                            break;
+                        case SUB:
+                            finalValue = TmfStateValue.newValueInt(finalValue.unboxInt() - currentValue);
+                            break;
+                        case MUL:
+                            finalValue = TmfStateValue.newValueInt(finalValue.unboxInt() * currentValue);
+                            break;
+                        case DIV:
+                            finalValue = TmfStateValue.newValueInt(finalValue.unboxInt() / currentValue);
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case LONG: {
+                    long currentValue = value.unboxLong();
+                    if (finalValue.isNull()) {
+                        finalValue = TmfStateValue.newValueLong(currentValue);
+                    } else {
+                        switch (operator) {
+                        case ADD:
+                            finalValue = TmfStateValue.newValueLong(finalValue.unboxLong() + currentValue);
+                            break;
+                        case SUB:
+                            finalValue = TmfStateValue.newValueLong(finalValue.unboxLong() - currentValue);
+                            break;
+                        case MUL:
+                            finalValue = TmfStateValue.newValueLong(finalValue.unboxLong() * currentValue);
+                            break;
+                        case DIV:
+                            finalValue = TmfStateValue.newValueLong(finalValue.unboxLong() / currentValue);
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                    //just to avoid error of not using the operator
+                    break;
+                }
+                case DOUBLE:
+                case NULL:
+                case STRING:
+                default:
+                    //Activator.logWarning("TmfXmlStateValue: The query result increment is not a number type"); //$NON-NLS-1$
+                    break;
+                }
+            }
+            /*
+             * the query can fail : for example, if a value is requested but has
+             * not been set yet
+             */
+
+            return finalValue;
         }
 
         @Override
