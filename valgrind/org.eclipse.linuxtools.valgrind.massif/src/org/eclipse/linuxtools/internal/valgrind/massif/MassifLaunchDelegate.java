@@ -32,12 +32,7 @@ import org.osgi.framework.Version;
 public class MassifLaunchDelegate implements IValgrindLaunchDelegate {
     protected static final String OUT_PREFIX = "massif_";     //$NON-NLS-1$
     protected static final String OUT_FILE = OUT_PREFIX + "%p.txt"; //$NON-NLS-1$
-    private static final FileFilter MASSIF_FILTER = new FileFilter() {
-        @Override
-        public boolean accept(File pathname) {
-            return pathname.getName().startsWith(OUT_PREFIX);
-        }
-    };
+    private static final FileFilter MASSIF_FILTER = pathname -> pathname.getName().startsWith(OUT_PREFIX);
 
     private static final String EQUALS = "="; //$NON-NLS-1$
     private static final String NO = "no"; //$NON-NLS-1$
@@ -81,7 +76,7 @@ public class MassifLaunchDelegate implements IValgrindLaunchDelegate {
     throws CoreException {
         ArrayList<String> opts = new ArrayList<>();
 
-        opts.add(MassifCommandConstants.OPT_MASSIF_OUTFILE + EQUALS + logDir.append(OUT_FILE).toPortableString());
+        opts.add(MassifCommandConstants.OPT_MASSIF_OUTFILE + EQUALS + logDir.append(OUT_FILE).toOSString());
 
         opts.add(MassifCommandConstants.OPT_HEAP + EQUALS + (config.getAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAP, MassifLaunchConstants.DEFAULT_MASSIF_HEAP) ? YES : NO));
         opts.add(MassifCommandConstants.OPT_HEAPADMIN + EQUALS + config.getAttribute(MassifLaunchConstants.ATTR_MASSIF_HEAPADMIN, MassifLaunchConstants.DEFAULT_MASSIF_HEAPADMIN));
