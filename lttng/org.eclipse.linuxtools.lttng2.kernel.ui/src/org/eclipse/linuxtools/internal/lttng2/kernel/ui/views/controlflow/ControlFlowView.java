@@ -29,13 +29,13 @@ import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Activator;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.Messages;
 import org.eclipse.linuxtools.lttng2.kernel.core.analysis.LttngKernelAnalysisModule;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtil;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtil.IStateSystemIntervalCondition;
+import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
@@ -70,12 +70,6 @@ public class ControlFlowView extends AbstractTimeGraphView {
     private static final String PTID_COLUMN = Messages.ControlFlowView_ptidColumn;
     private static final String BIRTH_TIME_COLUMN = Messages.ControlFlowView_birthTimeColumn;
     private static final String TRACE_COLUMN = Messages.ControlFlowView_traceColumn;
-    private static final IStateSystemIntervalCondition NON_NULL_INTERVAL = new IStateSystemIntervalCondition() {
-        @Override
-        public boolean pass(ITmfStateInterval interval) {
-            return !interval.getStateValue().isNull();
-        }
-    };
 
     private static final String[] COLUMN_NAMES = new String[] {
             PROCESS_COLUMN,
@@ -253,8 +247,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 return;
             }
             long end = ssq.getCurrentEndTime();
-            if (start == end && !complete) { // when complete execute one last
-                                             // time regardless of end time
+            if (start == end && !complete) { // when complete execute one last time regardless of end time
                 continue;
             }
             setEndTime(Math.max(getEndTime(), end + 1));
@@ -270,28 +263,48 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 } catch (NumberFormatException e1) {
                     continue;
                 }
-                if (threadId <= 0) { // ignore the 'unknown' (-1) and swapper
-                                     // (0) threads
+                if (threadId <= 0) { // ignore the 'unknown' (-1) and swapper (0) threads
                     continue;
                 }
 
-                ControlFlowEntry entry = entryMap.get(threadId);
+                int execNameQuark;
+                List<ITmfStateInterval> execNameIntervals;
                 try {
-                    /* Get the first non-null interface for exec name and ppid */
-                    int execNameQuark = ssq.getQuarkRelative(threadQuark, Attributes.EXEC_NAME);
-                    int ppidQuark = ssq.getQuarkRelative(threadQuark, Attributes.PPID);
-                    ITmfStateInterval execNameInterval = StateSystemUtil.queryIntervalsUntil(ssq, execNameQuark, getStartTime(), getEndTime(), NON_NULL_INTERVAL);
-                    if (execNameInterval != null) {
+                    execNameQuark = ssq.getQuarkRelative(threadQuark, Attributes.EXEC_NAME);
+                    execNameIntervals = StateSystemUtils.queryHistoryRange(ssq, execNameQuark, start, end);
+                } catch (AttributeNotFoundException e) {
+                    /* No information on this thread (yet?), skip it for now */
+                    continue;
+                } catch (StateSystemDisposedException e) {
+                    /* State system is closing down, no point continuing */
+                    break;
+                }
+
+                for (ITmfStateInterval execNameInterval : execNameIntervals) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
+                    ControlFlowEntry entry = entryMap.get(threadId);
+                    if (!execNameInterval.getStateValue().isNull() &&
+                            execNameInterval.getStateValue().getType() == ITmfStateValue.Type.STRING) {
+                        String execName = execNameInterval.getStateValue().unboxStr();
                         long startTime = execNameInterval.getStartTime();
                         long endTime = execNameInterval.getEndTime() + 1;
-                        ITmfStateInterval ppidInterval = StateSystemUtil.queryIntervalsUntil(ssq, ppidQuark, startTime, endTime, NON_NULL_INTERVAL);
-                        String execName = execNameInterval.getStateValue().unboxStr();
-                        int ppid = -1;
-                        if (ppidInterval != null) {
-                            ppid = ppidInterval.getStateValue().unboxInt();
-                        }
-
                         if (entry == null) {
+                            ITmfStateInterval ppidInterval = null;
+                            try {
+                                int ppidQuark = ssq.getQuarkRelative(threadQuark, Attributes.PPID);
+                                ppidInterval = ssq.querySingleState(startTime, ppidQuark);
+                            } catch (AttributeNotFoundException e) {
+                                /* No info, keep PPID at -1 */
+                            } catch (StateSystemDisposedException e) {
+                                /* SS is closing down, time to bail */
+                                break;
+                            }
+                            int ppid = -1;
+                            if (!(ppidInterval == null) && !ppidInterval.getStateValue().isNull()) {
+                                ppid = ppidInterval.getStateValue().unboxInt();
+                            }
                             entry = new ControlFlowEntry(threadQuark, trace, execName, threadId, ppid, startTime, endTime);
                             entryList.add(entry);
                             entryMap.put(threadId, entry);
@@ -301,10 +314,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
                             entry.setName(execName);
                             entry.updateEndTime(endTime);
                         }
+                    } else {
+                        entryMap.remove(threadId);
                     }
-                } catch (AttributeNotFoundException e) {
-                    /* No information on this thread (yet?), skip it for now */
-                    continue;
                 }
             }
 
@@ -334,17 +346,9 @@ public class ControlFlowView extends AbstractTimeGraphView {
             boolean root = (entry.getParent() == null);
             if (root && entry.getParentThreadId() > 0) {
                 for (ControlFlowEntry parent : entryList) {
-                    /*
-                     * Associate the parent entry only if their time overlap. A
-                     * child entry may start before its parent, for example at
-                     * the beginning of the trace if a parent has not yet
-                     * appeared in the state system. We just want to make sure
-                     * that the entry didn't start after the parent ended or
-                     * ended before the parent started.
-                     */
                     if (parent.getThreadId() == entry.getParentThreadId() &&
-                            !((entry.getStartTime() >= parent.getEndTime()) &&
-                            entry.getEndTime() <= parent.getStartTime())) {
+                            entry.getStartTime() >= parent.getStartTime() &&
+                            entry.getStartTime() <= parent.getEndTime()) {
                         parent.addChild(entry);
                         root = false;
                         if (rootList != null && rootList.contains(entry)) {
@@ -410,7 +414,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
         }
         try {
             int statusQuark = ssq.getQuarkRelative(entry.getThreadQuark(), Attributes.STATUS);
-            List<ITmfStateInterval> statusIntervals = ssq.queryHistoryRange(statusQuark, realStart, realEnd - 1, resolution, monitor);
+            List<ITmfStateInterval> statusIntervals = StateSystemUtils.queryHistoryRange(ssq, statusQuark, realStart, realEnd - 1, resolution, monitor);
             eventList = new ArrayList<>(statusIntervals.size());
             long lastEndTime = -1;
             for (ITmfStateInterval statusInterval : statusIntervals) {
@@ -531,11 +535,10 @@ public class ControlFlowView extends AbstractTimeGraphView {
                 }
                 List<Integer> currentThreadQuarks = ssq.getQuarks(Attributes.CPUS, "*", Attributes.CURRENT_THREAD); //$NON-NLS-1$
                 for (int currentThreadQuark : currentThreadQuarks) {
-                    // adjust the query range to include the previous and
-                    // following intervals
+                    // adjust the query range to include the previous and following intervals
                     long qstart = Math.max(ssq.querySingleState(start, currentThreadQuark).getStartTime() - 1, ssq.getStartTime());
                     long qend = Math.min(ssq.querySingleState(end, currentThreadQuark).getEndTime() + 1, ssq.getCurrentEndTime());
-                    List<ITmfStateInterval> currentThreadIntervals = ssq.queryHistoryRange(currentThreadQuark, qstart, qend, resolution, monitor);
+                    List<ITmfStateInterval> currentThreadIntervals = StateSystemUtils.queryHistoryRange(ssq, currentThreadQuark, qstart, qend, resolution, monitor);
                     int prevThread = 0;
                     long prevEnd = 0;
                     long lastEnd = 0;
@@ -545,8 +548,7 @@ public class ControlFlowView extends AbstractTimeGraphView {
                         }
                         long time = currentThreadInterval.getStartTime();
                         if (time != lastEnd) {
-                            // don't create links where there are gaps in
-                            // intervals due to the resolution
+                            // don't create links where there are gaps in intervals due to the resolution
                             prevThread = 0;
                             prevEnd = 0;
                         }

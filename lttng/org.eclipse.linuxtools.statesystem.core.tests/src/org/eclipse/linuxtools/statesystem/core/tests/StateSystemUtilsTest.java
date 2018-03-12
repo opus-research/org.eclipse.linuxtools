@@ -21,8 +21,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystemBuilder;
 import org.eclipse.linuxtools.statesystem.core.StateSystemFactory;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtil;
-import org.eclipse.linuxtools.statesystem.core.StateSystemUtil.IStateSystemIntervalCondition;
+import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.backend.IStateHistoryBackend;
 import org.eclipse.linuxtools.statesystem.core.backend.InMemoryBackend;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
@@ -30,15 +29,16 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeExceptio
 import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.statesystem.core.statevalue.TmfStateValue;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the {@link StateSystemUtil} class
+ * Test the {@link StateSystemUtils} class
  *
  * @author Geneviève Bastien
  */
-public class StateSystemUtilTest {
+public class StateSystemUtilsTest {
 
     private static final long START_TIME = 1000L;
     private static final @NonNull String DUMMY_STRING = "test";
@@ -65,23 +65,18 @@ public class StateSystemUtilTest {
     }
 
     /**
-     * Test the
-     * {@link StateSystemUtil#queryIntervalsUntil(org.eclipse.linuxtools.statesystem.core.ITmfStateSystem, int, long, long, org.eclipse.linuxtools.statesystem.core.StateSystemUtil.IStateSystemIntervalCondition)}
-     * method
+     * Clean-up
+     */
+    @After
+    public void tearDown() {
+        fStateSystem.dispose();
+    }
+
+    /**
+     * Test the {@link StateSystemUtils#queryUntilNonNullValue} method.
      */
     @Test
-    public void testQueryIntervalUntil() {
-        IStateSystemIntervalCondition conditionIntValue = new IStateSystemIntervalCondition() {
-
-            @Override
-            public boolean pass(ITmfStateInterval interval) {
-                if (interval.getStateValue().getType() == ITmfStateValue.Type.INTEGER) {
-                    return interval.getStateValue().unboxInt() == INT_VAL;
-                }
-                return false;
-            }
-
-        };
+    public void testQueryUntilNonNullValue() {
         ITmfStateSystem ss = fStateSystem;
         assertNotNull(ss);
 
@@ -90,30 +85,30 @@ public class StateSystemUtilTest {
             quark = ss.getQuarkAbsolute(DUMMY_STRING);
 
             /* Should return null if requested range is not within range */
-            assertNull(StateSystemUtil.queryIntervalsUntil(ss, quark, 0, 999L, conditionIntValue));
-            assertNull(StateSystemUtil.queryIntervalsUntil(ss, quark, 2001L, 5000L, conditionIntValue));
+            assertNull(StateSystemUtils.queryUntilNonNullValue(ss, quark, 0, 999L));
+            assertNull(StateSystemUtils.queryUntilNonNullValue(ss, quark, 2001L, 5000L));
 
             /*
              * Should return null if request within range, but condition is
              * false
              */
-            assertNull(StateSystemUtil.queryIntervalsUntil(ss, quark, 1000L, 1199L, conditionIntValue));
+            assertNull(StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1199L));
 
             /*
              * Should return the right interval if an interval is within range,
              * even if the range starts or ends outside state system range
              */
-            ITmfStateInterval interval = StateSystemUtil.queryIntervalsUntil(ss, quark, 1000L, 1300L, conditionIntValue);
+            ITmfStateInterval interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1300L);
             assertNotNull(interval);
             assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(INT_VAL, interval.getStateValue().unboxInt());
 
-            interval = StateSystemUtil.queryIntervalsUntil(ss, quark, 800L, 2500L, conditionIntValue);
+            interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 800L, 2500L);
             assertNotNull(interval);
             assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(INT_VAL, interval.getStateValue().unboxInt());
 
-            interval = StateSystemUtil.queryIntervalsUntil(ss, quark, 1500L, 2500L, conditionIntValue);
+            interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1500L, 2500L);
             assertNull(interval);
 
         } catch (AttributeNotFoundException e) {

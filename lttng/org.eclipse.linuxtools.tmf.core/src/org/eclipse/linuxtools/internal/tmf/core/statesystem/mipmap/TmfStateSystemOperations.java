@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.StateSystemUtils;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
@@ -212,7 +213,7 @@ public final class TmfStateSystemOperations {
                         intervals.add(interval);
                     }
                 } else {
-                    for (ITmfStateInterval interval : ss.queryHistoryRange(baseQuark, t1, t2)) {
+                    for (ITmfStateInterval interval : StateSystemUtils.queryHistoryRange(ss, baseQuark, t1, t2)) {
                         if (!interval.getStateValue().isNull()) {
                             intervals.add(interval);
                         }
