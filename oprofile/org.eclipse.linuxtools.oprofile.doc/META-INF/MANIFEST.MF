@@ -7,4 +7,3 @@ Bundle-ActivationPolicy: lazy
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.help
 Bundle-Localization: plugin
-Automatic-Module-Name: org.eclipse.linuxtools.oprofile.doc
