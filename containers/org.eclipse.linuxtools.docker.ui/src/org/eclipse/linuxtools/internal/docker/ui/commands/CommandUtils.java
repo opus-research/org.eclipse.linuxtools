@@ -19,7 +19,6 @@ import java.util.List;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizard;
@@ -31,7 +30,6 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
-import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -72,15 +70,6 @@ public class CommandUtils {
 			return ((DockerContainersView) activePart).getConnection();
 		} else if (activePart instanceof DockerImagesView) {
 			return ((DockerImagesView) activePart).getConnection();
-		} else if (activePart instanceof DockerExplorerView) {
-			final ITreeSelection selection = ((DockerExplorerView) activePart)
-					.getCommonViewer().getStructuredSelection();
-			final Object firstElement = selection.getFirstElement();
-			if (firstElement instanceof IDockerContainer) {
-				return ((IDockerContainer) firstElement).getConnection();
-			} else if (firstElement instanceof IDockerImage) {
-				return ((IDockerImage) firstElement).getConnection();
-			}
 		}
 		return null;
 	}
@@ -95,10 +84,6 @@ public class CommandUtils {
 	public static List<IDockerContainer> getSelectedContainers(final IWorkbenchPart activePart) {
 		if (activePart instanceof DockerContainersView) {
 			final ISelection selection = ((DockerContainersView) activePart).getSelection();
-			return getSelectedContainers(selection);
-		} else if (activePart instanceof DockerExplorerView) {
-			final ISelection selection = ((DockerExplorerView) activePart)
-					.getCommonViewer().getSelection();
 			return getSelectedContainers(selection);
 		}
 		return Collections.emptyList();
@@ -126,6 +111,7 @@ public class CommandUtils {
 		}
 		return Collections.emptyList();
 	}
+
 	/**
 	 * @param activePart
 	 *            the active {@link IWorkbenchPart}
@@ -138,10 +124,6 @@ public class CommandUtils {
 		if (activePart instanceof DockerImagesView) {
 			final ISelection selection = ((DockerImagesView) activePart)
 					.getSelection();
-			return getSelectedImages(selection);
-		} else if (activePart instanceof DockerExplorerView) {
-			final ISelection selection = ((DockerExplorerView) activePart)
-					.getCommonViewer().getSelection();
 			return getSelectedImages(selection);
 		}
 		return Collections.emptyList();
@@ -190,12 +172,11 @@ public class CommandUtils {
 		// console for the container id and get
 		// its stream.
 		if (autoLogOnStart) {
-			final RunConsole console = RunConsole.findConsole(container);
-			if (console != null) {
-				console.attachToConsole(connection);
-				console.clearConsole();
-				return console;
-			}
+			final RunConsole console = RunConsole.findConsole(container.id(),
+					RunConsole.DEFAULT_ID, container.name());
+			console.attachToConsole(connection);
+			console.clearConsole();
+			return console;
 		}
 		return null;
 	}
@@ -213,25 +194,6 @@ public class CommandUtils {
 	 */
 	public static boolean openWizard(final IWizard wizard, final Shell shell) {
 		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
-		wizardDialog.create();
-		return wizardDialog.open() == Window.OK;
-	}
-
-	/**
-	 * Opens the given {@link IWizard} and returns <code>true</code> if the user
-	 * finished the operation, <code>false</code> if he cancelled it.
-	 * 
-	 * @param wizard
-	 *            the wizard to open
-	 * @param shell
-	 *            the current {@link Shell}
-	 * @return <code>true</code> if the wizard completed, <code>false</code>
-	 *         otherwise.
-	 */
-	public static boolean openWizard(final IWizard wizard, final Shell shell,
-			final int width, final int height) {
-		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
-		wizardDialog.setPageSize(width, height);
 		wizardDialog.create();
 		return wizardDialog.open() == Window.OK;
 	}
