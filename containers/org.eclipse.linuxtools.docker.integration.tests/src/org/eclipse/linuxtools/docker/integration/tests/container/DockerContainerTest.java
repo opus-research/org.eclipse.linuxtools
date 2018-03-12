@@ -16,10 +16,11 @@ import static org.junit.Assert.assertTrue;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.jboss.reddeer.common.wait.TimePeriod;
-import org.jboss.reddeer.common.wait.WaitWhile;
-import org.jboss.reddeer.core.condition.JobIsRunning;
-import org.jboss.reddeer.eclipse.condition.ConsoleHasNoChange;
+import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasNoChange;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,13 +49,14 @@ public class DockerContainerTest extends AbstractImageBotTest {
 		new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
 		assertTrue("Image has not been found!", imageIsDeployed(getCompleteImageName(IMAGE_NAME)));
 		getConnection().getImage(getCompleteImageName(IMAGE_NAME)).run();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
+		ImageRunWizard wizard = new ImageRunWizard();
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
 		firstPage.setContainerName(CONTAINER_NAME);
 		firstPage.finish();
 		if(mockitoIsUsed()){
 			MockUtils.runContainer(DEFAULT_CONNECTION_NAME, IMAGE_NAME, IMAGE_TAG_LATEST, CONTAINER_NAME);
 		}
-		new WaitWhile(new JobIsRunning(), TimePeriod.NORMAL);
+		new WaitWhile(new JobIsRunning(), TimePeriod.DEFAULT);
 		new WaitWhile(new ConsoleHasNoChange());
 		assertTrue("Container does not exists!",containerIsDeployed(CONTAINER_NAME));
 	}
