@@ -21,6 +21,7 @@ import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.Prob
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.ProbevarNodeData;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
@@ -32,11 +33,18 @@ import org.eclipse.ui.PlatformUI;
  * @author Henry Hughes
  * @author Ryan Morse
  */
-public class ProbeAliasBrowserView extends TapsetBrowserView {
+public class ProbeAliasBrowserView extends BrowserView {
     public static final String ID = "org.eclipse.linuxtools.internal.systemtap.ui.ide.views.ProbeAliasBrowserView"; //$NON-NLS-1$
 
-    public ProbeAliasBrowserView() {
-        super(ProbeParser.getInstance());
+    /**
+     * Creates the UI on the given <code>Composite</code>
+     */
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+        ProbeParser.getInstance().addListener(viewUpdater);
+        refresh();
+        makeActions();
     }
 
     @Override
@@ -67,17 +75,30 @@ public class ProbeAliasBrowserView extends TapsetBrowserView {
         return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     }
 
+    /**
+     * Refreshes the list of probe aliases in the viewer.
+     */
     @Override
-    protected void displayContents() {
-        setViewerInput(TapsetLibrary.getProbes());
-        setRefreshable(true);
+    public void refresh() {
+        tree = TapsetLibrary.getProbes();
+        if (tree != null) {
+            viewer.setInput(tree);
+        }
     }
 
-    @Override
-    protected void makeActions() {
+    /**
+     * Wires up all of the actions for this browser, such as double and right click handlers.
+     */
+    private void makeActions() {
         doubleClickAction = new ProbeAliasAction(getSite().getWorkbenchWindow(), this);
         viewer.addDoubleClickListener(doubleClickAction);
         registerContextMenu("probePopup"); //$NON-NLS-1$
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        ProbeParser.getInstance().removeListener(viewUpdater);
     }
 
 }
