@@ -10,18 +10,23 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.valgrind.ui;
 
+import org.eclipse.cdt.debug.ui.CDebugUIPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IPersistableSourceLocator;
 import org.eclipse.debug.core.model.ISourceLocator;
+import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
+import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
@@ -141,51 +146,74 @@ public class CoreMessagesViewer {
 
         });
 
-        doubleClickListener = new IDoubleClickListener() {
+        doubleClickListener = event -> {
+		    Object element = ((TreeSelection) event.getSelection()).getFirstElement();
+		    if (element instanceof ValgrindStackFrame) {
+		        ValgrindStackFrame frame = (ValgrindStackFrame) element;
+		        ILaunch launch = frame.getLaunch();
+		        ISourceLocator locator = launch.getSourceLocator();
+		        if (locator instanceof AbstractSourceLookupDirector) {
+		            AbstractSourceLookupDirector director = (AbstractSourceLookupDirector) locator;
+		            ISourceLookupParticipant[] participants = director.getParticipants();
+		            if (participants.length == 0) {
+		                // source locator likely disposed, try recreating it
+		                IPersistableSourceLocator sourceLocator;
+		                ILaunchConfiguration config = launch.getLaunchConfiguration();
+		                if (config != null) {
+		                    try {
+		                        String id = config.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, (String) null);
+		                        if (id == null) {
+		                            sourceLocator = CDebugUIPlugin.createDefaultSourceLocator();
+		                            sourceLocator.initializeDefaults(config);
+		                        } else {
+		                            sourceLocator = DebugPlugin.getDefault().getLaunchManager().newSourceLocator(id);
+		                            String memento = config.getAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_MEMENTO, (String) null);
+		                            if (memento == null) {
+		                                sourceLocator.initializeDefaults(config);
+		                            } else {
+		                                sourceLocator.initializeFromMemento(memento);
+		                            }
+		                        }
 
-            @Override
-            public void doubleClick(DoubleClickEvent event) {
-				Object element = ((TreeSelection) event.getSelection()).getFirstElement();
-				if (element instanceof ValgrindStackFrame) {
-					ValgrindStackFrame frame = (ValgrindStackFrame) element;
-					// locator stored in the frame should be valid for the lifespan of the frame object
-					ISourceLocator locator = frame.getSourceLocator();
-					ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
-					try {
-						if (result.getSourceElement() != null)
-							ProfileUIUtils.openEditorAndSelect(result, frame.getLine());
-						else // if lookup failed there is good chance we can just open the file by name
-							ProfileUIUtils.openEditorAndSelect(frame.getFile(), frame.getLine());
-					} catch (PartInitException | BadLocationException e) {
-						ValgrindUIPlugin.log(e);
-					}
-				}
-                else {
-                    if (viewer.getExpandedState(element)) {
-                        viewer.collapseToLevel(element, AbstractTreeViewer.ALL_LEVELS);
-                    } else {
-                        viewer.expandToLevel(element, 1);
-                    }
-                }
-            }
-        };
+		                        // replace old source locator
+		                        locator = sourceLocator;
+		                        launch.setSourceLocator(sourceLocator);
+		                    } catch (CoreException e1) {
+		                        e1.printStackTrace();
+		                    }
+		                }
+		            }
+		        }
+		        ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
+
+		        try {
+		            ProfileUIUtils.openEditorAndSelect(result, frame.getLine());
+		        } catch (PartInitException|BadLocationException e2) {
+		            e2.printStackTrace();
+		        }
+		    }
+		    else {
+		        if (viewer.getExpandedState(element)) {
+		            viewer.collapseToLevel(element, AbstractTreeViewer.ALL_LEVELS);
+		        } else {
+		            viewer.expandToLevel(element, 1);
+		        }
+		    }
+		};
         viewer.addDoubleClickListener(doubleClickListener);
 
         final ExpandAction expandAction = new ExpandAction(viewer);
         final CollapseAction collapseAction = new CollapseAction(viewer);
 
         MenuManager manager = new MenuManager();
-        manager.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager) {
-                ITreeSelection selection = (ITreeSelection) viewer.getSelection();
-                Object element = selection.getFirstElement();
-                if (contentProvider.hasChildren(element)) {
-                    manager.add(expandAction);
-                    manager.add(collapseAction);
-                }
-            }
-        });
+        manager.addMenuListener(manager1 -> {
+		    ITreeSelection selection = (ITreeSelection) viewer.getSelection();
+		    Object element = selection.getFirstElement();
+		    if (contentProvider.hasChildren(element)) {
+		        manager1.add(expandAction);
+		        manager1.add(collapseAction);
+		    }
+		});
 
         manager.setRemoveAllWhenShown(true);
         Menu contextMenu = manager.createContextMenu(viewer.getTree());
