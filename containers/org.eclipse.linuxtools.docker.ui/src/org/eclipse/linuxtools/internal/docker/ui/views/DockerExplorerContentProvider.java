@@ -95,22 +95,16 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			final DockerContainer container = (DockerContainer) parentElement;
 			if (container.isInfoLoaded()) {
 				final IDockerContainerInfo info = container.info();
-				final IDockerNetworkSettings networkSettings = (info != null)
-						? info.networkSettings() : null;
-				final IDockerHostConfig hostConfig = (info != null)
-						? info.hostConfig() : null;
+				final IDockerNetworkSettings networkSettings = info
+						.networkSettings();
+				final IDockerHostConfig hostConfig = info.hostConfig();
 				return new Object[] {
 						new DockerContainerPortMappingsCategory(container,
-								(networkSettings != null)
-										? networkSettings.ports()
-										: Collections
-												.<String, List<IDockerPortBinding>> emptyMap()),
+								networkSettings.ports()),
 						new DockerContainerVolumesCategory(container,
-								(hostConfig != null) ? hostConfig.binds()
-										: Collections.<String> emptyList()),
+								hostConfig.binds()),
 						new DockerContainerLinksCategory(container,
-								(hostConfig != null) ? hostConfig.links()
-										: Collections.<String> emptyList()) };
+								hostConfig.links()) };
 			}
 			loadContainerInfo(container);
 			return new Object[] { new LoadingStub(container) };
