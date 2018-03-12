@@ -15,7 +15,6 @@ import static org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils.ge
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,6 +24,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
@@ -33,7 +33,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
-import org.eclipse.linuxtools.internal.docker.ui.launch.LaunchConfigurationUtils;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -71,22 +70,21 @@ public class RunImageCommandHandler extends AbstractHandler {
 							.getDockerContainerConfig();
 					final IDockerHostConfig hostConfig = wizard
 							.getDockerHostConfig();
-					runImage(selectedImage, containerConfig,
+					runImage(selectedImage.getConnection(), containerConfig,
 							hostConfig, wizard.getDockerContainerName(),
 							wizard.removeWhenExits());
 				}
-			} catch (DockerException | CoreException e) {
+			} catch (DockerException e) {
 				Activator.log(e);
 			}
 		}
 		return null;
 	}
 
-	public static void runImage(final IDockerImage image,
+	private void runImage(final IDockerConnection connection,
 			final IDockerContainerConfig containerConfig,
 			final IDockerHostConfig hostConfig, final String containerName,
 			final boolean removeWhenExits) {
-		final IDockerConnection connection = image.getConnection();
 		if (containerConfig.tty()) {
 			// show the console view
 			try {
@@ -106,7 +104,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 			protected IStatus run(final IProgressMonitor monitor) {
 				monitor.beginTask(
 						DVMessages.getString("RunImageRunningTask.msg"), 2); //$NON-NLS-1$
-				String containerId = null;
+				String id = null;
 				try {
 					final SubProgressMonitor createContainerMonitor = new SubProgressMonitor(
 							monitor, 1);
@@ -115,10 +113,12 @@ public class RunImageCommandHandler extends AbstractHandler {
 							DVMessages.getString(
 									"RunImageCreatingContainerTask.msg"), //$NON-NLS-1$
 							1);
-					containerId = ((DockerConnection) connection)
+					final String containerId = ((DockerConnection) connection)
 							.createContainer(containerConfig, hostConfig, containerName);
+					id = containerId;
 					final IDockerContainer container = ((DockerConnection) connection)
 							.getContainer(containerId);
+
 					createContainerMonitor.done();
 					// abort if operation was cancelled
 					if (monitor.isCanceled()) {
@@ -141,10 +141,6 @@ public class RunImageCommandHandler extends AbstractHandler {
 								.startContainer(containerId, null);
 					}
 					startContainerMonitor.done();
-					// create a launch configuration from the container
-					LaunchConfigurationUtils.createLaunchConfiguration(image,
-							containerConfig, hostConfig, container.name(),
-							removeWhenExits);
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {
 
@@ -163,14 +159,19 @@ public class RunImageCommandHandler extends AbstractHandler {
 				} finally {
 					if (removeWhenExits) {
 						try {
-							if (containerId != null) {
+							if (id != null) {
 								// Wait for the container to finish
 								((DockerConnection) connection)
-										.waitForContainer(containerId);
+										.waitForContainer(id);
 								// Drain the logging thread before we remove the
 								// container
 								((DockerConnection) connection)
-										.stopLoggingThread(containerId);
+										.stopLoggingThread(id);
+								while (((DockerConnection) connection)
+										.loggingStatus(
+												id) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
+									Thread.sleep(1000);
+								}
 							}
 						} catch (DockerException | InterruptedException e) {
 							// ignore any errors in waiting for container or
@@ -178,11 +179,11 @@ public class RunImageCommandHandler extends AbstractHandler {
 						}
 						try {
 							// try and remove the container if it was created
-							if (containerId != null)
+							if (id != null)
 								((DockerConnection) connection)
-										.removeContainer(containerId);
+										.removeContainer(id);
 						} catch (DockerException | InterruptedException e) {
-							final String id = containerId;
+							final String containerId = id;
 							Display.getDefault().syncExec(new Runnable() {
 
 								@Override
@@ -192,7 +193,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 													.getActiveShell(),
 											DVMessages.getFormattedString(
 													ERROR_REMOVING_CONTAINER,
-													id),
+													containerId),
 											e.getMessage());
 
 								}

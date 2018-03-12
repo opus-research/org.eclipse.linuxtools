@@ -44,12 +44,6 @@ public class EnvironmentVariableModel extends BaseDatabindingModel {
 		this.value = variable.getValue();
 	}
 
-	public static EnvironmentVariableModel createEnvironmentVariableModel(
-			String fromString) {
-		String[] s = fromString.split("="); //$NON-NLS-1$
-		return new EnvironmentVariableModel(s[0], s[1]);
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -64,11 +58,6 @@ public class EnvironmentVariableModel extends BaseDatabindingModel {
 
 	public void setValue(final String value) {
 		firePropertyChange(VALUE, this.value, this.value = value);
-	}
-
-	@Override
-	public String toString() {
-		return name + "=" + value; //$NON-NLS-1$
 	}
 
 	@Override
