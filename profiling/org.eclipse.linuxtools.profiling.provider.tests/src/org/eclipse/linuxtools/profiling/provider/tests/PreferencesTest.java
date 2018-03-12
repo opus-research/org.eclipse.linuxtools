@@ -281,7 +281,7 @@ public class PreferencesTest extends AbstractTest{
      *
      * @param name partial label of radio button to deselect.
      */
-    private static void deselectSelectionByName(final String name, final SWTWorkbenchBot bot) {
+    public static void deselectSelectionByName(final String name, final SWTWorkbenchBot bot) {
         UIThreadRunnable.syncExec(new VoidResult() {
             @Override
             public void run() {

@@ -22,7 +22,8 @@ import org.eclipse.ui.part.IPageBookViewPage;
 public class RpmConsolePageParticipant implements IConsolePageParticipant {
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Class adapter) {
         return null;
     }
 

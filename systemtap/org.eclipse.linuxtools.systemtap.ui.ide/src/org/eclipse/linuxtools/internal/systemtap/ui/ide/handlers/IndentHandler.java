@@ -119,7 +119,7 @@ public class IndentHandler extends AbstractHandler {
             Runnable runnable = new STPRunnable(editor) {
                 @Override
                 public void run() {
-                    IRewriteTarget target = getTextEditor()
+                    IRewriteTarget target = (IRewriteTarget) getTextEditor()
                             .getAdapter(IRewriteTarget.class);
                     if (target != null) {
                         target.beginCompoundChange();
@@ -464,6 +464,10 @@ public class IndentHandler extends AbstractHandler {
         }
         return null;
     }
+
+    /*
+     * @see org.eclipse.ui.texteditor.IUpdate#update()
+     */
 
     /**
      * Returns the document currently displayed in the editor, or
