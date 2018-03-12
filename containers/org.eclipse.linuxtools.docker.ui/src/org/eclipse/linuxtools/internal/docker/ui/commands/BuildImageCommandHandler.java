@@ -31,14 +31,15 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.DockerConnectionWatcher;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImageBuildProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -52,27 +53,22 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
+		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final ImageBuild wizard = new ImageBuild();
 		final WizardDialog wizardDialog = new NonModalWizardDialog(HandlerUtil.getActiveShell(event), wizard);
 		wizardDialog.create();
 		final boolean buildImage = wizardDialog.open() == Window.OK;
 		if (buildImage) {
-			connection = DockerConnectionWatcher.getInstance().getConnection();
+			if (activePart instanceof DockerImagesView) {
+				connection = ((DockerImagesView) activePart)
+						.getConnection();
+			}
 			performBuildImage(wizard);
 		}
 		return null;
 	}
 	
 	private void performBuildImage(final ImageBuild wizard) {
-		if (connection == null) {
-			// if no connection, issue error message dialog and return
-			Display.getDefault().syncExec(() -> MessageDialog.openError(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getShell(),
-					WizardMessages.getString("ErrorNoConnection.msg"), //$NON-NLS-1$
-					WizardMessages.getString("ErrorNoConnection.desc"))); //$NON-NLS-1$
-			return;
-		}
 		final Job buildImageJob = new Job(
 				DVMessages.getString(BUILD_IMAGE_JOB_TITLE)) {
 
@@ -121,9 +117,9 @@ public class BuildImageCommandHandler extends AbstractHandler {
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),
 							WizardMessages
-									.getString("ErrorInvalidDirectory.msg"), //$NON-NLS-1$
+									.getString("ErrorInvalidDirectory.msg"),
 							WizardMessages.getFormattedString(
-									"ErrorInvalidPermissions.msg", //$NON-NLS-1$
+									"ErrorInvalidPermissions.msg",
 									path.toString())));
 					return Status.OK_STATUS;
 				}
