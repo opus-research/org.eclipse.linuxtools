@@ -163,7 +163,6 @@ public class InMemoryBackendTest {
     public void testQueryAttributeEmpty() {
         try {
             ITmfStateInterval interval = fixture.doSingularQuery(999, 0);
-            assertNotNull(interval);
             assertEquals(TmfStateValue.nullValue(), interval.getStateValue());
 
         } catch (TimeRangeException e) {
@@ -180,7 +179,6 @@ public class InMemoryBackendTest {
     public void testBegin() {
         try {
             ITmfStateInterval interval = fixture.doSingularQuery(0, 0);
-            assertNotNull(interval);
             assertEquals(0, interval.getStartTime());
             assertEquals(90, interval.getEndTime());
             assertEquals(0, interval.getStateValue().unboxInt());
