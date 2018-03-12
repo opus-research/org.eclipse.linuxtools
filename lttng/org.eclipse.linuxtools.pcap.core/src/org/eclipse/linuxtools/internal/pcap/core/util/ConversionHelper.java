@@ -15,6 +15,7 @@ package org.eclipse.linuxtools.internal.pcap.core.util;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.pcap.core.protocol.ethernet2.EthernetIIValues;
@@ -31,6 +32,11 @@ public final class ConversionHelper {
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final String DEFAULT_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(DEFAULT_TIME_PATTERN);
+
+    static
+    {
+        DATE_FORMATTER.setTimeZone(TimeZone.getTimeZone("GMT")); //$NON-NLS-1$
+    }
 
     private ConversionHelper() {
     }
