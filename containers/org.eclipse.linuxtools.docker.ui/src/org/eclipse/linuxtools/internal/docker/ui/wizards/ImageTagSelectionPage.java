@@ -13,12 +13,10 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -91,21 +89,19 @@ public class ImageTagSelectionPage extends WizardPage {
 								2);
 						final String selectedImageName = ImageTagSelectionPage.this.model
 								.getSelectedImage().getName();
+						List<IRepositoryTag> repositoryTags;
 						try {
-							final List<IRepositoryTag> repositoryTags = registry
+							repositoryTags = registry
 									.getTags(selectedImageName);
-							Collections.sort(repositoryTags);
 							monitor.worked(1);
+							final List<DockerImageTagSearchResult> searchResults = new ArrayList<>();
 							final IDockerConnection connection = model
 									.getSelectedConnection();
-							final List<DockerImageTagSearchResult> searchResults = repositoryTags
-									.stream()
-									.map(t -> new DockerImageTagSearchResult(
-											selectedImageName, t,
-											connection.hasImage(
-													selectedImageName,
-													t.getName())))
-									.collect(Collectors.toList());
+							for (IRepositoryTag repositoryTag : repositoryTags) {
+								searchResults.add(new DockerImageTagSearchResult(
+										selectedImageName, repositoryTag,
+										connection.hasImage(selectedImageName, repositoryTag.getName())));
+							}
 							monitor.worked(1);
 							searchResultQueue.offer(searchResults);
 						} catch (DockerException e) {

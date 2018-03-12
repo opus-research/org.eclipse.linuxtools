@@ -13,10 +13,8 @@ package org.eclipse.linuxtools.internal.docker.core;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.eclipse.linuxtools.docker.core.IRepositoryTag;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,21 +28,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class RepositoryTagV2 {
 
-	public static final String UNKNOWN_LAYER = "Unknown";
-
 	@JsonProperty("name") //$NON-NLS-1$
 	private String name;
 
 	@JsonProperty("tags") //$NON-NLS-1$
 	private List<String> tags;
 
-	public List<IRepositoryTag> getTags() {
-		return tags.stream().map(t -> {
-			final RepositoryTag tag = new RepositoryTag();
-			tag.setName(t);
-			tag.setLayer(UNKNOWN_LAYER); //$NON-NLS-1$
-			return tag;
-		}).collect(Collectors.toList());
+	public List<RepositoryTag> getTags() {
+		List<RepositoryTag> result = new ArrayList<>();
+		for (String tag : tags) {
+			RepositoryTag rtag = new RepositoryTag();
+			rtag.setName(tag);
+			rtag.setLayer("Unknown"); //$NON-NLS-1$
+			result.add(rtag);
+		}
+		return result;
 	}
 
 	public String getName() {
