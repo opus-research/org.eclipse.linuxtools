@@ -294,7 +294,8 @@ public class DockerRegistryAccountPreferencePage extends PreferencePage
 				int index = pwdTable.getSelectionIndex();
 				IRegistryAccount info = passwords
 						.get(index);
-				dialog.setInputData(info);
+				dialog.setInputData(info.getServerAddress(), info.getUsername(),
+						info.getEmail());
 				if (dialog.open() == Window.OK) {
 					// Remove old and add new
 					info = dialog.getSignonInformation();
