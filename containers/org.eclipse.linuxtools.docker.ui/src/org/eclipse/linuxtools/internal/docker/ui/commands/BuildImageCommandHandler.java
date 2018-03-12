@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -32,6 +33,7 @@ import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImageBuildProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
@@ -39,9 +41,11 @@ import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.navigator.CommonNavigator;
 
 public class BuildImageCommandHandler extends AbstractHandler {
 
@@ -62,6 +66,19 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			if (activePart instanceof DockerImagesView) {
 				connection = ((DockerImagesView) activePart)
 						.getConnection();
+			} else {
+				// if activated as part of quick view, we will have to find a
+				// DockerExplorerView and get its selected Connection, if any
+				IViewPart explorerView = PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage()
+						.findView(DockerExplorerView.VIEW_ID);
+				if (explorerView != null) {
+					IStructuredSelection selection = (IStructuredSelection) ((CommonNavigator) explorerView)
+							.getCommonViewer().getSelection();
+					if (selection != null)
+						connection = (IDockerConnection) selection
+								.getFirstElement();
+				}
 			}
 			performBuildImage(wizard);
 		}
@@ -69,6 +86,15 @@ public class BuildImageCommandHandler extends AbstractHandler {
 	}
 	
 	private void performBuildImage(final ImageBuild wizard) {
+		if (connection == null) {
+			// if no connection, issue error message dialog and return
+			Display.getDefault().syncExec(() -> MessageDialog.openError(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getShell(),
+					WizardMessages.getString("ErrorNoConnection.msg"), //$NON-NLS-1$
+					WizardMessages.getString("ErrorNoConnection.desc"))); //$NON-NLS-1$
+			return;
+		}
 		final Job buildImageJob = new Job(
 				DVMessages.getString(BUILD_IMAGE_JOB_TITLE)) {
 
@@ -117,9 +143,9 @@ public class BuildImageCommandHandler extends AbstractHandler {
 							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 									.getShell(),
 							WizardMessages
-									.getString("ErrorInvalidDirectory.msg"),
+									.getString("ErrorInvalidDirectory.msg"), //$NON-NLS-1$
 							WizardMessages.getFormattedString(
-									"ErrorInvalidPermissions.msg",
+									"ErrorInvalidPermissions.msg", //$NON-NLS-1$
 									path.toString())));
 					return Status.OK_STATUS;
 				}
