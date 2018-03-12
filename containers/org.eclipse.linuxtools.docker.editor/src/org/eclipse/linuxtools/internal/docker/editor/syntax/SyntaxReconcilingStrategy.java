@@ -37,9 +37,11 @@ public class SyntaxReconcilingStrategy implements IReconcilingStrategy, IReconci
 	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
 		try {
-			IResource resource = editor.getEditorInput().getAdapter(IResource.class);
+			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 			new SyntaxProblemReporter().checkAndApply(document, subRegion.getOffset(), subRegion.getLength(), resource);
-		} catch (CoreException|BadLocationException e) {
+		} catch (CoreException e) {
+			Activator.log(IStatus.ERROR, "Failed to perform syntax check", e);
+		} catch (BadLocationException e) {
 			Activator.log(IStatus.ERROR, "Failed to perform syntax check", e);
 		}
 	}

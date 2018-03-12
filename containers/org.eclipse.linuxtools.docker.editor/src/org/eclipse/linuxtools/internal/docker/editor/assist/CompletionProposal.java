@@ -88,7 +88,6 @@ public class CompletionProposal implements ICompletionProposal, ICompletionPropo
 	}
 	
 	private static class DefaultInformationControlCreator implements IInformationControlCreator {
-		@Override
 		public IInformationControl createInformationControl(Shell shell) {
 			return new DefaultInformationControl(shell, true);
 		}
