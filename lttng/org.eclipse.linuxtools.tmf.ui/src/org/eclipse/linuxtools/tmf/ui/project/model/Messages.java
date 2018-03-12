@@ -76,21 +76,9 @@ public class Messages extends NLS {
      * @since 3.0*/
     public static String TmfTraceElement_SourceLocation;
 
-    /** The descriptor for the last modified property
-     * @since 3.1 */
-    public static String TmfTraceElement_LastModified;
-
-    /** The descriptor for the size property
-     * @since 3.1 */
-    public static String TmfTraceElement_Size;
-
-    /** The format string for the size property of a file
-     * @since 3.1 */
-    public static String TmfTraceElement_FileSizeString;
-
-    /** The format string for the size property of a folder
-     * @since 3.1 */
-    public static String TmfTraceElement_FolderSizeString;
+    /** The descriptor for the time offset property
+     * @since 3.2*/
+    public static String TmfTraceElement_TimeOffset;
 
     /** Trace text
      * @since 3.0*/
