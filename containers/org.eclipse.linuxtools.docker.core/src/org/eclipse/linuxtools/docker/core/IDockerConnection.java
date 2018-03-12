@@ -17,9 +17,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
-import org.eclipse.linuxtools.internal.docker.core.RegistryAccountInfo;
-
-import com.spotify.docker.client.DockerCertificateException;
 
 public interface IDockerConnection {
 
@@ -191,19 +188,9 @@ public interface IDockerConnection {
 
 	void pullImage(String id, IDockerProgressHandler handler) throws DockerException, InterruptedException;
 
-	/**
-	 * @since 2.0
-	 */
-	void pullImage(String id, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
-
 	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException;
-
+	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
-
-	/**
-	 * @since 2.0
-	 */
-	void pushImage(String name, IRegistryAccount info, IDockerProgressHandler handler) throws DockerException, InterruptedException, DockerCertificateException;
 
 	/**
 	 * Adds a tag to an existing image
