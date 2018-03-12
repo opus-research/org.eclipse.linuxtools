@@ -141,7 +141,7 @@ public final class ProbeParser extends TreeTapsetParser {
             TreeNode groupNode = null;
             while (st.hasNextLine()) {
                 if (monitor.isCanceled()) {
-                    canceled = true;
+                    canceled = false;
                     break;
                 }
                 String tokenString = st.nextLine();
