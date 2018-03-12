@@ -10,19 +10,15 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.core;
 
-import java.net.Authenticator;
 import java.util.Arrays;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.RegistryFactory;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 
-public class RegistryAccountInfo extends RegistryInfo implements IRegistryAccount {
+public class RegistryAccountInfo extends RegistryInfo
+		implements IRegistryAccount {
 
 	private final String username;
 	private final String email;
@@ -76,35 +72,6 @@ public class RegistryAccountInfo extends RegistryInfo implements IRegistryAccoun
 		} catch (StorageException e) {
 		}
 		return password;
-	}
-
-	@Override
-	protected void enableDockerAuthenticator() {
-		if (getUsername() != null && getPassword() != null) {
-			Authenticator.setDefault(new DockerAuthenticator(getUsername(), getPassword()));
-		}
-	}
-
-	@Override
-	protected void restoreAuthenticator() {
-		IExtension[] extensions = RegistryFactory.getRegistry()
-				.getExtensionPoint("org.eclipse.core.net", "authenticator") //$NON-NLS-1$ //$NON-NLS-2$
-				.getExtensions();
-		if (extensions.length == 0) {
-			return;
-		}
-		IExtension extension = extensions[0];
-		IConfigurationElement[] configs = extension.getConfigurationElements();
-		if (configs.length == 0) {
-			return;
-		}
-		try {
-			IConfigurationElement config = configs[0];
-			Authenticator original = (Authenticator) config
-					.createExecutableExtension("class"); //$NON-NLS-1$
-			Authenticator.setDefault(original);
-		} catch (CoreException ex) {
-		}
 	}
 
 	@Override
