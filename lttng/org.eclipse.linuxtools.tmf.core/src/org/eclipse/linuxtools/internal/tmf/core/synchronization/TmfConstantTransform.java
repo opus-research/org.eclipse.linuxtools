@@ -12,8 +12,6 @@
 
 package org.eclipse.linuxtools.internal.tmf.core.synchronization;
 
-import java.math.BigDecimal;
-
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransformLinear;
@@ -31,7 +29,7 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
      * Serial ID
      */
     private static final long serialVersionUID = 417299521984404532L;
-    private TmfNanoTimestamp fOffset;
+    private ITmfTimestamp fOffset;
 
     /**
      * Default constructor
@@ -57,12 +55,12 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
      *            The offset of the linear transform
      */
     public TmfConstantTransform(ITmfTimestamp offset) {
-        fOffset = new TmfNanoTimestamp(offset);
+        fOffset = offset;
     }
 
     @Override
     public ITmfTimestamp transform(ITmfTimestamp timestamp) {
-        return timestamp.normalize(fOffset.getValue(), ITmfTimestamp.NANOSECOND_SCALE);
+        return fOffset.normalize(timestamp.getValue(), timestamp.getScale());
     }
 
     /**
@@ -74,7 +72,7 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
      */
     @Override
     public long transform(long timestamp) {
-        return fOffset.getValue() + timestamp;
+        return fOffset.normalize(timestamp, ITmfTimestamp.NANOSECOND_SCALE).getValue();
     }
 
     @Override
@@ -86,15 +84,7 @@ public class TmfConstantTransform implements ITmfTimestampTransform {
             TmfConstantTransform tct = (TmfConstantTransform) composeWith;
             return new TmfConstantTransform(fOffset.getValue() + tct.fOffset.getValue());
         } else if (composeWith instanceof TmfTimestampTransformLinear) {
-            /*
-             * If composeWith is a linear transform, add the two together, we
-             * hope the linear transform is in nanoseconds, because there is no
-             * way to determine what its scale is. At the time of the writing,
-             * it is always in ns though.
-             */
-            TmfTimestampTransformLinear ttl = (TmfTimestampTransformLinear) composeWith;
-            BigDecimal newBeta = ttl.getOffset().add(new BigDecimal(fOffset.getValue()));
-            return new TmfTimestampTransformLinear(ttl.getSlope(), newBeta);
+            throw new UnsupportedOperationException("Cannot compose a constant and linear transform yet"); //$NON-NLS-1$
         } else {
             /*
              * We do not know what to do with this kind of transform, just

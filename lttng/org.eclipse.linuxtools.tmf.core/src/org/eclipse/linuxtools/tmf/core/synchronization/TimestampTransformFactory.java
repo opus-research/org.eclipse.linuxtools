@@ -56,7 +56,7 @@ public final class TimestampTransformFactory {
     }
 
     /**
-     * Create an offsetted and slopped transform
+     * Create an offsetted and sloped transform
      *
      * @param factor
      *            the slope
@@ -72,7 +72,7 @@ public final class TimestampTransformFactory {
     }
 
     /**
-     * Create an offsetted and slopped transform
+     * Create an offsetted and sloped transform
      *
      * @param factor
      *            the slope
@@ -88,7 +88,7 @@ public final class TimestampTransformFactory {
     }
 
     /**
-     * Create an offsetted and slopped transform using bigDecimals
+     * Create an offsetted and sloped transform using bigDecimals
      *
      * @param factor
      *            the slope

@@ -119,26 +119,6 @@ public class TmfTimestampTransformLinear implements ITmfTimestampTransform {
         }
     }
 
-    /**
-     * Get the slope of the transform
-     *
-     * @return the slope
-     * @since 3.1
-     */
-    public BigDecimal getSlope() {
-        return fAlpha;
-    }
-
-    /**
-     * Get the offset of the transform
-     *
-     * @return the offset
-     * @since 3.1
-     */
-    public BigDecimal getOffset() {
-        return fBeta;
-    }
-
     @Override
     public boolean equals(Object other) {
         boolean result = false;
