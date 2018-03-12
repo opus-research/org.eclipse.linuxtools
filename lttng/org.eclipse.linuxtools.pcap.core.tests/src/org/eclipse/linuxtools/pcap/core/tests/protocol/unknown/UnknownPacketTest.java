@@ -75,7 +75,8 @@ public class UnknownPacketTest {
     public void CompleteUnknownPacketTest() throws IOException, BadPcapFileException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer byteBuffer = fPacket;
             if (byteBuffer == null) {
                 fail("CompleteUnknownPacketTest has failed!");

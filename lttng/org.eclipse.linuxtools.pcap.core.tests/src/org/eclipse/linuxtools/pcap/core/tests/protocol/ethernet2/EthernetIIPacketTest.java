@@ -102,7 +102,8 @@ public class EthernetIIPacketTest {
     public void CompleteEthernetIIPacketTest() throws IOException, BadPcapFileException, BadPacketException {
         PcapTestTrace trace = PcapTestTrace.MOSTLY_TCP;
         assumeTrue(trace.exists());
-        try (PcapFile dummy = new PcapFile(trace.getPath())) {
+        String file = trace.getPath();
+        try (PcapFile dummy = new PcapFile(file)) {
             ByteBuffer byteBuffer = fPacket;
             if (byteBuffer == null) {
                 fail("CompleteEthernetIIPacketTest has failed!");
