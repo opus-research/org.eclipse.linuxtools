@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 Alphonse Van Assche and others.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.linuxtools.internal.rpm.ui.editor.ColorManager;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.ISpecfileColorConstants;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.scanners.SpecfileScanner;
 import org.eclipse.linuxtools.rpm.ui.editor.tests.AScannerTest;
@@ -33,7 +34,7 @@ public class SpecfileScannerTest extends AScannerTest {
 
     @BeforeClass
     public static void init() {
-        scanner = new SpecfileScanner();
+        scanner = new SpecfileScanner(new ColorManager());
     }
 
     @Override

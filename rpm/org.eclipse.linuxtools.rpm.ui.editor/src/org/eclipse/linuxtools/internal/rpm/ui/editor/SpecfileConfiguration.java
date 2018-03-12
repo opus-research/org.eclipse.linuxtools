@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 Red Hat, Inc.
+ * Copyright (c) 2007, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TabsToSpacesConverter;
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -38,6 +39,7 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.hyperlink.URLHyperlinkWithMacroDetector;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
@@ -58,13 +60,15 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 	private SpecfileScanner scanner;
 	private SpecfileChangelogScanner changelogScanner;
 	private SpecfilePackagesScanner packagesScanner;
+	private ColorManager colorManager;
 	private SpecfileHover specfileHover;
 	private SpecfileEditor editor;
 	private IPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 			FrameworkUtil.getBundle(SpecfileConfiguration.class).getSymbolicName());
 
-	public SpecfileConfiguration(SpecfileEditor editor) {
+	public SpecfileConfiguration(ColorManager colorManager, SpecfileEditor editor) {
 		super();
+		this.colorManager = colorManager;
 		this.editor = editor;
 	}
 
@@ -83,21 +87,27 @@ public class SpecfileConfiguration extends TextSourceViewerConfiguration {
 
 	private SpecfileScanner getSpecfileScanner() {
 		if (scanner == null) {
-			scanner = new SpecfileScanner();
+			scanner = new SpecfileScanner(colorManager);
+			scanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
 		}
 		return scanner;
 	}
 
 	private SpecfileChangelogScanner getSpecfileChangelogScanner() {
 		if (changelogScanner == null) {
-			changelogScanner = new SpecfileChangelogScanner();
+			changelogScanner = new SpecfileChangelogScanner(colorManager);
+			changelogScanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
 		}
 		return changelogScanner;
 	}
 
 	private SpecfilePackagesScanner getSpecfilePackagesScanner() {
 		if (packagesScanner == null) {
-			packagesScanner = new SpecfilePackagesScanner();
+			packagesScanner = new SpecfilePackagesScanner(colorManager);
+			packagesScanner.setDefaultReturnToken(
+					new Token(new TextAttribute(colorManager.getColor(ISpecfileColorConstants.DEFAULT))));
 		}
 		return packagesScanner;
 	}
