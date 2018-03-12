@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Version;
 
 public class PerfCore {
 
@@ -207,7 +206,7 @@ public class PerfCore {
     }
 
     //Gets the current version of perf
-    public static Version getPerfVersion(ILaunchConfiguration config) {
+    public static PerfVersion getPerfVersion(ILaunchConfiguration config) {
         IProject project = getProject(config);
         Process p = null;
 
@@ -228,9 +227,9 @@ public class PerfCore {
             perfVersion = perfVersion.substring(0, index);
         }
         perfVersion = perfVersion.replace("perf version", "").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-        if (perfVersion.length() == 0)
+        if (perfVersion.isEmpty())
         	return null;
-        return new Version(perfVersion);
+        return new PerfVersion(perfVersion);
     }
 
 
@@ -244,7 +243,7 @@ public class PerfCore {
     }
 
     //Generates a perf record command string with the options set in the given config. (If null uses default).
-    public static String [] getRecordString(ILaunchConfiguration config, Version perfVersion) {
+    public static String [] getRecordString(ILaunchConfiguration config) {
         String [] base = new String [] {PerfPlugin.PERF_COMMAND, "record"}; //$NON-NLS-1$
         if (config == null) {
             return base;
@@ -314,7 +313,7 @@ public class PerfCore {
         if (oldPerfVersion) {
             base.addAll( Arrays.asList( new String[]{PerfPlugin.PERF_COMMAND, "annotate", "-s", symbol, "-l", "-P"} ) ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         } else {
-            base.addAll( Arrays.asList( new String[]{PerfPlugin.PERF_COMMAND, "annotate", "-d", dso, "-s", symbol, "-l", "-P"} ) ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+            base.addAll( Arrays.asList( new String[]{PerfPlugin.PERF_COMMAND, "annotate", "--stdio", "-d", dso, "-s", symbol, "-l", "-P"} ) ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         }
         if (config != null) {
             try {
@@ -332,6 +331,12 @@ public class PerfCore {
                 }
             } catch (CoreException e) { }
         }
+        /*
+         * Some versions of perf annotate hangs while waiting for an input.
+         * Redirect input from an empty file (or /dev/null) to avoid that behavior.
+         */
+        base.add("<"); //$NON-NLS-1$
+        base.add("/dev/null"); //$NON-NLS-1$
 
         //(Annotate string per symbol)
         return base.toArray( new String[base.size()] );
@@ -340,16 +345,16 @@ public class PerfCore {
     // Runs assuming perf.data has already been recorded, environ and workingDir can be set to null to use default
     //perfDataLoc is optional - it is used to provide a pre-existing data file instead of something recorded from
     //whatever project is being profiled. It is only used for junit tests atm.
-    public static void report(ILaunchConfiguration config, String[] environ, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
+    public static void report(ILaunchConfiguration config, IPath workingDir, IProgressMonitor monitor, String perfDataLoc, PrintStream print) {
         IProject project = getProject(config);
 
         TreeParent invisibleRoot = PerfPlugin.getDefault().clearModelRoot();
 
-        Version perfVersion = getPerfVersion(config);
-        boolean OldPerfVersion = false;
-        if (new Version(0, 0, 2).compareTo(perfVersion) > 0) {
-            OldPerfVersion = true;
-            if (print != null) { print.println("WARNING: You are running an older version of Perf, please update if you can. The plugin may produce unpredictable results."); }
+        PerfVersion perfVersion = getPerfVersion(config);
+        boolean oldPerfVersion = false;
+        if (!perfVersion.isNewer(new PerfVersion(0, 0, 2))) {
+            oldPerfVersion = true;
+            if (print != null) { print.println("WARNING: You are running an older version of Perf, please update if you can. The plugin may produce unpredictable results."); } //$NON-NLS-1$
         }
 
 
@@ -381,7 +386,7 @@ public class PerfCore {
         }
 
         PerfCore.parseRemoteReport(config, workingDir, monitor, perfDataLoc, print,
-                invisibleRoot, OldPerfVersion, input, error, project);
+                invisibleRoot, oldPerfVersion, input, error, project);
     }
 
     /**
@@ -433,6 +438,10 @@ public class PerfCore {
                 // line containing report information
                 if ((line.startsWith("#"))) { //$NON-NLS-1$
                     if (line.contains("Events:") || line.contains("Samples:")) { //$NON-NLS-1$ //$NON-NLS-2$
+                    	// ignore lost samples as the plugin has no logic for handling them
+                    	if (line.startsWith("# Total Lost Samples:")) { //$NON-NLS-1$
+                    		continue;
+                    	}
                         String[] tmp = line.trim().split(" "); //$NON-NLS-1$
                         String event = tmp[tmp.length - 1];
                         // In this case, the event name is single quoted
@@ -444,8 +453,8 @@ public class PerfCore {
                         currentCommand = null;
                         currentDso = null;
                     } else if (line.contains("Samples:")) { //"samples" was used instead of events in an older version, some incompatibilities may arise. //$NON-NLS-1$
-                        if (print != null) { print.println("WARNING: You are running an older version of Perf, please update if you can. The plugin may produce unpredictable results."); }
-                        invisibleRoot.addChild(new PMEvent("WARNING: You are running an older version of Perf, the plugin may produce unpredictable results."));
+                        if (print != null) { print.println("WARNING: You are running an older version of Perf, please update if you can. The plugin may produce unpredictable results."); } //$NON-NLS-1$
+                        invisibleRoot.addChild(new PMEvent("WARNING: You are running an older version of Perf, the plugin may produce unpredictable results.")); //$NON-NLS-1$
                     }
                     // contains profiled information
                 } else {
@@ -493,7 +502,7 @@ public class PerfCore {
         } catch (IOException e) {
             logException(e);
         }
-        spitStream(error,"Perf Report", print);
+        spitStream(error,"Perf Report", print); //$NON-NLS-1$
 
         boolean SourceLineNumbers = PerfPlugin.ATTR_SourceLineNumbers_default;
         boolean Kernel_SourceLineNumbers = PerfPlugin.ATTR_Kernel_SourceLineNumbers_default;
@@ -531,13 +540,33 @@ public class PerfCore {
                             if (workingDir == null) {
                                 annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDataLoc, oldPerfVersion);
                             } else {
-                                String perfDefaultDataLoc = workingDir + "/" + PerfPlugin.PERF_DEFAULT_DATA;
+                                String perfDefaultDataLoc = workingDir + "/" + PerfPlugin.PERF_DEFAULT_DATA; //$NON-NLS-1$
                                 annotateCmd = getAnnotateString(config, currentDso.getName(), currentSym.getName().substring(4), perfDefaultDataLoc, oldPerfVersion);
                             }
 
                             try {
-                                if(project==null) p = Runtime.getRuntime().exec(annotateCmd);
-                                else p = RuntimeProcessFactory.getFactory().exec(annotateCmd, project);
+                                if(project==null) {
+                                    p = Runtime.getRuntime().exec(annotateCmd);
+                                } else {
+                                    StringBuffer sb = new StringBuffer();
+                                    ArrayList<String> al = new ArrayList<>();
+                                    /*
+                                     *  Wrap the whole Perf annotate line as a single argument of sh command
+                                     *   so that any IO redirection will take effect. Change to working directory before run perf annotate.
+                                     *  It results on a command string as 'sh', '-c', 'cd <workindir> && perf annotate <args> < /dev/null'
+                                     */
+                                    al.add("sh"); //$NON-NLS-1$
+                                    al.add("-c"); //$NON-NLS-1$
+                                    if(workingDir != null) {
+                                        sb.append("cd " + workingDir.toOSString() + " && "); //$NON-NLS-1$ //$NON-NLS-2$
+                                    }
+                                    for(int i=0; i<annotateCmd.length; i++) {
+                                        sb.append(annotateCmd[i]);
+                                        sb.append(" "); //$NON-NLS-1$
+                                    }
+                                    al.add(sb.toString());
+                                    p = RuntimeProcessFactory.getFactory().exec(al.toArray(new String[]{}), project);
+                                }
                                 input = new BufferedReader(new InputStreamReader(p.getInputStream()));
                                 error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
                             } catch (IOException e) {
@@ -550,7 +579,7 @@ public class PerfCore {
                         if (currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols).getChildren().length == 0) {
                             currentDso.removeChild(currentDso.getFile(PerfPlugin.STRINGS_UnfiledSymbols));
                         }
-                        spitStream(error,"Perf Annotate", print);
+                        spitStream(error,"Perf Annotate", print); //$NON-NLS-1$
                     }
                 }
             }
@@ -558,9 +587,9 @@ public class PerfCore {
 
         if (print != null) {
             if (hasProfileData) {
-                print.println("Profile data loaded into Perf Profile View.");
+                print.println("Profile data loaded into Perf Profile View."); //$NON-NLS-1$
             } else {
-                print.println("No profile data generated to be displayed.");
+                print.println("No profile data generated to be displayed."); //$NON-NLS-1$
             }
         }
     }
@@ -624,7 +653,12 @@ public class PerfCore {
                     } else {
                         int lineNum = -1;
                         try {
-                            lineNum = Integer.parseInt(items[1]);
+                            /*
+                             *  May not have line number when parsing a line like "100.00 [vdso][7ffce9fdbda0]"
+                             */
+                             if( items.length > 1) {
+                                 lineNum = Integer.parseInt(items[1]);
+                             }
                         } catch (NumberFormatException e) {
                             // leave line number as -1
                         }
