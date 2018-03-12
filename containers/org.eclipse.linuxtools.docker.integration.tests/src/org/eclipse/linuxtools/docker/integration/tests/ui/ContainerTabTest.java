@@ -17,14 +17,13 @@ import static org.junit.Assert.assertTrue;
 import org.eclipse.linuxtools.docker.integration.tests.image.AbstractImageBotTest;
 import org.eclipse.linuxtools.docker.integration.tests.mock.MockUtils;
 import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunSelectionPage;
-import org.eclipse.linuxtools.docker.reddeer.core.ui.wizards.ImageRunWizard;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerContainersTab;
 import org.eclipse.linuxtools.docker.reddeer.ui.DockerImagesTab;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.eclipse.ui.views.properties.PropertySheet;
-import org.eclipse.reddeer.swt.api.TableItem;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.eclipse.ui.views.properties.PropertiesView;
+import org.jboss.reddeer.swt.api.TableItem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public class ContainerTabTest extends AbstractImageBotTest {
 		containerTab.activate();
 		containerTab.refresh();
 
-		new WaitWhile(new JobIsRunning(), TimePeriod.DEFAULT);
+		new WaitWhile(new JobIsRunning(), TimePeriod.NORMAL);
 
 		// get values from Container Tab
 		String nameFromTable = "";
@@ -75,7 +74,7 @@ public class ContainerTabTest extends AbstractImageBotTest {
 		statusFromTable = item.getText(5);
 
 		// get values from Properties view
-		PropertySheet propertiesView = new PropertySheet();
+		PropertiesView propertiesView = new PropertiesView();
 		propertiesView.open();
 		getConnection().getContainer(CONTAINER_NAME).select();
 		propertiesView.selectTab("Info");
@@ -116,8 +115,7 @@ public class ContainerTabTest extends AbstractImageBotTest {
 	private void runContainer(String connectionName, String imageName, String imageTag, String containerName){
 		DockerImagesTab imagesTab = openDockerImagesTab();
 		imagesTab.runImage(imageName);
-		ImageRunWizard wizard = new ImageRunWizard();
-		ImageRunSelectionPage firstPage = new ImageRunSelectionPage(wizard);
+		ImageRunSelectionPage firstPage = new ImageRunSelectionPage();
 		firstPage.setContainerName(containerName);
 		firstPage.finish();
 		if (mockitoIsUsed()) {
