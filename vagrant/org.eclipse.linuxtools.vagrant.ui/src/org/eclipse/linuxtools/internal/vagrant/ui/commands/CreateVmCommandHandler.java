@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -98,7 +100,20 @@ public class CreateVmCommandHandler extends AbstractHandler {
 						break;
 					}
 				}
-				connection.up(vagrantDir, box != null ? box.getProvider() : null);
+				Process p = connection.up(vagrantDir, box != null ? box.getProvider() : null);
+				String line;
+				try (BufferedReader buff = new BufferedReader(
+						new InputStreamReader(p.getInputStream()))) {
+					while ((line = buff.readLine()) != null) {
+						if (monitor.isCanceled()) {
+							p.destroy();
+							break;
+						}
+						line = line.replaceAll("(=)+>", "");
+						monitor.subTask(line);
+					}
+				} catch (IOException e) {
+				}
 				connection.getVMs(true);
 				return Status.OK_STATUS;
 			}

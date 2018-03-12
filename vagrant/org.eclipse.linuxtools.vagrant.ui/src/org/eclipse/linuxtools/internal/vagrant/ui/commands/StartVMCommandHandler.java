@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.vagrant.ui.commands;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,7 +39,20 @@ public class StartVMCommandHandler extends BaseVMCommandHandler {
 	@Override
 	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
 		IVagrantConnection connection = VagrantService.getInstance();
-		connection.up(vm.directory(), vm.provider());
+		Process p = connection.up(vm.directory(), vm.provider());
+		String line;
+		try (BufferedReader buff = new BufferedReader(
+				new InputStreamReader(p.getInputStream()))) {
+			while ((line = buff.readLine()) != null) {
+				if (monitor.isCanceled()) {
+					p.destroy();
+					break;
+				}
+				line = line.replaceAll("(=)+>", "");
+				monitor.subTask(line);
+			}
+		} catch (IOException e) {
+		}
 		connection.getVMs(true);
 	}
 
