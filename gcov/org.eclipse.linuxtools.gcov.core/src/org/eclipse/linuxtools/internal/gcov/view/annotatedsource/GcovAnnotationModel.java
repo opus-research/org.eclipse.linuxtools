@@ -384,7 +384,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     }
 
     @Override
-    public Iterator<GcovAnnotation> getAnnotationIterator() {
+    public Iterator<?> getAnnotationIterator() {
         return annotations.iterator();
     }
 
