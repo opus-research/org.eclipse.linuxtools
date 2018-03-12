@@ -20,8 +20,6 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.observable.ChangeEvent;
-import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
@@ -109,26 +107,13 @@ public class ImageRunSelectionPage extends WizardPage {
 	 *            the {@link IDockerImage} to run
 	 * 
 	 */
-	public ImageRunSelectionPage() {
-		super("ImageRunSelectionPage", //$NON-NLS-1$
-				WizardMessages.getString("ImageRunSelectionPage.title"), //$NON-NLS-1$
-				SWTImagesFactory.DESC_BANNER_REPOSITORY);
-		setMessage(WizardMessages.getString("ImageRunSelectionPage.runImage")); //$NON-NLS-1$
-		setPageComplete(true);
-		this.model = new ImageRunSelectionModel();
-	}
-
-	/**
-	 * Default constructor.
-	 * 
-	 * @param selectedImage
-	 *            the {@link IDockerImage} to run
-	 * 
-	 */
 	public ImageRunSelectionPage(final IDockerImage selectedImage) {
-		this();
-		this.model.setSelectedImageName(selectedImage);
-		this.model.setSelectedConnectionName(selectedImage.getConnection());
+		super("ImageSelectionPage", //$NON-NLS-1$
+				WizardMessages.getString("ImageSelectionPage.title"), //$NON-NLS-1$
+				SWTImagesFactory.DESC_BANNER_REPOSITORY);
+		setMessage(WizardMessages.getString("ImageSelectionPage.runImage")); //$NON-NLS-1$
+		setPageComplete(true);
+		this.model = new ImageRunSelectionModel(selectedImage);
 	}
 
 	/**
@@ -139,8 +124,13 @@ public class ImageRunSelectionPage extends WizardPage {
 	 * 
 	 */
 	public ImageRunSelectionPage(final IDockerConnection selectedConnection) {
-		this();
-		this.model.setSelectedConnectionName(selectedConnection);
+		super("ImageSelectionPage", //$NON-NLS-1$
+				WizardMessages.getString("ImageSelectionPage.exposedPortTitle"), //$NON-NLS-1$
+				SWTImagesFactory.DESC_BANNER_REPOSITORY);
+		setMessage(WizardMessages
+				.getString("ImageRunSelectionPage.exposedPortMsg")); //$NON-NLS-1$
+		setPageComplete(false);
+		this.model = new ImageRunSelectionModel(selectedConnection);
 	}
 
 	/**
@@ -153,7 +143,6 @@ public class ImageRunSelectionPage extends WizardPage {
 	@Override
 	public void dispose() {
 		dbc.dispose();
-		model.dispose();
 		super.dispose();
 	}
 
@@ -164,8 +153,7 @@ public class ImageRunSelectionPage extends WizardPage {
 				.grab(true, false).applyTo(container);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
 				.applyTo(container);
-		createConnectionSelectionSection(container);
-		createSectionSeparator(container, true);
+		setDefaultValues();
 		createImageSettingsSection(container);
 		createSectionSeparator(container, true);
 		createPortSettingsSection(container);
@@ -173,10 +161,19 @@ public class ImageRunSelectionPage extends WizardPage {
 		createLinkSettingsSection(container);
 		// addSectionSeparator(container, false);
 		createRunOptionsSection(container);
-		//
-		refreshImageNames();
+		// Observe model changes to propagate to the UI via listeners.
+		final IObservableValue imageSelectionObservable = BeanProperties
+				.value(ImageRunSelectionModel.class,
+						ImageRunSelectionModel.SELECTED_IMAGE_NAME)
+				.observe(model);
+		imageSelectionObservable
+				.addValueChangeListener(onImageSelectionChange());
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
+		// set validation
+		final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
+				imageSelectionObservable);
+		dbc.addValidationStatusProvider(imageSelectionValidator);
 		//
 		setControl(container);
 	}
@@ -191,74 +188,6 @@ public class ImageRunSelectionPage extends WizardPage {
 						? (SWT.SEPARATOR | SWT.HORIZONTAL) : SWT.NONE));
 	}
 
-	private void createConnectionSelectionSection(final Composite container) {
-		final Label connectionSelectionLabel = new Label(container, SWT.NONE);
-		connectionSelectionLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.connection")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(connectionSelectionLabel);
-		final Combo connectionSelectionCombo = new Combo(container, SWT.BORDER);
-		final ComboViewer connectionSelectionComboViewer = new ComboViewer(
-				connectionSelectionCombo);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).span(1, 1).applyTo(connectionSelectionCombo);
-		connectionSelectionComboViewer
-				.setContentProvider(new ObservableListContentProvider());
-		dbc.bindList(WidgetProperties.items().observe(connectionSelectionCombo),
-				BeanProperties
-				.list(ImageRunSelectionModel.class,
-						ImageRunSelectionModel.CONNECTION_NAMES)
-				.observe(model));
-		dbc.bindValue(
-				WidgetProperties.selection().observe(connectionSelectionCombo),
-				BeanProperties
-				.value(ImageRunSelectionModel.class,
-						ImageRunSelectionModel.SELECTED_CONNECTION_NAME)
-				.observe(model));
-		BeanProperties
-				.value(ImageRunSelectionModel.class,
-						ImageRunSelectionModel.CONNECTION_NAMES)
-				.observe(model).addChangeListener(onConnectionNamesChange());
-		// add connection button
-		final Button addConnectionButton = new Button(container, SWT.NONE);
-		addConnectionButton.setText(
-				WizardMessages.getString("ImageRunSelectionPage.addButton")); //$NON-NLS-1$
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).span(1, 1).applyTo(addConnectionButton);
-		// open New Docker Connection wizard when clicking on the "Add..." button
-		addConnectionButton.addSelectionListener(onAddConnection());
-	}
-
-	private IChangeListener onConnectionNamesChange() {
-		return new IChangeListener() {
-
-			@Override
-			public void handleChange(ChangeEvent event) {
-				refreshImageNames();
-			}
-		};
-	}
-
-	private SelectionListener onAddConnection() {
-		return new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				final NewDockerConnection newConnectionWizard = new NewDockerConnection();
-				final boolean connectionAdded = CommandUtils
-						.openWizard(newConnectionWizard, getShell());
-				if (connectionAdded) {
-					model.setSelectedConnectionName(newConnectionWizard
-							.getDockerConnection().getName());
-				}
-			}
-		};
-	}
-
-	public void refreshImageNames() {
-		model.refreshImageNames();
-	}
-
 	/**
 	 * Creates the {@link Composite} container that will display widgets to
 	 * select an {@link IDockerImage}, name it and specify the command to run.
@@ -269,8 +198,7 @@ public class ImageRunSelectionPage extends WizardPage {
 	private void createImageSettingsSection(final Composite container) {
 		// Image selection name
 		final Label imageSelectionLabel = new Label(container, SWT.NONE);
-		imageSelectionLabel.setText(
-				WizardMessages.getString("ImageRunSelectionPage.imageName")); //$NON-NLS-1$
+		imageSelectionLabel.setText("Image:"); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(imageSelectionLabel);
 		final Combo imageSelectionCombo = new Combo(container, SWT.BORDER);
@@ -322,18 +250,14 @@ public class ImageRunSelectionPage extends WizardPage {
 				.setContentProvider(new ObservableListContentProvider());
 		dbc.bindList(WidgetProperties.items().observe(imageSelectionCombo),
 				BeanProperties
-				.list(ImageRunSelectionModel.class,
-						ImageRunSelectionModel.IMAGE_NAMES)
+						.list(ImageRunSelectionModel.class,
+								ImageRunSelectionModel.IMAGE_NAMES)
 						.observe(model));
-		final IObservableValue imageSelectionObservable = BeanProperties
-				.value(ImageRunSelectionModel.class,
-						ImageRunSelectionModel.SELECTED_IMAGE_NAME)
-				.observe(model);
 		dbc.bindValue(WidgetProperties.selection().observe(imageSelectionCombo),
-				imageSelectionObservable);
-		// Observe model changes to propagate to the UI via listeners.
-		imageSelectionObservable
-				.addValueChangeListener(onImageSelectionChange());
+				BeanProperties
+						.value(ImageRunSelectionModel.class,
+								ImageRunSelectionModel.SELECTED_IMAGE_NAME)
+						.observe(model));
 		// Container name (optional)
 		final Label containerNameLabel = new Label(container, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
@@ -389,12 +313,6 @@ public class ImageRunSelectionPage extends WizardPage {
 		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(commandText),
 				BeanProperties.value(ImageRunSelectionModel.class,
 						ImageRunSelectionModel.COMMAND).observe(model));
-
-		// set validation
-		final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
-				imageSelectionObservable);
-		dbc.addValidationStatusProvider(imageSelectionValidator);
-
 	}
 
 	private void createPortSettingsSection(final Composite container) {
@@ -475,7 +393,6 @@ public class ImageRunSelectionPage extends WizardPage {
 
 		togglePortMappingControls(exposedPortsTableViewer.getTable(), addButton,
 				removeButton);
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -855,6 +772,14 @@ public class ImageRunSelectionPage extends WizardPage {
 		};
 	}
 
+	private void setDefaultValues() {
+		final IDockerImage selectedImage = model.getSelectedImage();
+		if (selectedImage == null) {
+			return;
+		}
+		findImageInfo(selectedImage);
+	}
+
 	private void findImageInfo(final IDockerImage selectedImage) {
 		try {
 			final FindImageInfoRunnable findImageInfoRunnable = new FindImageInfoRunnable(
@@ -925,7 +850,7 @@ public class ImageRunSelectionPage extends WizardPage {
 					} finally {
 						monitor.done();
 						// refresh the widgets
-						refreshImageNames();
+						model.refreshImageNames();
 						if (model.getImageNames().contains(imageName)) {
 							model.setSelectedImageName(imageName);
 						}
@@ -978,22 +903,19 @@ public class ImageRunSelectionPage extends WizardPage {
 		protected IStatus validate() {
 			final String selectedImageName = (String) imageSelectionObservable
 					.getValue();
-			if (selectedImageName == null || selectedImageName.isEmpty()) {
+			if (selectedImageName.isEmpty()) {
 				model.setSelectedImageNeedsPulling(false);
 				return ValidationStatus.error(WizardMessages
 						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
 			}
-			if (model.getSelectedConnection() != null
-					&& model.getSelectedConnection().isImagesLoaded()
-					&& model.getSelectedImage() == null) {
-				model.setSelectedImageNeedsPulling(true);
-				return ValidationStatus
-						.warning(WizardMessages.getFormattedString(
-								"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
-								selectedImageName));
+			if (model.getSelectedImage() != null) {
+				model.setSelectedImageNeedsPulling(false);
+				return ValidationStatus.ok();
 			}
-			model.setSelectedImageNeedsPulling(false);
-			return ValidationStatus.ok();
+			model.setSelectedImageNeedsPulling(true);
+			return ValidationStatus.warning(WizardMessages.getFormattedString(
+					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
+					selectedImageName));
 		}
 
 		@Override

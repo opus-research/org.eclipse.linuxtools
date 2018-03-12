@@ -16,8 +16,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -180,25 +178,10 @@ public class DockerConnectionManager {
 		return connections.toArray(new IDockerConnection[connections.size()]);
 	}
 
-	/**
-	 * @return the {@link List} of {@link IDockerConnection} names.
-	 */
-	public List<String> getConnectionNames() {
-		final List<String> connectionNames = new ArrayList<>();
-		for (IDockerConnection connection : DockerConnectionManager
-				.getInstance().getConnections()) {
-			connectionNames.add(connection.getName());
-		}
-		Collections.sort(connectionNames);
-		return Collections.unmodifiableList(connectionNames);
-	}
-
 	public IDockerConnection findConnection(String name) {
-		if (name != null) {
-			for (IDockerConnection connection : connections) {
-				if (connection.getName().equals(name))
-					return connection;
-			}
+		for (IDockerConnection connection : connections) {
+			if (connection.getName().equals(name))
+				return connection;
 		}
 		return null;
 	}

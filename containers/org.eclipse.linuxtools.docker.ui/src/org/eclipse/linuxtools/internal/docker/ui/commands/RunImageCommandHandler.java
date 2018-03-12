@@ -59,18 +59,20 @@ public class RunImageCommandHandler extends AbstractHandler {
 			Activator.logErrorMessage(
 					DVMessages.getString("RunImageUnableToRetrieveError.msg")); //$NON-NLS-1$
 		} else {
-			final ImageRun wizard = new ImageRun(selectedImage);
-			final boolean runImage = CommandUtils.openWizard(wizard,
-					HandlerUtil.getActiveShell(event));
-			if (runImage) {
-				final IDockerContainerConfig containerConfig = wizard
-						.getDockerContainerConfig();
-				final IDockerHostConfig hostConfig = wizard
-						.getDockerHostConfig();
-				final IDockerConnection selectedConnection = wizard
-						.getSelectedConnection();
-				runImage(selectedConnection, containerConfig, hostConfig,
-						wizard.getDockerContainerName());
+			try {
+				final ImageRun wizard = new ImageRun(selectedImage);
+				final boolean runImage = CommandUtils.openWizard(wizard,
+						HandlerUtil.getActiveShell(event));
+				if (runImage) {
+					final IDockerContainerConfig containerConfig = wizard
+							.getDockerContainerConfig();
+					final IDockerHostConfig hostConfig = wizard
+							.getDockerHostConfig();
+					runImage(selectedImage.getConnection(), containerConfig,
+							hostConfig, wizard.getDockerContainerName());
+				}
+			} catch (DockerException e) {
+				Activator.log(e);
 			}
 		}
 		return null;

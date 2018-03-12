@@ -15,6 +15,9 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImage
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_LOCATION;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,6 +35,7 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -123,9 +127,17 @@ public class BuildDockerImageLaunchConfigurationMainTab
 				connectionSelectionCombo);
 		connectionSelectionComboViewer
 				.setContentProvider(new ArrayContentProvider());
-		connectionSelectionComboViewer.setInput(
-				DockerConnectionManager.getInstance().getConnectionNames());
+		connectionSelectionComboViewer.setInput(getConnectionNames());
 		connectionSelectionCombo.addSelectionListener(new LaunchConfigurationChangeListener());
+	}
+
+	private List<String> getConnectionNames() {
+		final List<String> connectionNames = new ArrayList<>();
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			connectionNames.add(connection.getName());
+		}
+		return connectionNames;
 	}
 
 	/**
