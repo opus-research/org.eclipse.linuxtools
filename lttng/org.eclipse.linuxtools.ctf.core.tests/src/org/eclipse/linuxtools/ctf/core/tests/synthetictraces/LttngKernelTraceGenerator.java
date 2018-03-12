@@ -28,6 +28,7 @@ import java.util.Random;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.linuxtools.ctf.core.tests.CtfCorePluginTest;
 import org.eclipse.linuxtools.ctf.core.tests.CtfCoreTestPlugin;
 
 /**
@@ -180,7 +181,7 @@ public class LttngKernelTraceGenerator {
      */
     public static void main(String[] args) {
         // not using createTempFile as this is a directory
-        String path = System.getProperty("java.io.tmpdir") + File.separator + TRACE_NAME;
+        String path = CtfCorePluginTest.getTemporaryDirPath() + File.separator + TRACE_NAME;
         generateLttngKernelTrace(new File(path));
     }
 
