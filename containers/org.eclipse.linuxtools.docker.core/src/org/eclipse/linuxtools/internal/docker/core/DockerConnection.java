@@ -1338,6 +1338,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 					.cmd(c.cmd()).image(c.image())
 					.hostConfig(hbuilder.build())
 					.workingDir(c.workingDir())
+					.labels(c.labels())
 					.networkDisabled(c.networkDisabled());
 			// For those fields that are Collections and not set, they will be null.
 			// We can't use their values to set the builder's fields as they are
@@ -1432,7 +1433,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
-			throw new DockerException(e.message());
+			// Permit kill to fail silently even on non-running containers
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
