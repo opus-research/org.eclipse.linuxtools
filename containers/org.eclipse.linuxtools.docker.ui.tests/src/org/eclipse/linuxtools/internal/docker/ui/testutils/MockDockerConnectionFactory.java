@@ -11,42 +11,30 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils;
 
-import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerClientFactory;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.mockito.Mockito;
+import java.util.Collections;
 
-import com.spotify.docker.client.DockerCertificateException;
-import com.spotify.docker.client.DockerClient;
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.mockito.Mockito;
 
 /**
  * Factory for mocked {@link IDockerConnection}
  */
 public class MockDockerConnectionFactory {
 
-	public static Builder from(final String name, final DockerClient dockerClient) {
-		return new Builder(name, dockerClient);
-	}
-
-	public static class Builder {
-		
-		private final DockerConnection connection;
-		
-		private Builder(final String name, final DockerClient dockerClient) {
-			this.connection = new DockerConnection.Builder().name(name).build();
-			final DockerClientFactory dockerClientFactory = Mockito.mock(DockerClientFactory.class);
-			this.connection.setDockerClientFactory(dockerClientFactory);
-			try {
-				Mockito.when(dockerClientFactory.getClient(Mockito.anyString(), Mockito.anyString(),  Mockito.anyString())).thenReturn(dockerClient);
-			} catch (DockerCertificateException e) {
-				// rest assured, nothing will happen while mocking the DockerClientFactory   
-			}
-		}
-		
-		public DockerConnection get() {
-			return connection;
-		}
-
+	public static IDockerConnection noImageNoContainer(final String name) {
+		final IDockerConnection connection = Mockito
+				.mock(IDockerConnection.class);
+		Mockito.when(connection.getName()).thenReturn(name);
+		noImageAvailable(connection);
+		noContainerAvailable(connection);
+		return connection;
 	}
 	
+	private static void noImageAvailable(final IDockerConnection connection) {
+		Mockito.when(connection.getImages()).thenReturn(Collections.emptyList());
+	}
+
+	private static void noContainerAvailable(final IDockerConnection connection) {
+		Mockito.when(connection.getContainers()).thenReturn(Collections.emptyList());
+	}
 }
