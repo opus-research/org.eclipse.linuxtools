@@ -15,7 +15,6 @@ import static org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils.ge
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,7 +24,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.linuxtools.docker.core.DockerException;
-import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerConfig;
@@ -34,7 +32,6 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
-import org.eclipse.linuxtools.internal.docker.ui.launch.LaunchConfigurationUtils;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -53,7 +50,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public class RunImageCommandHandler extends AbstractHandler {
 
 	private static final String ERROR_CREATING_CONTAINER = "ContainerCreateError.msg"; //$NON-NLS-1$
-	private static final String ERROR_REMOVING_CONTAINER = "ContainerRemoveError.msg"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
@@ -72,22 +68,19 @@ public class RunImageCommandHandler extends AbstractHandler {
 							.getDockerContainerConfig();
 					final IDockerHostConfig hostConfig = wizard
 							.getDockerHostConfig();
-					runImage(selectedImage, containerConfig,
-							hostConfig, wizard.getDockerContainerName(),
-							wizard.removeWhenExits());
+					runImage(selectedImage.getConnection(), containerConfig,
+							hostConfig, wizard.getDockerContainerName());
 				}
-			} catch (DockerException | CoreException e) {
+			} catch (DockerException e) {
 				Activator.log(e);
 			}
 		}
 		return null;
 	}
 
-	public static void runImage(final IDockerImage image,
+	private void runImage(final IDockerConnection connection,
 			final IDockerContainerConfig containerConfig,
-			final IDockerHostConfig hostConfig, final String containerName,
-			final boolean removeWhenExits) {
-		final IDockerConnection connection = image.getConnection();
+			final IDockerHostConfig hostConfig, final String containerName) {
 		if (containerConfig.tty()) {
 			// show the console view
 			try {
@@ -107,7 +100,6 @@ public class RunImageCommandHandler extends AbstractHandler {
 			protected IStatus run(final IProgressMonitor monitor) {
 				monitor.beginTask(
 						DVMessages.getString("RunImageRunningTask.msg"), 2); //$NON-NLS-1$
-				String containerId = null;
 				try {
 					final SubProgressMonitor createContainerMonitor = new SubProgressMonitor(
 							monitor, 1);
@@ -116,10 +108,11 @@ public class RunImageCommandHandler extends AbstractHandler {
 							DVMessages.getString(
 									"RunImageCreatingContainerTask.msg"), //$NON-NLS-1$
 							1);
-					containerId = ((DockerConnection) connection)
+					final String containerId = ((DockerConnection) connection)
 							.createContainer(containerConfig, hostConfig, containerName);
 					final IDockerContainer container = ((DockerConnection) connection)
 							.getContainer(containerId);
+
 					createContainerMonitor.done();
 					// abort if operation was cancelled
 					if (monitor.isCanceled()) {
@@ -135,17 +128,10 @@ public class RunImageCommandHandler extends AbstractHandler {
 					if (console != null) {
 						// if we are auto-logging, show the console
 						console.showConsole();
-						((DockerConnection) connection).startContainer(
-								containerId, console.getOutputStream());
-					} else {
-						((DockerConnection) connection)
-								.startContainer(containerId, null);
 					}
+					((DockerConnection) connection).startContainer(containerId,
+							console.getOutputStream());
 					startContainerMonitor.done();
-					// create a launch configuration from the container
-					LaunchConfigurationUtils.createLaunchConfiguration(image,
-							containerConfig, hostConfig, container.name(),
-							removeWhenExits);
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {
 
@@ -162,51 +148,6 @@ public class RunImageCommandHandler extends AbstractHandler {
 
 					});
 				} finally {
-					if (removeWhenExits) {
-						try {
-							if (containerId != null) {
-								// Wait for the container to finish
-								((DockerConnection) connection)
-										.waitForContainer(containerId);
-								// Drain the logging thread before we remove the
-								// container
-								((DockerConnection) connection)
-										.stopLoggingThread(containerId);
-								while (((DockerConnection) connection)
-										.loggingStatus(
-												containerId) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
-									Thread.sleep(1000);
-								}
-							}
-						} catch (DockerException | InterruptedException e) {
-							// ignore any errors in waiting for container or
-							// draining log
-						}
-						try {
-							// try and remove the container if it was created
-							if (containerId != null)
-								((DockerConnection) connection)
-										.removeContainer(containerId);
-						} catch (DockerException | InterruptedException e) {
-							final String id = containerId;
-							Display.getDefault().syncExec(new Runnable() {
-
-								@Override
-								public void run() {
-									MessageDialog.openError(
-											Display.getCurrent()
-													.getActiveShell(),
-											DVMessages.getFormattedString(
-													ERROR_REMOVING_CONTAINER,
-													id),
-											e.getMessage());
-
-								}
-
-							});
-						}
-					}
-
 					monitor.done();
 				}
 				return Status.OK_STATUS;

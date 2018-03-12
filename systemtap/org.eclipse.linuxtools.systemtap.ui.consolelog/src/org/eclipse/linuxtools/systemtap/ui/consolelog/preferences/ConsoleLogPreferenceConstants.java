@@ -12,5 +12,8 @@
 package org.eclipse.linuxtools.systemtap.ui.consolelog.preferences;
 
 public interface ConsoleLogPreferenceConstants {
-    String CONNECTION_NAME = "connection_name"; //$NON-NLS-1$
+    String HOST_NAME = "host"; //$NON-NLS-1$
+    String PORT_NUMBER = "port"; //$NON-NLS-1$
+    String SCP_USER = "scpuser"; //$NON-NLS-1$
+    String SCP_PASSWORD = "scppassword"; //$NON-NLS-1$
 }

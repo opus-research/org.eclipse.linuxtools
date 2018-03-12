@@ -51,8 +51,7 @@ public interface IDockerContainer {
 	/**
 	 * @return the {@link IDockerContainerInfo} by calling the Docker daemon
 	 *         using the {@link IDockerConnection} associated with this
-	 *         {@link IDockerContainer} if it was not loaded before, otherwise
-	 *         uses the previous version.
+	 *         {@link IDockerContainer}.
 	 */
 	public IDockerContainerInfo info();
 

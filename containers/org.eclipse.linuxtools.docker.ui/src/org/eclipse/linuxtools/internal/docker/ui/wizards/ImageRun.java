@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
-import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MB;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,9 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.linuxtools.docker.core.DockerException;
@@ -36,8 +32,6 @@ import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerConfig.Builder;
 import org.eclipse.linuxtools.internal.docker.core.DockerHostConfig;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortBinding;
-import org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants;
-import org.eclipse.linuxtools.internal.docker.ui.launch.LaunchConfigurationUtils;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ContainerLinkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
 
@@ -76,23 +70,13 @@ public class ImageRun extends Wizard {
 	 * @param selectedImage
 	 *            the {@link IDockerImage} to use to fill the wizard pages
 	 * @throws DockerException
-	 * @throws CoreException
 	 */
-	public ImageRun(final IDockerImage selectedImage)
-			throws DockerException, CoreException {
+	public ImageRun(final IDockerImage selectedImage) throws DockerException {
 		setWindowTitle(WizardMessages.getString("ImageRun.title")); //$NON-NLS-1$
 		setNeedsProgressMonitor(true);
-		// attempt to find the last "Image Run" launch configuration for this
-		// image
-		final ILaunchConfiguration lastLaunchConfiguration = LaunchConfigurationUtils
-				.getLaunchConfigurationByImageName(
-						LaunchConfigurationUtils.getLaunchConfigType(
-								IRunDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID),
-						selectedImage.repoTags().get(0));
-		this.imageRunSelectionPage = new ImageRunSelectionPage(selectedImage,
-				lastLaunchConfiguration);
+		this.imageRunSelectionPage = new ImageRunSelectionPage(selectedImage);
 		this.imageRunResourceVolumesPage = new ImageRunResourceVolumesVariablesPage(
-				selectedImage, lastLaunchConfiguration);
+				selectedImage.getConnection());
 	}
 
 	@Override
@@ -117,10 +101,6 @@ public class ImageRun extends Wizard {
 
 	public String getDockerContainerName() {
 		return this.imageRunSelectionPage.getModel().getContainerName();
-	}
-
-	public boolean removeWhenExits() {
-		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,7 +156,7 @@ public class ImageRun extends Wizard {
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
 				String bind = convertToUnixPath(dataVolume.getHostPathMount())
-						+ ':' + dataVolume.getContainerPath() + ":Z"; //$NON-NLS-1$ //$NON-NLS-2$
+						+ ':' + dataVolume.getContainerPath() + ':' + 'Z';
 				if (dataVolume.isReadOnly()) {
 					bind += ",ro"; //$NON-NLS-1$
 				}
@@ -192,11 +172,7 @@ public class ImageRun extends Wizard {
 		}
 		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
-		// memory constraints (in bytes)
-		if (resourcesModel.isEnableResourceLimitations()) {
-			hostConfigBuilder.memory(resourcesModel.getMemoryLimit() * MB);
-			hostConfigBuilder.cpuShares(resourcesModel.getCpuShareWeight());
-		}
+
 		return hostConfigBuilder.build();
 	}
 
@@ -205,10 +181,10 @@ public class ImageRun extends Wizard {
 
 		if (Platform.OS_WIN32.equals(Platform.getOS())) {
 			// replace backslashes with slashes
-			unixPath = unixPath.replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+			unixPath = unixPath.replaceAll("\\\\", "/");
 
 			// replace "C:/" with "/c/"
-			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath); //$NON-NLS-1$
+			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath);
 			if (m.find()) {
 				StringBuffer b = new StringBuffer();
 				b.append('/');
@@ -236,9 +212,8 @@ public class ImageRun extends Wizard {
 				.tty(selectionModel.isAllocatePseudoTTY())
 				.openStdin(selectionModel.isInteractiveMode());
 		if (resourcesModel.isEnableResourceLimitations()) {
-			// memory limit must be converted from MB to bytes
-			config.memory(resourcesModel.getMemoryLimit() * MB);
-			config.cpuShares(resourcesModel.getCpuShareWeight());
+			config.memory(resourcesModel.getMemory());
+			config.cpuShares((long) resourcesModel.getCpuShareWeight());
 		}
 		// environment variables
 		final List<String> environmentVariables = new ArrayList<>();
@@ -251,20 +226,10 @@ public class ImageRun extends Wizard {
 		return config.build();
 	}
 
-	/**
-	 * Create a proper command list after handling quotation.
-	 * 
-	 * @param command
-	 *            the command as a single {@link String}
-	 * @return the command splitted in a list of ars or <code>null</code> if the
-	 *         input <code>command</code> was <code>null</code>.
-	 */
-	private List<String> getCmdList(final String command) {
-		if (command == null) {
-			return null;
-		}
-		final List<String> list = new ArrayList<>();
-		int length = command.length();
+	// Create a proper command list after handling quotation.
+	private List<String> getCmdList(String s) {
+		ArrayList<String> list = new ArrayList<>();
+		int length = s.length();
 		boolean insideQuote1 = false; // single-quote
 		boolean insideQuote2 = false; // double-quote
 		boolean escaped = false;
@@ -273,7 +238,7 @@ public class ImageRun extends Wizard {
 		// separated by white-space or are quoted. Ignore characters
 		// that have been escaped, including the escape character.
 		for (int i = 0; i < length; ++i) {
-			char c = command.charAt(i);
+			char c = s.charAt(i);
 			if (escaped) {
 				buffer.append(c);
 				escaped = false;

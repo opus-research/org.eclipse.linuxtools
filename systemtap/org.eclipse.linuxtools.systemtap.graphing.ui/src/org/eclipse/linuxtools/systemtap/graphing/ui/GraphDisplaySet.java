@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.internal.systemtap.graphing.ui.GraphingUIPlugin;
 import org.eclipse.linuxtools.internal.systemtap.graphing.ui.Localization;
@@ -77,11 +78,14 @@ public class GraphDisplaySet {
         updater = new UpdateManager(delay);
         createPartControl(parent);
 
-        propertyChangeListener = event -> {
-		    if (updater.isRunning() && event.getProperty().equals(GraphingPreferenceConstants.P_GRAPH_UPDATE_DELAY)) {
-		        updater.restart((int) event.getNewValue());
-		    }
-		};
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (updater.isRunning() && event.getProperty().equals(GraphingPreferenceConstants.P_GRAPH_UPDATE_DELAY)) {
+                    updater.restart((int) event.getNewValue());
+                }
+            }
+        };
         p.addPropertyChangeListener(propertyChangeListener);
 
         builders = new ArrayList<>();

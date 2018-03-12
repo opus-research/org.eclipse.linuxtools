@@ -8,12 +8,11 @@ Bundle-Vendor: %Bundle-Vendor.0
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.linuxtools.dataviewers.charts
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
 Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.cdt.debug.core,
- org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.debug.core,
  org.eclipse.debug.core.model,
@@ -21,7 +20,6 @@ Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.debug.ui,
  org.eclipse.jface.text,
  org.eclipse.linuxtools.internal.valgrind.launch,
- org.eclipse.linuxtools.internal.valgrind.ui,
  org.eclipse.linuxtools.profiling.launch,
  org.eclipse.linuxtools.profiling.ui,
  org.eclipse.linuxtools.valgrind.core,

@@ -15,8 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -62,13 +60,8 @@ public class Activator extends AbstractUIPlugin {
 		Activator.getDefault().getLog().log(status);
 	}
 
-	public static void logErrorMessage(final String message) {
+	public static void logErrorMessage(String message) {
 		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, message, null));
-	}
-
-	public static void logErrorMessage(final String message,
-			final Throwable e) {
-		log(new Status(IStatus.ERROR, PLUGIN_ID, IStatus.ERROR, message, e));
 	}
 
 	public static void log(Throwable e) {
@@ -81,15 +74,6 @@ public class Activator extends AbstractUIPlugin {
 			status = new Status(IStatus.ERROR, PLUGIN_ID, IStatus.OK,
 					e.getMessage(), e);
 		log(status);
-	}
-
-	public static Shell getActiveWorkbenchShell() {
-		IWorkbenchWindow window = getDefault().getWorkbench()
-				.getActiveWorkbenchWindow();
-		if (window != null) {
-			return window.getShell();
-		}
-		return null;
 	}
 
 }

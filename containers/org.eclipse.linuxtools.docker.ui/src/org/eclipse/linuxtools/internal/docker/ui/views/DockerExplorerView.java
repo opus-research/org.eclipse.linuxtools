@@ -19,20 +19,18 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
-import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener2;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerListener;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
-import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.NewDockerConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -55,13 +53,11 @@ import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributo
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
 /**
- * {@link CommonNavigator} that display a tree of available
- * {@link IDockerConnection}s and for each one, the {@link IDockerContainer}s
- * and {@link IDockerImage}s under separate categories.
+ * @author xcoulon
  *
  */
 public class DockerExplorerView extends CommonNavigator implements
-		IDockerConnectionManagerListener2, ITabbedPropertySheetPageContributor {
+		IDockerConnectionManagerListener, ITabbedPropertySheetPageContributor {
 
 	private static final String NO_CONNECTION_LABEL = "NoConnection.label"; //$NON-NLS-1$
 
@@ -69,7 +65,6 @@ public class DockerExplorerView extends CommonNavigator implements
 	
 	private Control connectionsPane;
 	private Control explanationsPane;
-	private Control currentPane;
 	private PageBook pageBook;
 	private Map<IDockerConnection, ContainersRefresher> containersRefreshers = new HashMap<>();
 	private Map<IDockerConnection, ImagesRefresher> imagesRefreshers = new HashMap<>();
@@ -122,6 +117,7 @@ public class DockerExplorerView extends CommonNavigator implements
 		getCommonViewer().addFilter(containersAndImagesSearchFilter);
 		DockerConnectionManager.getInstance()
 				.addConnectionManagerListener(this);
+
 	}
 
 	/**
@@ -211,9 +207,17 @@ public class DockerExplorerView extends CommonNavigator implements
 		return new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				CommandUtils.openWizard(new NewDockerConnection(),
-						PlatformUI.getWorkbench().getModalDialogShellProvider()
-								.getShell());
+				final NewDockerConnection wizard = new NewDockerConnection();
+				final WizardDialog dialog = new WizardDialog(PlatformUI
+						.getWorkbench().getModalDialogShellProvider()
+						.getShell(), wizard);
+				if (dialog.open() == Window.OK) {
+					getCommonViewer().refresh();
+				}
+				// if a (first) connection is added, the
+				// DockerExplorerView#changeEvent(int) method
+				// will be called and the pageBook will show the connectionsPane
+				// instead of the explanationsPane
 			}
 		};
 	}
@@ -223,97 +227,59 @@ public class DockerExplorerView extends CommonNavigator implements
 	 * {@link DockerExplorerView#connectionsPane} depending on the number of
 	 * connections in the {@link DockerConnectionManager}.
 	 */
-	public void showConnectionsOrExplanations() {
+	private void showConnectionsOrExplanations() {
 		if (DockerConnectionManager.getInstance().getConnections().length < 1) {
 			pageBook.showPage(explanationsPane);
-			this.currentPane = explanationsPane;
 		} else {
 			pageBook.showPage(connectionsPane);
-			this.currentPane = connectionsPane;
 			registerListeners();
 		}
 	}
 
-	/**
-	 * @return <code>true</code> if the current panel is the one containing a
-	 *         {@link TreeViewer} of {@link IDockerConnection}s,
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean isShowingConnectionsPane() {
-		return this.currentPane == connectionsPane;
-	}
-
 	@Override
-	@Deprecated
-	public void changeEvent(final int type) {
-		// method kept for backward compatibility
-	}
-
-	@Override
-	public void changeEvent(final IDockerConnection connection,
-			final int type) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				showConnectionsOrExplanations();
-				switch (type) {
-				case IDockerConnectionManagerListener.ADD_EVENT:
-					registerListeners(connection);
-					getCommonViewer().refresh();
-					getCommonViewer()
-							.setSelection(new StructuredSelection(connection));
-					break;
-				case IDockerConnectionManagerListener.REMOVE_EVENT:
-					unregisterListeners(connection);
-					getCommonViewer().refresh();
-					// move viewer selection to the first connection or set to
-					// null if
-					// no other connection exists
-					final IDockerConnection[] connections = DockerConnectionManager
-							.getInstance().getConnections();
-					if (connections.length > 0) {
-						getCommonViewer().setSelection(
-								new StructuredSelection(connections[0]), true);
-					} else {
-						getCommonViewer().setSelection(null);
-					}
-					break;
-				}
-			}
-		});
+	public void changeEvent(int type) {
+		showConnectionsOrExplanations();
+		switch(type) {
+		case IDockerConnectionManagerListener.ADD_EVENT:
+			registerListeners();
+			break;
+		case IDockerConnectionManagerListener.REMOVE_EVENT:
+			unregisterListeners();
+			break;
+		}
 	}
 
 	private void registerListeners() {
 		for (IDockerConnection connection : DockerConnectionManager
 				.getInstance().getConnections()) {
-			registerListeners(connection);
+			if (!containersRefreshers.containsKey(connection)) {
+				final ContainersRefresher refresher = new ContainersRefresher();
+				connection.addContainerListener(refresher);
+				containersRefreshers.put(connection, refresher);
+			}
+			if (!imagesRefreshers.containsKey(connection)) {
+				final ImagesRefresher refresher = new ImagesRefresher();
+				connection.addImageListener(refresher);
+				imagesRefreshers.put(connection, refresher);
+			}
 		}
 	}
 
-	private void registerListeners(final IDockerConnection connection) {
-		if (!containersRefreshers.containsKey(connection)) {
-			final ContainersRefresher refresher = new ContainersRefresher();
-			connection.addContainerListener(refresher);
-			containersRefreshers.put(connection, refresher);
-		}
-		if (!imagesRefreshers.containsKey(connection)) {
-			final ImagesRefresher refresher = new ImagesRefresher();
-			connection.addImageListener(refresher);
-			imagesRefreshers.put(connection, refresher);
-		}
-	}
-
-	private void unregisterListeners(final IDockerConnection connection) {
-		if (containersRefreshers.containsKey(connection)) {
-			final ContainersRefresher refresher = containersRefreshers
-					.get(connection);
-			connection.removeContainerListener(refresher);
-			containersRefreshers.remove(connection);
-		}
-		if (imagesRefreshers.containsKey(connection)) {
-			final ImagesRefresher refresher = imagesRefreshers.get(connection);
-			connection.removeImageListener(refresher);
-			imagesRefreshers.remove(connection);
+	private void unregisterListeners() {
+		for (IDockerConnection connection : DockerConnectionManager
+				.getInstance().getConnections()) {
+			if (containersRefreshers.containsKey(connection)) {
+				final ContainersRefresher refresher = containersRefreshers
+						.get(connection);
+				connection.removeContainerListener(refresher);
+				containersRefreshers.remove(connection);
+			}
+			if (imagesRefreshers.containsKey(connection)) {
+				final ImagesRefresher refresher = imagesRefreshers
+						.get(connection);
+				connection.removeImageListener(refresher);
+				imagesRefreshers.remove(connection);
+			}
 		}
 	}
 

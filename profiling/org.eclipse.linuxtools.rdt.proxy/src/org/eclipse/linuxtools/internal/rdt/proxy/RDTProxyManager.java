@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.profiling.launch.IRemoteCommandLauncher;
-import org.eclipse.linuxtools.profiling.launch.IRemoteCon;
 import org.eclipse.linuxtools.profiling.launch.IRemoteEnvProxyManager;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.remote.core.IRemoteConnection;
@@ -134,9 +133,4 @@ public class RDTProxyManager implements IRemoteEnvProxyManager {
         IRemoteConnectionType ct = sm.getConnectionType(uri);
         return ct.getConnection(uri);
     }
-
-	@Override
-	public IRemoteCon getConnection(String schemeID) {
-		return new RDTConnection();
-	}
 }

@@ -25,12 +25,12 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.valgrind.launch.IValgrindToolPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -50,7 +50,6 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
@@ -65,7 +64,6 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
     protected Button traceChildrenButton;
     protected Button childSilentButton;
     protected Button runFreeresButton;
-    protected Text otherOptionsText;
 
     protected Button demangleButton;
     protected Spinner numCallersSpinner;
@@ -120,9 +118,12 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
             updateLaunchConfigurationDialog();
         }
     };
-    private ModifyListener modifyListener = e -> updateLaunchConfigurationDialog();
-
-
+    private ModifyListener modifyListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent e) {
+            updateLaunchConfigurationDialog();
+        }
+    };
 
     @Override
     public void createControl(Composite parent) {
@@ -162,10 +163,8 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         createBasicOptions(generalTop);
 
         createVerticalSpacer(generalTop, 1);
-        createErrorOptions(generalTop);
 
-        createVerticalSpacer(generalTop, 1);
-        createOtherOptions(generalTop);
+        createErrorOptions(generalTop);
 
         generalTab.setControl(generalTop);
 
@@ -215,16 +214,19 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         }
         toolsCombo.setItems(names);
 
-        toolsCombo.addModifyListener(e -> {
-		    // user selected change, set defaults in new tool
-		    if (!isInitializing) {
-		        initDefaults = true;
-		        int ix = toolsCombo.getSelectionIndex();
-		        tool = tools[ix];
-		        handleToolChanged();
-		        updateLaunchConfigurationDialog();
-		    }
-		});
+        toolsCombo.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                // user selected change, set defaults in new tool
+                if (!isInitializing) {
+                    initDefaults = true;
+                    int ix = toolsCombo.getSelectionIndex();
+                    tool = tools[ix];
+                    handleToolChanged();
+                    updateLaunchConfigurationDialog();
+                }
+            }
+        });
     }
 
     private String capitalize(String str) {
@@ -264,21 +266,6 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         runFreeresButton.addSelectionListener(selectListener);
         runFreeresButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
-
-	private void createOtherOptions(Composite basicTop) {
-		Composite otherOptionsGroup = new Composite(basicTop, SWT.NONE);
-		otherOptionsGroup.setLayout(new GridLayout());
-		otherOptionsGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-		Label label = new Label(otherOptionsGroup, SWT.WRAP);
-		label.setText(Messages.getString("ValgrindOptionsTab.ExtraOptionsLabel")); //$NON-NLS-1$
-		// Tooltip: Specify any other valgrind options, separated by space. Escaping of spaces is not supported.
-		label.setToolTipText(Messages.getString("ValgrindOptionsTab.ExtraOptionsTooltip")); //$NON-NLS-1$
-
-		otherOptionsText = new Text(otherOptionsGroup, SWT.BORDER);
-		otherOptionsText.setToolTipText(Messages.getString("ValgrindOptionsTab.ExtraOptionsTooltip")); //$NON-NLS-1$
-		otherOptionsText.addModifyListener(modifyListener);
-		otherOptionsText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-	}
 
     private void createErrorOptions(Composite top) {
         Group errorGroup = new Group(top, SWT.NONE);
@@ -352,17 +339,15 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
     }
 
     private void updateErrorOptions() {
-        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
+        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0)
             mainStackSizeTop.setVisible(true);
-        } else {
+        else
             mainStackSizeTop.setVisible(false);
-        }
 
-        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0) {
+        if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_6_0) >= 0)
             dSymUtilButton.setVisible(true);
-        } else {
+        else
             dSymUtilButton.setVisible(false);
-        }
     }
 
     private void createSuppressionsOption(Composite top) {
@@ -539,7 +524,6 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
             }
             handleToolChanged();
 
-            otherOptionsText.setText(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_EXTRA_OPTIONS, "")); //$NON-NLS-1$
             traceChildrenButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_TRACECHILD, LaunchConfigurationConstants.DEFAULT_GENERAL_TRACECHILD));
             runFreeresButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_FREERES, LaunchConfigurationConstants.DEFAULT_GENERAL_FREERES));
             demangleButton.setSelection(configuration.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_DEMANGLE, LaunchConfigurationConstants.DEFAULT_GENERAL_DEMANGLE));
@@ -615,7 +599,6 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_BELOWMAIN, showBelowMainButton.getSelection());
         configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_MAXFRAME, maxStackFrameSpinner.getSelection());
         configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_SUPPFILES, Arrays.asList(suppFileList.getItems()));
-        configuration.setAttribute(LaunchConfigurationConstants.ATTR_GENERAL_EXTRA_OPTIONS, otherOptionsText.getText());
 
         // 3.4.0 specific
         if (valgrindVersion == null || valgrindVersion.compareTo(ValgrindLaunchPlugin.VER_3_4_0) >= 0) {
@@ -739,9 +722,5 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
 
     public String[] getTools() {
         return tools;
-    }
-
-    public Text getExtraOptionsText() {
-        return otherOptionsText;
     }
 }
