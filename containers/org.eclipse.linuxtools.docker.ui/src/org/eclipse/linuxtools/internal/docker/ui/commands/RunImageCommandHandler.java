@@ -143,9 +143,8 @@ public class RunImageCommandHandler extends AbstractHandler {
 					}
 					startContainerMonitor.done();
 					// create a launch configuration from the container
-					LaunchConfigurationUtils.createLaunchConfiguration(
-							container.name(), image, containerConfig,
-							hostConfig, containerName,
+					LaunchConfigurationUtils.createLaunchConfiguration(image,
+							containerConfig, hostConfig, container.name(),
 							removeWhenExits);
 				} catch (final DockerException | InterruptedException e) {
 					Display.getDefault().syncExec(new Runnable() {

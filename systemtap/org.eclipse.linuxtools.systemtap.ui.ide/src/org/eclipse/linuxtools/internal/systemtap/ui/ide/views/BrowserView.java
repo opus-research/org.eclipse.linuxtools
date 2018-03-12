@@ -192,7 +192,12 @@ public abstract class BrowserView extends ViewPart {
 
     protected void setViewerInput(final Object input) {
         if (viewer != null) {
-            viewer.getControl().getDisplay().asyncExec(() -> viewer.setInput(input));
+            viewer.getControl().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    viewer.setInput(input);
+                }
+            });
         }
     }
 

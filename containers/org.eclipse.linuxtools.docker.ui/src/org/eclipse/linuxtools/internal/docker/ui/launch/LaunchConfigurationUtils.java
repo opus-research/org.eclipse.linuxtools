@@ -96,9 +96,6 @@ public class LaunchConfigurationUtils {
 	 * Creates a new {@link ILaunchConfiguration} for the given
 	 * {@link IDockerContainer}.
 	 * 
-	 * @param baseConfigurationName
-	 *            the base configuration name to use when creating the
-	 *            {@link ILaunchConfiguration}.
 	 * @param image
 	 *            the {@link IDockerImage} used to create the container
 	 * @param containerName
@@ -114,7 +111,6 @@ public class LaunchConfigurationUtils {
 	 * 
 	 */
 	public static ILaunchConfiguration createLaunchConfiguration(
-			final String baseConfigurationName,
 			final IDockerImage image,
 			final IDockerContainerConfig containerConfig,
 			final IDockerHostConfig hostConfig, final String containerName,
@@ -123,7 +119,7 @@ public class LaunchConfigurationUtils {
 			final ILaunchManager manager = DebugPlugin.getDefault()
 					.getLaunchManager();
 			final String configurationName = manager
-					.generateLaunchConfigurationName(baseConfigurationName);
+					.generateLaunchConfigurationName(containerName);
 			final ILaunchConfigurationType type = manager
 					.getLaunchConfigurationType(RUN_IMAGE_CONFIGURATION_TYPE);
 			final ILaunchConfigurationWorkingCopy workingCopy = type
@@ -134,9 +130,7 @@ public class LaunchConfigurationUtils {
 					image.getConnection().getName());
 			workingCopy.setAttribute(IMAGE_ID, image.id());
 			workingCopy.setAttribute(IMAGE_NAME, image.repoTags().get(0));
-			if (containerName != null && !containerName.isEmpty()) {
-				workingCopy.setAttribute(CONTAINER_NAME, containerName);
-			}
+			workingCopy.setAttribute(CONTAINER_NAME, containerName);
 			workingCopy.setAttribute(COMMAND, toString(containerConfig.cmd()));
 			workingCopy.setAttribute(ENTRYPOINT,
 					toString(containerConfig.entrypoint()));
