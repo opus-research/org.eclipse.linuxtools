@@ -880,9 +880,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 						loggingThreads.remove(c.id());
 					}
 				}
-				if (!c.status().equals(Messages.Removal_In_Progress_specifier)) {
-					dclist.add(new DockerContainer(this, c));
-				}
+				dclist.add(new DockerContainer(this, c));
 			}
 			containers = dclist;
 		}
