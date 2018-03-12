@@ -86,22 +86,19 @@ public class DefaultDockerConnectionStorageManager
 							}
 						}
 
-						final DockerConnection.Builder builder = new DockerConnection.Builder()
+						DockerConnection.Builder builder = new DockerConnection.Builder()
 								.name(name);
 						if (uri.startsWith("unix:")) { //$NON-NLS-1$
-							final DockerConnection connection = builder
-									.unixSocketConnection(
-									new UnixSocketConnectionSettings(uri));
-							connections.add(connection);
+							builder = builder.unixSocket(uri);
 						} else {
-							final String pathToCertificates = certNode != null
-									? certNode.getNodeValue() : null;
-							final DockerConnection connection = builder
-									.tcpConnection(new TCPConnectionSettings(
-											uri, pathToCertificates));
-							connections.add(connection);
+							builder = builder.tcpHost(uri);
+							if (certNode != null) {
+								builder = builder
+										.tcpCertPath(certNode.getNodeValue());
+							}
 						}
-
+						DockerConnection connection = builder.build();
+						connections.add(connection);
 					}
 				}
 			}
