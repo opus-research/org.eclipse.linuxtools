@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
@@ -175,6 +176,41 @@ public class StructDeclaration extends Declaration {
                 throw new IllegalStateException();
             }
             myFields[i] = entry.getValue().createDefinition(structDefinition, name, input);
+        }
+        return structDefinition;
+    }
+
+    /**
+     * Accelerated create definition
+     *
+     * @param definitionScope
+     *            the definition scope
+     * @param fieldScope
+     *            the lexical scope of this element
+     * @param input
+     *            the {@Link BitBuffer} to read
+     * @return the Struct definition
+     * @throws CTFReaderException
+     *             read error and such
+     * @since 3.1
+     */
+    public StructDefinition createDefinition(IDefinitionScope definitionScope,
+            LexicalScope fieldScope, @NonNull BitBuffer input) throws CTFReaderException {
+        alignRead(input);
+        final Definition[] myFields = new Definition[fFieldMap.size()];
+        /*
+         * Key set is NOT null
+         */
+        @SuppressWarnings("null")
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), fFieldMap.keySet(), myFields);
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String fieldName = entry.getKey();
+            if (fieldName == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, fieldName, input);
         }
         return structDefinition;
     }

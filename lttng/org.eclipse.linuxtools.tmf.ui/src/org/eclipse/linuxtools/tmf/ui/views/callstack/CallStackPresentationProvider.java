@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
+import org.eclipse.linuxtools.internal.tmf.ui.Messages;
 import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
 import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
 import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
@@ -66,14 +67,8 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     }
 
     @Override
-    public String getStateTypeName() {
-        // Empty string since no generic name
-        return ""; //$NON-NLS-1$
-    }
-
-    @Override
     public String getStateTypeName(ITimeGraphEntry entry) {
-        return ""; //$NON-NLS-1$
+        return Messages.CallStackPresentationProvider_Thread;
     }
 
     @Override
@@ -104,10 +99,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     public String getEventName(ITimeEvent event) {
         if (event instanceof CallStackEvent) {
             CallStackEntry entry = (CallStackEntry) event.getEntry();
-            ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
-            if (ss == null) {
-                return null;
-            }
+            ITmfStateSystem ss = entry.getStateSystem();
             try {
                 ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
                 if (!value.isNull()) {
@@ -135,10 +127,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
         CallStackEntry entry = (CallStackEntry) event.getEntry();
-        ITmfStateSystem ss = CallStackView.getCallStackStateSystem(entry.getTrace());
-        if (ss == null) {
-            return;
-        }
+        ITmfStateSystem ss = entry.getStateSystem();
         try {
             ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
             if (!value.isNull()) {

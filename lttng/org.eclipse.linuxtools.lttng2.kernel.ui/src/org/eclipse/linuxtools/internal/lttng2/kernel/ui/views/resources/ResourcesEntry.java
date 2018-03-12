@@ -13,6 +13,7 @@
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
@@ -37,7 +38,7 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
     }
 
     private final int fId;
-    private final ITmfTrace fTrace;
+    private final @NonNull ITmfTrace fTrace;
     private final Type fType;
     private final int fQuark;
 
@@ -59,7 +60,8 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(int quark, ITmfTrace trace, String name, long startTime, long endTime, Type type, int id) {
+    public ResourcesEntry(int quark, @NonNull ITmfTrace trace, String name,
+            long startTime, long endTime, Type type, int id) {
         super(name, startTime, endTime);
         fId = id;
         fTrace = trace;
@@ -81,7 +83,8 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(ITmfTrace trace, String name, long startTime, long endTime, int id) {
+    public ResourcesEntry(@NonNull ITmfTrace trace, String name,
+            long startTime, long endTime, int id) {
         this(-1, trace, name, startTime, endTime, Type.NULL, id);
     }
 
@@ -101,7 +104,8 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(int quark, ITmfTrace trace, long startTime, long endTime, Type type, int id) {
+    public ResourcesEntry(int quark, @NonNull ITmfTrace trace,
+            long startTime, long endTime, Type type, int id) {
         this(quark, trace, type.toString() + " " + id, startTime, endTime, type, id); //$NON-NLS-1$
     }
 
@@ -119,7 +123,7 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
      *
      * @return the entry's trace
      */
-    public ITmfTrace getTrace() {
+    public @NonNull ITmfTrace getTrace() {
         return fTrace;
     }
 
@@ -147,38 +151,6 @@ public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGr
             return false;
         }
         return true;
-    }
-
-    /**
-     * Add a child to this entry of type ResourcesEntry
-     *
-     * @param entry
-     *            The entry to add
-     */
-    @Override
-    public void addChild(TimeGraphEntry entry) {
-        // FIXME This check won't be necessary once all ITimeGraphEntry's are
-        // made Comparable.
-        if (!(entry instanceof ResourcesEntry)) {
-            throw new IllegalArgumentException();
-        }
-        ResourcesEntry rEntry = (ResourcesEntry) entry;
-
-        /*
-         * Insert in the array, keeping the elements sorted
-         * (CopyOnWriteArrayList doesn't support Collections#sort,
-         * unfortunately).
-         */
-        int index;
-        for (index = 0; index < getChildren().size(); index++) {
-            ResourcesEntry other = (ResourcesEntry) getChildren().get(index);
-            if (rEntry.compareTo(other) < 0) {
-                break;
-            }
-        }
-
-        rEntry.setParent(this);
-        getChildren().add(index, rEntry);
     }
 
     @Override
