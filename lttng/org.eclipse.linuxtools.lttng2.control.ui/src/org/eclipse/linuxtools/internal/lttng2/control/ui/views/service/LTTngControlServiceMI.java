@@ -457,52 +457,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
 
     @Override
     public ISnapshotInfo getSnapshotInfo(String sessionName, IProgressMonitor monitor) throws ExecutionException {
-        // TODO A session can have multiple snapshot output. This need to be
-        // supported in the future.
-        // Currently the SessionInfo object does not support multiple snashot
-        // output.
-        // For now only keep the last one.
-        StringBuffer command = createCommand(LTTngControlServiceConstants.COMMAND_LIST_SNAPSHOT_OUTPUT, LTTngControlServiceConstants.OPTION_SESSION, sessionName);
-        ICommandResult result = executeCommand(command.toString(), monitor);
-        Document doc = getDocumentFromStrings(result.getOutput());
-        NodeList rawSnapshotsOutputs = doc.getElementsByTagName(MIStrings.SNAPSHOT_OUTPUTS);
-
-        ISnapshotInfo snapshotInfo = new SnapshotInfo(""); //$NON-NLS-1$
-
-        for (int i = 0; i < rawSnapshotsOutputs.getLength(); i++) {
-            NodeList rawSnapshotOutput = rawSnapshotsOutputs.item(i).getChildNodes();
-            for (int j = 0; j < rawSnapshotOutput.getLength(); j++) {
-                Node rawInfo = rawSnapshotOutput.item(j);
-                switch (rawInfo.getNodeName()) {
-                case MIStrings.ID:
-                    snapshotInfo.setId(Integer.parseInt(rawInfo.getTextContent()));
-                    break;
-                case MIStrings.NAME:
-                    snapshotInfo.setName(rawInfo.getTextContent());
-                    break;
-                case MIStrings.SNAPSHOT_CTRL_URL:
-                    // The use of the ctrl_url for the snapshot path is to assure
-                    // basic support. Refactoring is necessary in lttng and
-                    // tmf side.
-                    // See http://bugs.lttng.org/issues/828 (+comment)
-                    snapshotInfo.setSnapshotPath(rawInfo.getTextContent());
-                    break;
-                case MIStrings.SNAPSHOT_DATA_URL:
-                    // TODO: tmf does not have a notion of a ctrl url.
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-        // Check if the snapshot output is Streamed
-        Matcher matcher2 = LTTngControlServiceConstants.TRACE_NETWORK_PATTERN.matcher(snapshotInfo.getSnapshotPath());
-        if (matcher2.matches()) {
-            snapshotInfo.setStreamedSnapshot(true);
-        }
-
-        return snapshotInfo;
+        // TODO JRJ - STUB
+        return null;
     }
 
     @Override
@@ -517,14 +473,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
             // Error: Unable to list kernel events
             // or:
             // Error: Unable to list kernel events
-            int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
-                Matcher matcher = LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    return events;
-                }
-                index++;
+            if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_KERNEL_NO_KERNEL_PROVIDER_PATTERN)) {
+                return events;
             }
             throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_KERNEL);
         }
@@ -551,14 +501,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
             // Error: Unable to list UST events: Listing UST events failed
             // or:
             // Error: Unable to list UST events: Listing UST events failed
-            int index = 0;
-            while (index < result.getErrorOutput().length) {
-                String line = result.getErrorOutput()[index];
-                Matcher matcher = LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    return allProviders;
-                }
-                index++;
+            if (ignoredPattern(result.getErrorOutput(), LTTngControlServiceConstants.LIST_UST_NO_UST_PROVIDER_PATTERN)) {
+                return allProviders;
             }
             throw new ExecutionException(Messages.TraceControl_CommandError + LTTngControlServiceConstants.COMMAND_LIST_UST);
         }
@@ -699,8 +643,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
         // When using controlUrl and dataUrl the full session path is not known
         // yet
         // and will be set later on when listing the session
-
         return sessionInfo;
+
     }
 
     @Override
@@ -713,15 +657,10 @@ public class LTTngControlServiceMI extends LTTngControlService {
         String[] errorOutput = result.getErrorOutput();
 
         if (isError(result) && (errorOutput != null)) {
-            int index = 0;
-            while (index < errorOutput.length) {
-                String line = errorOutput[index];
-                Matcher matcher = LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    // Don't treat this as an error
-                    return;
-                }
-                index++;
+            // Don't treat this as an error
+            if (ignoredPattern(errorOutput, LTTngControlServiceConstants.SESSION_NOT_FOUND_ERROR_PATTERN)) {
+                return;
+
             }
             throw new ExecutionException(Messages.TraceControl_CommandError + " " + command.toString() + "\n" + formatOutput(result)); //$NON-NLS-1$ //$NON-NLS-2$
         }
