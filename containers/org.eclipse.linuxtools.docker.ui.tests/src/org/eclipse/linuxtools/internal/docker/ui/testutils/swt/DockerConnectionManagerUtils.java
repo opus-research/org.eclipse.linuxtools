@@ -19,6 +19,7 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionStorageManager;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionStorageManagerFactory;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 
 /**
  * 
@@ -36,8 +37,10 @@ public class DockerConnectionManagerUtils {
 			final IDockerConnection... connections) {
 		DockerConnectionManager.getInstance()
 				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(connections));
-		final DockerExplorerView dockerExplorerView = getDockerExplorerView(new SWTWorkbenchBot());
-		if(dockerExplorerView != null) {
+		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
+		final SWTBotView dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
+		if(dockerExplorerViewBot != null) {
+			final DockerExplorerView dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(true));
 			SWTUtils.syncExec(() -> {
 				DockerConnectionManager.getInstance().reloadConnections();
 				dockerExplorerView.getCommonViewer().refresh();
@@ -46,11 +49,4 @@ public class DockerConnectionManagerUtils {
 			SWTUtils.wait(1, TimeUnit.SECONDS);
 		}
 	}
-	
-	private static DockerExplorerView getDockerExplorerView(final SWTWorkbenchBot bot) {
-		return bot.views().stream().filter(v -> v.getReference().getId().equals(DockerExplorerView.VIEW_ID))
-				.map(viewBot -> (DockerExplorerView) (viewBot.getViewReference().getView(true))).findFirst()
-				.orElse(null);
-	}
-
 }
