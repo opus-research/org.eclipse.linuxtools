@@ -340,7 +340,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 
 			@Override
 			public void handleChange(ChangeEvent event) {
-				final IStatus status = validateInput(errorMessageLabel);
+				final IStatus status = validateInput();
 				if (status.isOK()) {
 					errorMessageIcon.setVisible(false);
 					errorMessageLabel.setVisible(false);
@@ -364,7 +364,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 		};
 	}
 
-	private IStatus validateInput(final Label errorMessageLabel) {
+	private IStatus validateInput() {
 		final MountType mountType = model.getMountType();
 		final String hostPath = model.getHostPathMount();
 		if (mountType == MountType.HOST_FILE_SYSTEM
