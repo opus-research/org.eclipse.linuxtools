@@ -18,9 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
-import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestampFormat;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 
 /**
  * Filter node for the comparison operation
@@ -53,8 +51,7 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
     private Type fType = Type.NUM;
     private String fValue;
     private transient Number fValueNumber;
-    private transient ITmfTimestamp fValueTimestamp;
-    private transient TmfTimestampFormat fTimestampFormat = new TmfTimestampFormat("T.SSSSSSSSS"); //$NON-NLS-1$
+    private transient TmfTimestamp fValueTimestamp;
 
     /**
      * @param parent the parent node
@@ -92,17 +89,17 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
     }
 
     /**
-     * @return the compare result (-1, 0 or 1)
+     * @return the compare result
      */
     public int getResult() {
         return fResult;
     }
 
     /**
-     * @param result the compare result (-1, 0 or 1)
+     * @param result the compare result
      */
     public void setResult(int result) {
-        this.fResult = (int) Math.signum(result);
+        this.fResult = result;
     }
 
     /**
@@ -121,14 +118,14 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
     }
 
     /**
-     * @return the comparison value (in seconds for the TIMESTAMP type)
+     * @return the comparison value
      */
     public String getValue() {
         return fValue;
     }
 
     /**
-     * @param value the comparison value (in seconds for the TIMESTAMP type)
+     * @param value the comparison value
      */
     public void setValue(String value) {
         this.fValue = value;
@@ -144,7 +141,7 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
             }
         } else if (fType == Type.TIMESTAMP) {
             try {
-                fValueTimestamp = new TmfNanoTimestamp(fTimestampFormat.parseValue(value.toString()));
+                fValueTimestamp = new TmfTimestamp((long) (1E9 * NumberFormat.getInstance().parse(value.toString()).doubleValue()));
             } catch (ParseException e) {
             }
         }
@@ -159,7 +156,7 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
     public boolean matches(ITmfEvent event) {
         Object value = getFieldValue(event, fField);
         if (value == null) {
-            return false;
+            return false ^ fNot;
         }
         if (fType == Type.NUM) {
             if (fValueNumber != null) {
@@ -175,24 +172,28 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
             }
         } else if (fType == Type.ALPHA) {
             String valueString = value.toString();
-            int comp = (int) Math.signum(valueString.compareTo(fValue.toString()));
+            int comp = valueString.compareTo(fValue.toString());
+            if (comp < -1) {
+                comp = -1;
+            } else if (comp > 1) {
+                comp = 1;
+            }
             return (comp == fResult) ^ fNot;
         } else if (fType == Type.TIMESTAMP) {
             if (fValueTimestamp != null) {
-                if (value instanceof ITmfTimestamp) {
-                    ITmfTimestamp valueTimestamp = (ITmfTimestamp) value;
-                    int comp = (int) Math.signum(valueTimestamp.compareTo(fValueTimestamp, false));
-                    return (comp == fResult) ^ fNot;
+                if (value instanceof TmfTimestamp) {
+                    TmfTimestamp valueTimestamp = (TmfTimestamp) value;
+                    return (valueTimestamp.compareTo(fValueTimestamp, false) == fResult) ^ fNot;
                 }
                 try {
-                    ITmfTimestamp valueTimestamp = new TmfNanoTimestamp(fTimestampFormat.parseValue(value.toString()));
-                    int comp = (int) Math.signum(valueTimestamp.compareTo(fValueTimestamp, false));
-                    return (comp == fResult) ^ fNot;
+                    TmfTimestamp valueTimestamp = new TmfTimestamp((long) (1E9 * NumberFormat
+                                    .getInstance().parse(value.toString()).doubleValue()));
+                    return (valueTimestamp.compareTo(fValueTimestamp, false) == fResult) ^ fNot;
                 } catch (ParseException e) {
                 }
             }
         }
-        return false;
+        return false ^ fNot;
     }
 
     @Override
@@ -214,13 +215,5 @@ public class TmfFilterCompareNode extends TmfFilterTreeNode {
         clone.fField = fField;
         clone.setValue(fValue);
         return clone;
-    }
-
-    @Override
-    protected Object getFieldValue(ITmfEvent event, String field) {
-        if (ITmfEvent.EVENT_FIELD_TIMESTAMP.equals(field)) {
-            return event.getTimestamp();
-        }
-        return super.getFieldValue(event, field);
     }
 }
