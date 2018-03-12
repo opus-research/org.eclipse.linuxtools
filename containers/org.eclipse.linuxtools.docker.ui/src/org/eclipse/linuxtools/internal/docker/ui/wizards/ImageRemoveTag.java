@@ -37,6 +37,11 @@ public class ImageRemoveTag extends Wizard {
 	}
 
 	@Override
+	public boolean canFinish() {
+		return this.mainPage.isPageComplete();
+	}
+
+	@Override
 	public boolean performFinish() {
 		return true;
 	}
