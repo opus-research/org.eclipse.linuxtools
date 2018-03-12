@@ -958,10 +958,11 @@ public class DockerConnection implements IDockerConnection, Closeable {
 	@Override
 	public boolean hasImage(final String repository, final String tag) {
 		for (IDockerImage image : getImages()) {
-			for (String repoTag : image.repoTags()) {
-				String tagExpr = (tag != null && !tag.isEmpty()) ? ':' + tag : ""; //$NON-NLS-1$
-				if (repoTag.equals(repository + tagExpr)) {
-					return true;
+			if (image.repo().equals(repository)) {
+				for (String imageTag : image.tags()) {
+					if (imageTag.startsWith(tag)) {
+						return true;
+					}
 				}
 			}
 		}
@@ -1432,7 +1433,7 @@ public class DockerConnection implements IDockerConnection, Closeable {
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
-			// Permit kill to fail silently even on non-running containers
+			throw new DockerException(e.message());
 		} catch (com.spotify.docker.client.DockerException e) {
 			throw new DockerException(e.getMessage(), e.getCause());
 		}

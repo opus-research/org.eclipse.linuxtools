@@ -45,16 +45,7 @@ public class ContainerPropertyTester extends PropertyTester {
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
 		if (receiver instanceof IDockerContainer) {
-			IDockerContainer container = (IDockerContainer) receiver;
-			/*
-			 * The 'receiver' is not updated if the selection remains unchanged
-			 * but a context menu command may have modified container state
-			 * requiring a change in menu items.
-			 */
-			final IDockerContainer newContainer = container.getConnection().getContainer(container.id());
-			if (newContainer != null) {
-				container = newContainer;
-			}
+			final IDockerContainer container = (IDockerContainer) receiver;
 			switch (property) {
 			case IS_RUNNING:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.RUNNING, expectedValue);
@@ -113,27 +104,6 @@ public class ContainerPropertyTester extends PropertyTester {
 		return true;
 	}
 
-	/**
-	 * Check if any of the given IStructuredSelection containing IDockerContainer
-	 * elements are in the specified state
-	 * @param ss an IStructuredSelection of IDockerContainer elements
-	 * @param state the state of the IDockerContainer to test
-	 * @return true if any IDockerContainer elements match the specified
-	 * and false otherwise.
-	 */
-	private static boolean checkAnyState(IStructuredSelection ss, EnumDockerStatus state) {
-		if (ss.toList().isEmpty()) {
-			return false;
-		}
-		for (Object o : ss.toList()) {
-			IDockerContainer c = (IDockerContainer) o;
-			if (EnumDockerStatus.fromStatusMessage(c.status()) == state) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public static boolean isStopped(IStructuredSelection ss) {
 		return checkState(ss, EnumDockerStatus.STOPPED);
 	}
@@ -144,10 +114,6 @@ public class ContainerPropertyTester extends PropertyTester {
 
 	public static boolean isPaused(IStructuredSelection ss) {
 		return checkState(ss, EnumDockerStatus.PAUSED);
-	}
-
-	public static boolean isAnyRunning(IStructuredSelection ss) {
-		return checkAnyState(ss, EnumDockerStatus.RUNNING);
 	}
 
 }
