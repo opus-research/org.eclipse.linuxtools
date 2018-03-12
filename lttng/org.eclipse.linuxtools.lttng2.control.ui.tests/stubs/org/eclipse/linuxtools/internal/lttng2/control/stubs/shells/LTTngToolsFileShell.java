@@ -8,7 +8,6 @@
  *
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  **********************************************************************/
 package org.eclipse.linuxtools.internal.lttng2.control.stubs.shells;
 
@@ -236,7 +235,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
     }
 
     @Override
-   public synchronized ICommandResult executeCommand(String command, IProgressMonitor monitor) throws ExecutionException {
+   public synchronized ICommandResult executeCommand(String command, IProgressMonitor monitor, boolean checkReturnValue) throws ExecutionException {
         Map<String, ICommandResult> commands = fScenarioMap.get(fScenario);
         String fullCommand = command;
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2014 Ericsson
+ * Copyright (c) 2009, 2013 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,13 +9,9 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Filled with content
- *   Markus Schorn - Bug 448058: Use org.eclipse.remote in favor of RSE
  *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,19 +23,13 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.ITraceControlComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.ITraceControlComponentChangedListener;
-import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TargetNodeComponent;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceControlContentProvider;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceControlLabelProvider;
 import org.eclipse.linuxtools.internal.lttng2.control.ui.views.model.impl.TraceControlRoot;
-import org.eclipse.remote.core.IRemoteConnection;
-import org.eclipse.remote.core.IRemoteServices;
-import org.eclipse.remote.core.RemoteServices;
+import org.eclipse.rse.core.RSECorePlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
@@ -75,8 +65,6 @@ public class ControlView extends ViewPart implements ITraceControlComponentChang
      */
     private ITraceControlComponent fRoot = null;
 
-    private List<IRemoteConnection> fInitialConnections;
-
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
@@ -106,60 +94,14 @@ public class ControlView extends ViewPart implements ITraceControlComponentChang
         // Create model root
         fRoot = new TraceControlRoot();
         fRoot.addComponentListener(this);
-        if (fInitialConnections != null) {
-            for (IRemoteConnection rc : fInitialConnections) {
-                TargetNodeComponent node = new TargetNodeComponent(rc.getName(), fRoot, rc);
-                fRoot.addChild(node);
-            }
-            fInitialConnections = null;
-        }
         fTreeViewer.setInput(fRoot);
 
         // Create context menu for the tree viewer
         createContextMenu();
 
         getSite().setSelectionProvider(fTreeViewer);
-    }
 
-    @Override
-    public void saveState(IMemento memento) {
-        int i = 0;
-        for (ITraceControlComponent cmp  : fRoot.getChildren()) {
-            if (cmp instanceof TargetNodeComponent) {
-                IRemoteConnection rc = ((TargetNodeComponent) cmp).getRemoteConnection();
-                memento.putString("rc_id_" + i, rc.getRemoteServices().getId()); //$NON-NLS-1$
-                memento.putString("rc_name_" + i, rc.getName()); //$NON-NLS-1$
-                i++;
-            }
-        }
-        super.saveState(memento);
-    }
-
-
-    @Override
-    public void init(IViewSite site, IMemento memento) throws PartInitException {
-        super.init(site, memento);
-        if (memento != null) {
-            fInitialConnections = new ArrayList<>();
-            for(int i = 0; ; i++) {
-                String id = memento.getString("rc_id_" + i); //$NON-NLS-1$
-                String name = memento.getString("rc_name_" + i); //$NON-NLS-1$
-                if (id == null || name == null) {
-                    break;
-                }
-                if (!Workaround_Bug449362.triggerRSEStartup(id)) {
-                    // Skip the connection in order to avoid an infinite loop
-                } else {
-                    IRemoteServices rs = RemoteServices.getRemoteServices(id);
-                    if (rs != null) {
-                        IRemoteConnection rc = rs.getConnectionManager().getConnection(name);
-                        if (rc != null) {
-                            fInitialConnections.add(rc);
-                        }
-                    }
-                }
-            }
-        }
+        RSECorePlugin.getTheSystemRegistry(); // to load RSE
     }
 
     @Override
