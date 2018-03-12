@@ -262,13 +262,16 @@ public class Messages extends NLS {
     public static String TmfView_PinActionNameText;
     public static String TmfView_PinActionToolTipText;
 
+    public static String CallStackPresentationProvider_Thread;
     public static String CallStackView_FunctionColumn;
     public static String CallStackView_DepthColumn;
     public static String CallStackView_EntryTimeColumn;
     public static String CallStackView_ExitTimeColumn;
     public static String CallStackView_DurationColumn;
     public static String CallStackView_StackInfoNotAvailable;
-
+    public static String CallStackView_SortByThreadName;
+    public static String CallStackView_SortByThreadId;
+    public static String CallStackView_SortByThreadTime;
     public static String CallStackView_ImportMappingButtonText;
     public static String CallStackView_ImportMappingButtonTooltip;
     public static String CallStackView_ImportMappingDialogTitle;
