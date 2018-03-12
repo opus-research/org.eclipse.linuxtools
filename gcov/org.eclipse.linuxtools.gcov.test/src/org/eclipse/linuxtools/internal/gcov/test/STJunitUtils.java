@@ -12,7 +12,7 @@ package org.eclipse.linuxtools.internal.gcov.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,38 +40,43 @@ public class STJunitUtils {
      * @param refFile
      * @return
      */
-    public static void compareIgnoreEOL(String dumpFile, String refFile, boolean deleteDumpFileIfOk) {
-        String message = "Comparing ref file (" + refFile + ") and dump file ("
+    public static boolean compareIgnoreEOL(String dumpFile, String refFile, boolean deleteDumpFileIfOk) {
+        String message = "Comparing ref file (" + refFile + ")and dump file ("
                 + dumpFile + ")";
-        try {
-            String refOut = readFile(refFile);
-            String dumpOut = readFile(dumpFile);
-            System.err.println("--ref--\n" + refOut);
-            System.err.println("--dump--\n" + dumpOut);
-            assertEquals(message, refOut, dumpOut);
+        boolean equals = false;
+        try (LineNumberReader is1 = new LineNumberReader(new FileReader(
+                dumpFile));
+                LineNumberReader is2 = new LineNumberReader(new FileReader(
+                        refFile))) {
+            do {
+                String line1 = is1.readLine();
+                String line2 = is2.readLine();
+                if (line1 == null) {
+                    if (line2 == null) {
+                        equals = true;
+                    }
+                    break;
+                } else if (line2 == null || !line1.equals(line2)) {
+                    break;
+                }
+            } while (true);
+
+            if (!equals) {
+                assertEquals(message + ": not correspond ", true, false);
+            }
 
             // delete dump only for successful tests
-            if (deleteDumpFileIfOk) {
+            if (equals && deleteDumpFileIfOk) {
                 new File(dumpFile).delete();
             }
+        } catch (FileNotFoundException _) {
+            message += "... FAILED: One of these files may not exist";
+            assertNull(message, _);
         } catch (Exception e) {
-            fail(message + ": exception raised ... FAILED");
+            message += ": exception raised ... FAILED";
+            assertNull(message, e);
         }
-    }
-
-    private static String readFile(String file) throws IOException {
-        try (LineNumberReader lnr = new LineNumberReader(new FileReader(file))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = lnr.readLine()) != null) {
-                sb.append(line);
-                sb.append('\n');
-            }
-            return sb.toString();
-        } catch (FileNotFoundException e) {
-            fail("FAILED: file " + file + " does not exist");
-            return "";
-        }
+        return equals;
     }
 
     /**
