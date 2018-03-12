@@ -240,7 +240,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
                 if (children[i] instanceof ValgrindStackFrame && marker == null) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
                     if (frame.getLine() > 0) {
-                        ISourceLocator locator = frame.getSourceLocator();
+                        ISourceLocator locator = frame.getLaunch().getSourceLocator();
                         ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
                         Object sourceElement = result.getSourceElement();
 
@@ -368,7 +368,10 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
             }
         }
         opts.addAll(Arrays.asList(dynamicDelegate.getCommandArray(config, valgrindVersion, outputPath)));
-
+        String otherOptions = config.getAttribute(LaunchConfigurationConstants.ATTR_GENERAL_EXTRA_OPTIONS,"").trim(); //$NON-NLS-1$
+		if (!otherOptions.isEmpty()) {
+			opts.addAll(Arrays.asList(otherOptions.split("\\s+"))); //$NON-NLS-1$
+		}
         String[] ret = new String[opts.size()];
         return opts.toArray(ret);
     }
