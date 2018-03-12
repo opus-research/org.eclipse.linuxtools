@@ -69,7 +69,7 @@ public abstract class AbstractProxyTest extends AbstractRemoteTest {
 	}
 
 	@Override
-	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) {
+	protected void setProfileAttributes(ILaunchConfigurationWorkingCopy wc) throws CoreException {
 		// Do nothing. This testsuite does not care about LaunchConfig
 	}
 
