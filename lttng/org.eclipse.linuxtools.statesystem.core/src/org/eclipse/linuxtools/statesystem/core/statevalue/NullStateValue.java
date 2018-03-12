@@ -75,9 +75,4 @@ final class NullStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
-
-    @Override
-    public boolean compare(Object object, ComparisonOperator comparisonOperator) {
-        return (object instanceof NullStateValue);
-    }
 }
