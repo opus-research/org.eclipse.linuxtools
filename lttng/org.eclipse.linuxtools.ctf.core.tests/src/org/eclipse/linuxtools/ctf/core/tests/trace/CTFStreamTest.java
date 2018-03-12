@@ -20,7 +20,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
@@ -68,14 +67,13 @@ public class CTFStreamTest {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws IOException{
         fInput.close();
     }
 
-    @NonNull
     private static File createFile() {
         File path = new File(testTrace.getPath());
-        final File[] listFiles = path.listFiles(new FilenameFilter() {
+        return path.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 if (name.contains("hann")) {
@@ -83,11 +81,7 @@ public class CTFStreamTest {
                 }
                 return false;
             }
-        });
-        assertNotNull(listFiles);
-        final File returnFile = listFiles[0];
-        assertNotNull(returnFile);
-        return returnFile;
+        })[0];
     }
 
     /**

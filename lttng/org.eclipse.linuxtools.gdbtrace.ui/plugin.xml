@@ -92,9 +92,6 @@
          <eventsTableType
                class="org.eclipse.linuxtools.internal.gdbtrace.ui.views.events.GdbEventsTable">
          </eventsTableType>
-         <eventTableColumns
-               class="org.eclipse.linuxtools.internal.gdbtrace.ui.views.events.GdbEventTableColumns">
-         </eventTableColumns>
       </type>
    </extension>
 

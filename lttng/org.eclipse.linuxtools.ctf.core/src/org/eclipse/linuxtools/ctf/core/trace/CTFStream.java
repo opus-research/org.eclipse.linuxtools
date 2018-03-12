@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
@@ -244,38 +242,31 @@ public class CTFStream {
     }
 
     /**
-     * Get all the event declarations in this stream.
+     * Get the event declarations in a list
      *
-     * @return The event declarations for this stream
+     * @return all the event declarations for this stream, The order is
+     *         guaranteed but not the index. if the events start at ID 1000,
+     *         there will not be 1000 blank events before the first good one.
      * @since 3.1
      */
-    public @NonNull Collection<IEventDeclaration> getEventDeclarations() {
-        List<IEventDeclaration> retVal = new ArrayList<>(fEvents);
-        retVal.removeAll(Collections.<IEventDeclaration> singletonList(null));
+    public List<IEventDeclaration> getEventDeclarations() {
+        ArrayList<IEventDeclaration> retVal = new ArrayList<>(fEvents);
+        retVal.removeAll(Collections.singletonList(null));
         return retVal;
     }
 
     /**
-     * Get the event declaration for a given ID.
+     * Get the event declaration for a given value
      *
-     * @param eventId
-     *            The ID, can be {@link EventDeclaration#UNSET_EVENT_ID}, or any
-     *            positive value
-     * @return The event declaration with the given ID for this stream, or
-     *         'null' if there are no declaration with this ID
-     * @throws IllegalArgumentException
-     *             If the passed ID is invalid
+     * @param eventIndex
+     *            the index, can be UNSET_EVENT_ID or a positive value
+     * @return the event declaration at a given index for this stream, cannot be
+     *         null,
      * @since 3.1
      */
-    public @Nullable IEventDeclaration getEventDeclaration(int eventId) {
-        int eventIndex = (eventId == EventDeclaration.UNSET_EVENT_ID) ? 0 : eventId;
-        if (eventIndex < 0) {
-            /* Any negative value other than UNSET_EVENT_ID is invalid */
-            throw new IllegalArgumentException("Event ID cannot be negative."); //$NON-NLS-1$
-        }
-        if (eventIndex >= fEvents.size()) {
-            /* This ID could be valid, but there are no declarations with it */
-            return null;
+    public IEventDeclaration getEventDeclaration(int eventIndex) {
+        if (eventIndex == EventDeclaration.UNSET_EVENT_ID) {
+            return fEvents.get(0);
         }
         return fEvents.get(eventIndex);
     }
@@ -320,7 +311,7 @@ public class CTFStream {
             if (fEvents.size() > id && fEvents.get(id) != null) {
                 throw new ParseException("Event id already exists"); //$NON-NLS-1$
             }
-            ensureSize(fEvents, id);
+            ensureSize(id);
             /* Put the event in the list */
             fEvents.set(id, event);
         }
@@ -348,7 +339,7 @@ public class CTFStream {
         for (IEventDeclaration event : events) {
             if (event != null) {
                 int index = event.getId().intValue();
-                ensureSize(fEvents, index);
+                ensureSize(index);
                 if (fEvents.get(index) != null) {
                     throw new CTFReaderException("Both lists have an event defined at position " + index); //$NON-NLS-1$
                 }
@@ -357,10 +348,10 @@ public class CTFStream {
         }
     }
 
-    private static void ensureSize(ArrayList<? extends Object> list, int index) {
-        list.ensureCapacity(index);
-        while (list.size() <= index) {
-            list.add(null);
+    private void ensureSize(int index) {
+        fEvents.ensureCapacity(index);
+        while (fEvents.size() <= index) {
+            fEvents.add(null);
         }
     }
 
@@ -381,4 +372,5 @@ public class CTFStream {
                 + ", eventContextDecl=" + fEventContextDecl + ", trace=" + fTrace //$NON-NLS-1$ //$NON-NLS-2$
                 + ", events=" + fEvents + ", inputs=" + fInputs + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
+
 }

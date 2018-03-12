@@ -109,10 +109,7 @@ public class EventHeaderLargeDeclaration extends Declaration implements IEventHe
         }
         long timestampLong = input.get(FULL_TS, false);
         input.setByteOrder(bo);
-        if (second > Integer.MAX_VALUE) {
-            throw new CTFReaderException("ID " + second + " larger than " + Integer.MAX_VALUE + " is currently unsupported by the parser"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-        }
-        return new EventHeaderDefinition(this, (int) second, timestampLong, FULL_TS);
+        return new EventHeaderDefinition(this, second, timestampLong, FULL_TS);
     }
 
     @Override
