@@ -18,8 +18,8 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocolValues;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.ProtocolValues;
 import org.junit.Test;
 
 /**
@@ -35,9 +35,9 @@ public class ProtocolTest {
      */
     @Test
     public void TestProtocolAttributes() {
-        assertEquals(PcapProtocol.PCAP.getName(), "Packet Capture");
-        assertEquals(PcapProtocol.PCAP.getShortName(), "pcap");
-        assertEquals(PcapProtocol.PCAP.getLayer(), PcapProtocolValues.LAYER_0);
+        assertEquals(Protocol.PCAP.getName(), "Packet Capture");
+        assertEquals(Protocol.PCAP.getShortName(), "pcap");
+        assertEquals(Protocol.PCAP.getLayer(), ProtocolValues.LAYER_0);
     }
 
     /**
@@ -45,42 +45,42 @@ public class ProtocolTest {
      */
     @Test
     public void TestgetProtocols() {
-        List<PcapProtocol> list = new ArrayList<>();
-        List<PcapProtocol> manualListLayer = new ArrayList<>();
-        for (int i = PcapProtocolValues.LAYER_0; i <= PcapProtocolValues.LAYER_7; i++) {
-            List<PcapProtocol> listLayer = PcapProtocol.getProtocolsOnLayer(i);
+        List<Protocol> list = new ArrayList<>();
+        List<Protocol> manualListLayer = new ArrayList<>();
+        for (int i = ProtocolValues.LAYER_0; i <= ProtocolValues.LAYER_7; i++) {
+            List<Protocol> listLayer = Protocol.getProtocolsOnLayer(i);
             list.addAll(listLayer);
 
             manualListLayer.clear();
             switch (i) {
-            case PcapProtocolValues.LAYER_0:
-                manualListLayer.add(PcapProtocol.PCAP);
+            case ProtocolValues.LAYER_0:
+                manualListLayer.add(Protocol.PCAP);
                 break;
-            case PcapProtocolValues.LAYER_1:
+            case ProtocolValues.LAYER_1:
                 break;
-            case PcapProtocolValues.LAYER_2:
-                manualListLayer.add(PcapProtocol.ETHERNET_II);
+            case ProtocolValues.LAYER_2:
+                manualListLayer.add(Protocol.ETHERNET_II);
                 break;
-            case PcapProtocolValues.LAYER_3:
-                manualListLayer.add(PcapProtocol.IPV4);
+            case ProtocolValues.LAYER_3:
+                manualListLayer.add(Protocol.IPV4);
                 break;
-            case PcapProtocolValues.LAYER_4:
-                manualListLayer.add(PcapProtocol.TCP);
-                manualListLayer.add(PcapProtocol.UDP);
+            case ProtocolValues.LAYER_4:
+                manualListLayer.add(Protocol.TCP);
+                manualListLayer.add(Protocol.UDP);
                 break;
-            case PcapProtocolValues.LAYER_5:
+            case ProtocolValues.LAYER_5:
                 break;
-            case PcapProtocolValues.LAYER_6:
+            case ProtocolValues.LAYER_6:
                 break;
-            case PcapProtocolValues.LAYER_7:
-                manualListLayer.add(PcapProtocol.UNKNOWN);
+            case ProtocolValues.LAYER_7:
+                manualListLayer.add(Protocol.UNKNOWN);
                 break;
             default:
                 fail("Illegal layer value!");
             }
             assertEquals(manualListLayer, listLayer);
         }
-        assertEquals(PcapProtocol.getAllProtocols(), list);
+        assertEquals(Protocol.getAllProtocols(), list);
 
     }
 

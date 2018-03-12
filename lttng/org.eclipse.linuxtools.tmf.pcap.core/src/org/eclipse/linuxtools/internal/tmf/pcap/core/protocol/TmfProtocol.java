@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
+import org.eclipse.linuxtools.internal.pcap.core.protocol.Protocol;
 
 /**
  * Enumeration as a TMF wrapper of the different Protocols. To register a
@@ -27,7 +27,7 @@ import org.eclipse.linuxtools.internal.pcap.core.protocol.PcapProtocol;
  *
  * @author Vincent Perot
  */
-public enum TmfPcapProtocol {
+public enum TmfProtocol {
 
     // Layer 0
     /**
@@ -79,13 +79,13 @@ public enum TmfPcapProtocol {
     private final int fLayer;
     private final boolean fSupportsStream;
 
-    private TmfPcapProtocol() {
+    private TmfProtocol() {
         @SuppressWarnings("null")
         @NonNull String name = this.name();
-        fName = PcapProtocol.valueOf(name).getName();
-        fShortName = PcapProtocol.valueOf(name).getShortName();
-        fLayer = PcapProtocol.valueOf(name).getLayer();
-        fSupportsStream = PcapProtocol.valueOf(name).supportsStream();
+        fName = Protocol.valueOf(name).getName();
+        fShortName = Protocol.valueOf(name).getShortName();
+        fLayer = Protocol.valueOf(name).getLayer();
+        fSupportsStream = Protocol.valueOf(name).supportsStream();
     }
 
     /**
@@ -129,8 +129,8 @@ public enum TmfPcapProtocol {
      *
      * @return A list containing all the protocols.
      */
-    public static List<TmfPcapProtocol> getAllProtocols() {
-        return new ArrayList<>(Arrays.asList(TmfPcapProtocol.values()));
+    public static List<TmfProtocol> getAllProtocols() {
+        return new ArrayList<>(Arrays.asList(TmfProtocol.values()));
     }
 
 }
