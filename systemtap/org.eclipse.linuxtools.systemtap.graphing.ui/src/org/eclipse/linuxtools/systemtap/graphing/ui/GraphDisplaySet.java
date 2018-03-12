@@ -28,7 +28,6 @@ import org.eclipse.linuxtools.systemtap.graphing.core.structures.GraphData;
 import org.eclipse.linuxtools.systemtap.graphing.ui.charts.AbstractChartBuilder;
 import org.eclipse.linuxtools.systemtap.graphing.ui.datadisplay.DataGrid;
 import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.GraphComposite;
-import org.eclipse.linuxtools.systemtap.graphing.ui.widgets.Messages;
 import org.eclipse.linuxtools.systemtap.graphing.ui.wizards.dataset.DataSetFactory;
 import org.eclipse.linuxtools.systemtap.graphing.ui.wizards.graph.GraphFactory;
 import org.eclipse.linuxtools.systemtap.graphing.ui.wizards.graph.SelectGraphAndSeriesWizard;
@@ -259,19 +258,13 @@ public class GraphDisplaySet {
         }
     }
 
-    public void addGraph(final GraphData gd) {
+    public void addGraph(GraphData gd) {
         CTabItem item = new CTabItem(folder, SWT.CLOSE);
         item.setText(MessageFormat.format(Localization.getString("GraphDisplaySet.GraphTabTitle"), //$NON-NLS-1$
                 gd.title, GraphFactory.getGraphName(gd.graphID)));
         final GraphComposite gc = new GraphComposite(folder, SWT.FILL, gd, dataSet);
         gc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        gc.addCheckOption(Messages.GraphCompositeTitle, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                gc.setTitleVisible(((Button)e.getSource()).getSelection());
-            }
-        });
-        gc.addCheckOption(Messages.GraphCompositeLegend, new SelectionAdapter() {
+        gc.addCheckOption("Legend", new SelectionAdapter() { //$NON-NLS-1$
             @Override
             public void widgetSelected(SelectionEvent e) {
                 gc.setLegendVisible(((Button)e.getSource()).getSelection());
