@@ -147,12 +147,8 @@ public class BuildDockerImageShortcut implements ILaunchShortcut {
 	private IPath getPath(final String sourcePathLocation,
 			final boolean sourcePathWorkspaceRelativeLocation) {
 		if (sourcePathWorkspaceRelativeLocation) {
-			IResource resource = ResourcesPlugin.getWorkspace().getRoot()
-					.findMember(new Path(sourcePathLocation));
-			if (resource != null)
-				return resource.getLocation();
-			else // return an empty path that won't match an existing resource
-				return new Path(""); //$NON-NLS-1$
+			return ResourcesPlugin.getWorkspace().getRoot()
+					.findMember(new Path(sourcePathLocation)).getLocation();
 		}
 		return new Path(sourcePathLocation);
 	}

@@ -563,9 +563,6 @@ public class DockerConnection implements IDockerConnection, Closeable {
 			} catch (com.spotify.docker.client.DockerException | IOException e) {
 				Activator.logErrorMessage(e.getMessage());
 				throw new InterruptedException();
-			} catch (InterruptedException e) {
-				kill = true;
-				Thread.currentThread().interrupt();
 			} catch (Exception e) {
 				Activator.logErrorMessage(e.getMessage());
 			} finally {
