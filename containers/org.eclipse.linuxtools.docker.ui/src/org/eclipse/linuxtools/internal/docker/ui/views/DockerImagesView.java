@@ -28,6 +28,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -44,8 +45,10 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -192,25 +195,47 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		final TableViewerColumn tagsColumn = createColumn(DVMessages
 				.getString("TAGS")); //$NON-NLS-1$
 		setLayout(tagsColumn, tableLayout, 150);
-		tagsColumn.setLabelProvider(new ColumnLabelProvider() {
+		tagsColumn.setLabelProvider(new OwnerDrawLabelProvider() {
 			@Override
-			public String getText(final Object element) {
+			protected void measure(Event event, Object element) {
+				event.width = viewer.getTable().getColumn(event.index).getWidth();
+				if (event.width == 0)
+					return;
+
 				if (element instanceof IDockerImage) {
-					final StringBuilder tags = new StringBuilder();
-					List<String> repoTags = new ArrayList<>();
-					repoTags.addAll(((IDockerImage) element).repoTags());
-					Collections.sort(repoTags);
-					for (Iterator<String> iterator = repoTags.iterator(); iterator
-							.hasNext();) {
-						final String tag = iterator.next();
-						tags.append(tag);
-						if (iterator.hasNext()) {
-							tags.append(System.getProperty("line.separator")); //$NON-NLS-1$
-						}
-					}
-					return tags.toString();
+					String tags = getTagString(element);
+					Point size = event.gc.textExtent(tags);
+					event.height = size.y;
 				}
-				return super.getText(element);
+			}
+
+			@Override
+			protected void paint(Event event, Object element) {
+				if (element instanceof IDockerImage) {
+					String tags = getTagString(element);
+					event.gc.drawText(tags, event.x, event.y, true);
+				}
+			}
+
+			@Override
+			protected void erase(Event event, Object element) {
+				// Avoid non-native behaviour by overriding parent
+			}
+
+			private String getTagString(Object img) {
+				final StringBuilder tags = new StringBuilder();
+				List<String> repoTags = new ArrayList<>();
+				repoTags.addAll(((IDockerImage) img).repoTags());
+				Collections.sort(repoTags);
+				for (Iterator<String> iterator = repoTags.iterator(); iterator
+						.hasNext();) {
+					final String tag = iterator.next();
+					tags.append(tag);
+					if (iterator.hasNext()) {
+						tags.append(System.getProperty("line.separator")); //$NON-NLS-1$
+					}
+				}
+				return tags.toString();
 			}
 		});
 		// 'Creation Date' column
