@@ -24,6 +24,8 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
@@ -161,7 +163,13 @@ public class MockDockerClientFactory {
 		public DockerClient build() {
 			try {
 				Mockito.when(this.dockerClient.listImages(Matchers.any())).thenReturn(this.images);
-				Mockito.when(this.dockerClient.listContainers(Matchers.any())).thenReturn(this.containers);
+				Mockito.when(this.dockerClient.listContainers(Matchers.any())).thenAnswer(new Answer<List<Container>>() {
+
+					@Override
+					public List<Container> answer(InvocationOnMock invocation) {
+						return containers;
+					}
+				});
 				for(Entry<String, List<ImageSearchResult>> searchResult : this.searchResults.entrySet()) {
 					Mockito.when(this.dockerClient.searchImages(searchResult.getKey())).thenReturn(searchResult.getValue());
 				}
