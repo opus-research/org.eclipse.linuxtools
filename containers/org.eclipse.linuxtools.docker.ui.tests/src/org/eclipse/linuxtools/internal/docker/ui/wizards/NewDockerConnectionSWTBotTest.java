@@ -16,21 +16,22 @@ import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.SystemUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionSettingsFinder;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ButtonAssertions;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertions;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ButtonAssertion;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CheckBoxAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseShellRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.RadioAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotTreeItemAssertions;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TextAssertions;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TextAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -112,7 +113,7 @@ public class NewDockerConnectionSWTBotTest {
 	private IDockerConnection configureTCPConnection(final String connectionName, final String host) {
 		final DockerClient client = MockDockerClientFactory.build();
 		final DockerConnection dockerConnection = MockDockerConnectionFactory.from(connectionName, client)
-				.withTCPConnectionSettings(host, null);
+				.withTCPConnectionSettings(host, null, EnumDockerConnectionState.ESTABLISHED);
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
 		return dockerConnection;
 	}
@@ -125,21 +126,21 @@ public class NewDockerConnectionSWTBotTest {
 		addConnectionButton.click();
 		// then
 		// Empty Connection name
-		TextAssertions.assertThat(bot.text(0)).isEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(0)).isEnabled().isEmpty();
 		// "Use custom connection settings" should be enabled and checked
-		CheckBoxAssertions.assertThat(bot.checkBox(0)).isEnabled().isChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isChecked();
 		// "Unix socket" radio should be enabled and selected
 		RadioAssertion.assertThat(bot.radio(0)).isEnabled().isSelected();
 		// "Unix socket path" text should be enabled and empty
-		TextAssertions.assertThat(bot.text(1)).isEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(1)).isEnabled().isEmpty();
 		// "TCP Connection" radio should be enabled but unselected
 		RadioAssertion.assertThat(bot.radio(1)).isEnabled().isNotSelected();
 		// "URI" should be disabled but empty
-		TextAssertions.assertThat(bot.text(2)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(2)).isNotEnabled().isEmpty();
 		// "Enable Auth" checkbox should be unselected and disabled
-		CheckBoxAssertions.assertThat(bot.checkBox(1)).isNotEnabled().isNotChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(1)).isNotEnabled().isNotChecked();
 		// "Path" for certs should be disabled and empty
-		TextAssertions.assertThat(bot.text(3)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(3)).isNotEnabled().isEmpty();
 	}
 
 	@Test
@@ -150,21 +151,21 @@ public class NewDockerConnectionSWTBotTest {
 		addConnectionButton.click();
 		// then
 		// Connection name
-		TextAssertions.assertThat(bot.text(0)).isEnabled().textEquals("mock");
+		TextAssertion.assertThat(bot.text(0)).isEnabled().textEquals("mock");
 		// "Use custom connection settings" should be enabled but unchecked
-		CheckBoxAssertions.assertThat(bot.checkBox(0)).isEnabled().isNotChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isNotChecked();
 		// "Unix socket" radio should be disabled and selected
 		RadioAssertion.assertThat(bot.radio(0)).isNotEnabled().isSelected();
 		// "Unix socket path" text should be disabled and not empty
-		TextAssertions.assertThat(bot.text(1)).isNotEnabled().textEquals("unix:///var/run/docker.sock");
+		TextAssertion.assertThat(bot.text(1)).isNotEnabled().textEquals("unix:///var/run/docker.sock");
 		// "TCP Connection" radio should be unselected and disabled
 		RadioAssertion.assertThat(bot.radio(1)).isNotEnabled().isNotSelected();
 		// "URI" should be disabled and empty
-		TextAssertions.assertThat(bot.text(2)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(2)).isNotEnabled().isEmpty();
 		// "Enable Auth" checkbox should be unselected and disabled
-		CheckBoxAssertions.assertThat(bot.checkBox(1)).isNotEnabled().isNotChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(1)).isNotEnabled().isNotChecked();
 		// "Path" for certs should be disabled but not empty
-		TextAssertions.assertThat(bot.text(3)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(3)).isNotEnabled().isEmpty();
 	}
 
 	@Test
@@ -176,21 +177,21 @@ public class NewDockerConnectionSWTBotTest {
 		bot.waitUntil(Conditions.shellIsActive(WizardMessages.getString("NewDockerConnection.title"))); //$NON-NLS-1$
 		// then
 		// Connection name
-		TextAssertions.assertThat(bot.text(0)).isEnabled().textEquals("mock");
+		TextAssertion.assertThat(bot.text(0)).isEnabled().textEquals("mock");
 		// "Use custom connection settings" should be enabled but unchecked
-		CheckBoxAssertions.assertThat(bot.checkBox(0)).isEnabled().isNotChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isNotChecked();
 		// "Unix socket" radio should be disabled and unselected
 		RadioAssertion.assertThat(bot.radio(0)).isNotEnabled().isNotSelected();
 		// "Unix socket path" text should be disabled and not empty
-		TextAssertions.assertThat(bot.text(1)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(1)).isNotEnabled().isEmpty();
 		// "TCP Connection" radio should be selected but diabled
 		RadioAssertion.assertThat(bot.radio(1)).isNotEnabled().isSelected();
 		// "URI" should be disabled but not empty
-		TextAssertions.assertThat(bot.text(2)).isNotEnabled().textEquals("https://1.2.3.4:1234");
+		TextAssertion.assertThat(bot.text(2)).isNotEnabled().textEquals("https://1.2.3.4:1234");
 		// "Enable Auth" checkbox should be selected but disabled
-		CheckBoxAssertions.assertThat(bot.checkBox(1)).isNotEnabled().isChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(1)).isNotEnabled().isChecked();
 		// "Path" for certs should be disabled but not empty
-		TextAssertions.assertThat(bot.text(3)).isNotEnabled().textEquals("/path/to/certs");
+		TextAssertion.assertThat(bot.text(3)).isNotEnabled().textEquals("/path/to/certs");
 	}
 
 	@Test
@@ -223,7 +224,7 @@ public class NewDockerConnectionSWTBotTest {
 		bot.text(0).setText("foo");
 		// then the wizard should not allow for completion because a connection
 		// with the connection settings already exists.
-		ButtonAssertions.assertThat(bot.button("Finish")).isNotEnabled();
+		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
 	}
 
 	@Test
@@ -239,7 +240,7 @@ public class NewDockerConnectionSWTBotTest {
 		bot.text(0).setText("foo");
 		// then the wizard should not allow for completion because a connection
 		// with the connection settings already exists.
-		ButtonAssertions.assertThat(bot.button("Finish")).isNotEnabled();
+		ButtonAssertion.assertThat(bot.button("Finish")).isNotEnabled();
 	}
 
 	@Test
@@ -258,7 +259,7 @@ public class NewDockerConnectionSWTBotTest {
 		bot.text(1).setText(otherDockerSocketTmpPath);
 		// then the wizard should not allow for completion because a connection
 		// with the connection settings already exists.
-		ButtonAssertions.assertThat(bot.button("Finish")).isEnabled();
+		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
 	}
 
 	@Test
@@ -276,7 +277,7 @@ public class NewDockerConnectionSWTBotTest {
 		bot.text(2).setText("https://bar:1234");
 		// then the wizard should not allow for completion because a connection
 		// with the connection settings already exists.
-		ButtonAssertions.assertThat(bot.button("Finish")).isEnabled();
+		ButtonAssertion.assertThat(bot.button("Finish")).isEnabled();
 	}
 
 	@Test
@@ -305,21 +306,21 @@ public class NewDockerConnectionSWTBotTest {
 		addConnectionButton.click();
 		// then
 		// Connection name
-		TextAssertions.assertThat(bot.text(0)).isEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(0)).isEnabled().isEmpty();
 		// "Use custom connection settings" should be enabled and checked
-		CheckBoxAssertions.assertThat(bot.checkBox(0)).isEnabled().isChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(0)).isEnabled().isChecked();
 		// "Unix socket" radio should be enabled and unselected
 		RadioAssertion.assertThat(bot.radio(0)).isEnabled().isNotSelected();
 		// "Unix socket path" text should be disabled and empty
-		TextAssertions.assertThat(bot.text(1)).isNotEnabled().isEmpty();
+		TextAssertion.assertThat(bot.text(1)).isNotEnabled().isEmpty();
 		// "TCP Connection" radio should be enabled and selected
 		RadioAssertion.assertThat(bot.radio(1)).isEnabled().isSelected();
 		// "URI" should be enabled and not empty
-		TextAssertions.assertThat(bot.text(2)).isEnabled().textEquals("https://1.2.3.4:1234");
+		TextAssertion.assertThat(bot.text(2)).isEnabled().textEquals("https://1.2.3.4:1234");
 		// "Enable Auth" checkbox should be enabled and selected
-		CheckBoxAssertions.assertThat(bot.checkBox(1)).isEnabled().isChecked();
+		CheckBoxAssertion.assertThat(bot.checkBox(1)).isEnabled().isChecked();
 		// "Path" for certs should be enabled and not empty
-		TextAssertions.assertThat(bot.text(3)).isEnabled().textEquals("/path/to/certs");
+		TextAssertion.assertThat(bot.text(3)).isEnabled().textEquals("/path/to/certs");
 
 		// Close wizard
 		bot.button("Cancel").click();

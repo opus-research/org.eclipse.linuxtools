@@ -20,7 +20,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 /**
  * 
  */
-public class SWTBotTreeItemAssertions extends AbstractSWTBotAssertions<SWTBotTreeItemAssertions, SWTBotTreeItem> {
+public class SWTBotTreeItemAssertions extends AbstractSWTBotAssertion<SWTBotTreeItemAssertions, SWTBotTreeItem> {
 
 	protected SWTBotTreeItemAssertions(final SWTBotTreeItem actual) {
 		super(actual, SWTBotTreeItemAssertions.class);
@@ -39,7 +39,7 @@ public class SWTBotTreeItemAssertions extends AbstractSWTBotAssertions<SWTBotTre
 	}
 
 	/**
-	 * Checks the number of items and also verifies that each item has an images and a text
+	 * Checks the number of items and also verifies that each item has an image and a text
 	 * @param expectedCount
 	 * @return
 	 */
