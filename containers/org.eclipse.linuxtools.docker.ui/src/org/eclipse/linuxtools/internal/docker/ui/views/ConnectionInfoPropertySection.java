@@ -60,6 +60,9 @@ public class ConnectionInfoPropertySection extends BasePropertySection {
 	}
 
 	private IDockerConnectionInfo getConnectionInfo(final IDockerConnection connection) {
+		if (!connection.isActive()) {
+			return null;
+		}
 		final BlockingQueue<IDockerConnectionInfo> result = new ArrayBlockingQueue<>(1);
 		final Job loadConnectionInfoJob = new Job("Loading connection info...") {
 			@Override
