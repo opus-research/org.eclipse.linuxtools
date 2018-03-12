@@ -745,22 +745,8 @@ image);
 	private static final class DataVolumesLabelProvider
 			extends ObservableMapLabelProvider {
 
-		private Image CONTAINER_IMAGE = SWTImagesFactory.DESC_CONTAINER
-				.createImage();
-		private Image FOLDER_CLOSED_IMAGE = SWTImagesFactory.DESC_FOLDER_CLOSED
-				.createImage();
-		private Image FILE_IMAGE = SWTImagesFactory.DESC_FILE.createImage();
-
 		public DataVolumesLabelProvider(final IObservableMap[] attributeMaps) {
 			super(attributeMaps);
-		}
-
-		@Override
-		public void dispose() {
-			CONTAINER_IMAGE.dispose();
-			FOLDER_CLOSED_IMAGE.dispose();
-			FILE_IMAGE.dispose();
-			super.dispose();
 		}
 
 		@Override
@@ -769,13 +755,14 @@ image);
 			if (dataVolume.getMountType() != null && columnIndex == 1) {
 				switch (dataVolume.getMountType()) {
 				case CONTAINER:
-					return CONTAINER_IMAGE;
+					return SWTImagesFactory.DESC_CONTAINER.createImage();
 				case HOST_FILE_SYSTEM:
 					final File hostFile = new File(dataVolume.getMount());
 					if (!hostFile.exists() || hostFile.isDirectory()) {
-						return FOLDER_CLOSED_IMAGE;
+						return SWTImagesFactory.DESC_FOLDER_CLOSED
+								.createImage();
 					} else {
-						return FILE_IMAGE;
+						return SWTImagesFactory.DESC_FILE.createImage();
 					}
 				default:
 					return null;
