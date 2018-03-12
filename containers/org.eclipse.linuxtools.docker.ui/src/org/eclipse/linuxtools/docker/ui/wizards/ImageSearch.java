@@ -14,7 +14,7 @@ package org.eclipse.linuxtools.docker.ui.wizards;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerImage;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchPage;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageTagSelectionPage;
@@ -80,7 +80,7 @@ public class ImageSearch extends Wizard {
 				+ (this.imageTagSelectionPage.getSelectedImageTag() != null
 						? this.imageTagSelectionPage.getSelectedImageTag()
 								.getName()
-						: DockerImage.TAG_LATEST);
+						: IDockerImage.TAG_LATEST);
 	}
 
 }
