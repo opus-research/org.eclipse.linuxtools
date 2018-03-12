@@ -93,17 +93,17 @@ public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersisten
     private final Map<BtfEventType, String> fEntityTypeTable = new HashMap<>();
     private final Map<Integer, BtfEventType> fEntityTypes = new TreeMap<>();
 
-    private String fVersion;
-    private String fCreator;
-    private String fCreationDate;
-    private String fInputFile;
+    private transient String fVersion;
+    private transient String fCreator;
+    private transient String fCreationDate;
+    private transient String fInputFile;
     // default unit is ns
-    private BtfTimstampFormat fTsFormat = BtfTimstampFormat.NS;
+    private transient BtfTimstampFormat fTsFormat = BtfTimstampFormat.NS;
 
     private File fFile;
-    private RandomAccessFile fFileInput;
-    private long fDataOffset;
-    private long fTsOffset = 0;
+    private transient RandomAccessFile fFileInput;
+    private transient long fDataOffset;
+    private transient long fTsOffset = 0;
 
     /**
      * Default constructor
@@ -304,7 +304,7 @@ public class BtfTrace extends TmfTrace implements ITmfEventParser, ITmfPersisten
             long pos = Math.round(ratio * fFile.length()) - fDataOffset;
             while (pos > 0) {
                 fFileInput.seek(pos - 1);
-                if (fFileInput.read() == '\n') {
+                if(fFileInput.readLine().isEmpty()){
                     break;
                 }
                 pos--;
