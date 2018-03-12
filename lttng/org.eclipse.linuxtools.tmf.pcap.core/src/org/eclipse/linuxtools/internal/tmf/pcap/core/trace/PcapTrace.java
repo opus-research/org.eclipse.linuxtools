@@ -12,7 +12,6 @@
 
 package org.eclipse.linuxtools.internal.tmf.pcap.core.trace;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.file.FileSystems;
@@ -99,8 +98,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
             throw new TmfTraceException("No path has been specified."); //$NON-NLS-1$
         }
         @SuppressWarnings("null")
-        @NonNull
-        Path filePath = FileSystems.getDefault().getPath(path);
+        @NonNull Path filePath = FileSystems.getDefault().getPath(path);
         try {
             fPcapFile = new PcapFile(filePath);
         } catch (IOException | BadPcapFileException e) {
@@ -192,7 +190,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, EMPTY_STRING);
         }
         @SuppressWarnings("null")
-        @NonNull Path filePath = FileSystems.getDefault().getPath(new File(path).getAbsolutePath());
+        @NonNull Path filePath = FileSystems.getDefault().getPath(path);
         try (PcapFile file = new PcapFile(filePath)) {
         } catch (IOException | BadPcapFileException e) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString());
@@ -230,8 +228,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         ImmutableMap<String, String> properties = fTraceProperties;
         if (properties == null) {
             @SuppressWarnings("null")
-            @NonNull
-            ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
+            @NonNull ImmutableMap<String, String> newProperties = ImmutableMap.<String, String> builder()
                     .put(Messages.PcapTrace_Version, String.format("%d%c%d", pcap.getMajorVersion(), '.', pcap.getMinorVersion())) //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimeZoneCorrection, pcap.getTimeZoneCorrection() + " s") //$NON-NLS-1$
                     .put(Messages.PcapTrace_TimestampAccuracy, String.valueOf(pcap.getTimeAccuracy()))
