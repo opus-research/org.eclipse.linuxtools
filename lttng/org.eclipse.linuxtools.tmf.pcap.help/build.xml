@@ -4,7 +4,7 @@
         Generate Eclipse help content for the Linux Tools Pcap User Guide
     </description>
 
-   <property name="ug.title" value="Pcap Network Tracing User Guide" />
+   <property name="ug.title" value="Pcap User Guide" />
 
     <path id="wikitext.tasks.classpath">
         <!-- Search in the local Eclipse installation directory for the Wikitext plugin -->
