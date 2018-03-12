@@ -76,10 +76,7 @@ public class ImagePullProgressHandler implements IDockerProgressHandler {
 									IMAGE_DOWNLOADING_JOBNAME, image),
 							DVMessages.getFormattedString(
 									IMAGE_DOWNLOADING_IMAGE, id));
-					// job.setUser(false) will show all pull job (one per image
-					// layer) in the progress
-					// view but not in multiple dialog
-					newJob.setUser(false);
+					newJob.setUser(true);
 					newJob.setPriority(Job.LONG);
 					newJob.schedule();
 					progressJobs.put(id, newJob);
