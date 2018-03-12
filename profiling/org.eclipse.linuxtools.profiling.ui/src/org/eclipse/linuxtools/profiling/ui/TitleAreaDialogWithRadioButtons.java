@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Red Hat Inc. :  Initial Implementation
+ *    lufimtse :  Leo Ufimtsev lufimtse@redhat.com
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.ui;
 
