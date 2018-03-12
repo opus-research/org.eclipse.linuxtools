@@ -456,11 +456,12 @@
             class="org.eclipse.linuxtools.internal.systemtap.ui.ide.handlers.RunScriptHandler"
             commandId="org.eclipse.linuxtools.systemtap.ui.ide.RunScriptCommand">
          <activeWhen>
-             <with variable="activeEditorInput">
-			     <adapt type="org.eclipse.core.resources.IFile">
-         			 <test property="org.eclipse.core.resources.contentTypeId" value="org.eclipse.linuxtools.stap.content-type" />
-    			 </adapt>
-			 </with>
+            <with
+                   variable="activeEditor">
+                <instanceof
+                      value="org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp.STPEditor">
+                </instanceof>
+             </with>
          </activeWhen>
       </handler>
       <handler
