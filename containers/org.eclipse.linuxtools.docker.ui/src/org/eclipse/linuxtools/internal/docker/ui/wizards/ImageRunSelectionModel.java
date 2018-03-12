@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.runtime.Assert;
@@ -315,8 +314,6 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 		public static final String HOST_PORT = "hostPort";
 
-		private final String id = UUID.randomUUID().toString();
-
 		private boolean selected;
 
 		private String containerPort;
@@ -394,7 +391,14 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((id == null) ? 0 : id.hashCode());
+			result = prime * result
+					+ ((hostAddress == null) ? 0 : hostAddress.hashCode());
+			result = prime * result
+					+ ((containerPort == null) ? 0 : containerPort.hashCode());
+			result = prime * result
+					+ ((hostPort == null) ? 0 : hostPort.hashCode());
+			result = prime * result
+					+ ((portType == null) ? 0 : portType.hashCode());
 			return result;
 		}
 
@@ -407,10 +411,25 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 			if (getClass() != obj.getClass())
 				return false;
 			ExposedPortModel other = (ExposedPortModel) obj;
-			if (id == null) {
-				if (other.id != null)
+			if (hostAddress == null) {
+				if (other.hostAddress != null)
 					return false;
-			} else if (!id.equals(other.id))
+			} else if (!hostAddress.equals(other.hostAddress))
+				return false;
+			if (containerPort == null) {
+				if (other.containerPort != null)
+					return false;
+			} else if (!containerPort.equals(other.containerPort))
+				return false;
+			if (hostPort == null) {
+				if (other.hostPort != null)
+					return false;
+			} else if (!hostPort.equals(other.hostPort))
+				return false;
+			if (portType == null) {
+				if (other.portType != null)
+					return false;
+			} else if (!portType.equals(other.portType))
 				return false;
 			return true;
 		}
