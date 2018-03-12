@@ -85,22 +85,34 @@ public interface IDockerConnection {
 	public List<IDockerImage> getImages();
 
 	/**
+	 * Checks if an entry in the current list of {@link IDockerImage} exists
+	 * with the same <code>name</code> and <code>tag</code>
+	 * 
+	 * @param repository
+	 *            the repository of the {@link IDockerImage} to find
+	 * @param tag
+	 *            the tag of the {@link IDockerImage} to find
+	 * @return <code>true</code> if an {@link IDockerImage} was found,
+	 *         <code>false</code> otherwise.
+	 */
+	public boolean hasImage(String repository, String tag);
+
+	/**
+	 * @return Boolean flag to indicate if the list of {@link IDockerImage} has
+	 *         already been loaded ({@code true}) or not ({@code false}).
+	 */
+	public boolean isImagesLoaded();
+
+	/**
 	 * Get the list of {@link IDockerImage} of the remote Docker daemon.
 	 * 
 	 * @param force
 	 *            {@code true} to force a new retrieval of the list of
-	 *            {@link IDockerImage}, {@code false} to use the cached
-	 *            list.
+	 *            {@link IDockerImage}, {@code false} to use the cached list.
 	 * @return an unmodifiable list of {@link IDockerImage} or
 	 *         {@link Collections#emptyList()} if no container exists yet.
 	 */
 	public List<IDockerImage> getImages(final boolean force);
-	
-	/**
-	 * @return Boolean flag to indicate if the list of {@link IDockerImage}
-	 *         has already been loaded ({@code true}) or not ({@code false}).
-	 */
-	public boolean isImagesLoaded();
 
 	public String getName();
 
@@ -157,6 +169,7 @@ public interface IDockerConnection {
 	 * 
 	 * @return the {@link List} of existing {@link IDockerImage}
 	 * @throws DockerException
+	 *             If listing images failed.
 	 */
 	public List<IDockerImage> listImages() throws DockerException;
 
@@ -166,16 +179,40 @@ public interface IDockerConnection {
 	
 	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
 
+	/**
+	 * Adds a tag to an existing image
+	 * 
+	 * @param name
+	 *            the image id
+	 * @param newTag
+	 *            the new tag to add to the given image
+	 * @throws DockerException
+	 *             in case of underlying problem (server error)
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 */
 	void tagImage(String name, String newTag) throws DockerException, InterruptedException;
+
+	String buildImage(IPath path, IDockerProgressHandler handler)
+			throws DockerException, InterruptedException;
 
 	String buildImage(IPath path, String name, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
 
-	String createContainer(IDockerContainerConfig c)
+	@Deprecated
+	String createContainer(IDockerContainerConfig c) throws DockerException,
+			InterruptedException;
+
+	@Deprecated
+	String createContainer(final IDockerContainerConfig c,
+			final String containerName) throws DockerException,
+			InterruptedException;
+
+	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
 			throws DockerException, InterruptedException;
 
 	public String createContainer(final IDockerContainerConfig config,
-			final String containerName)
+			final IDockerHostConfig hc, final String containerName)
 					throws DockerException, InterruptedException;
 
 	void stopContainer(String id) throws DockerException, InterruptedException;
@@ -190,15 +227,19 @@ public interface IDockerConnection {
 	void removeContainer(String id)
 			throws DockerException, InterruptedException;
 
+	@Deprecated
+	void startContainer(String id, IDockerHostConfig config, OutputStream stream)
+			throws DockerException, InterruptedException;
+
+	@Deprecated
+	void startContainer(String id, String loggingId, IDockerHostConfig config,
+			OutputStream stream)
+			throws DockerException, InterruptedException;
+
 	void startContainer(String id, OutputStream stream)
 			throws DockerException, InterruptedException;
 
-	void startContainer(String id, IDockerHostConfig config,
-			OutputStream stream)
-			throws DockerException, InterruptedException;
-
-	void startContainer(String id, String loggingId, IDockerHostConfig config,
-			OutputStream stream)
+	void startContainer(String id, String loggingId, OutputStream stream)
 			throws DockerException, InterruptedException;
 
 	void commitContainer(String id, String repo, String tag, String comment,
@@ -211,6 +252,18 @@ public interface IDockerConnection {
 
 	void removeImage(String name) throws DockerException, InterruptedException;
 
+	/**
+	 * Removes the tagged image
+	 * 
+	 * @param tag
+	 *            the tagged image to remove. If the image has more tags they
+	 *            will be kept. If this is the only tag for the named image, it
+	 *            will be totally removed.
+	 * @throws DockerException
+	 *             in case of underlying problem (server error)
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 */
 	void removeTag(String tag) throws DockerException, InterruptedException;
 
 

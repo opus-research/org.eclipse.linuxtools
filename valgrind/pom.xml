@@ -16,7 +16,7 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.valgrind</groupId>
@@ -57,6 +57,7 @@
     <module>org.eclipse.linuxtools.valgrind.ui.tests</module>
     <module>org.eclipse.linuxtools.valgrind.ui.editor</module>
     <module>org.eclipse.linuxtools.valgrind-feature</module>
+    <module>org.eclipse.linuxtools.valgrind.core.tests</module>
   </modules>
 
 </project>

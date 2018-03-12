@@ -58,6 +58,7 @@ import org.eclipse.linuxtools.profiling.launch.ConfigUtils;
 import org.eclipse.linuxtools.profiling.launch.IRemoteFileProxy;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnection;
 import org.eclipse.linuxtools.profiling.launch.RemoteConnectionException;
+import org.eclipse.linuxtools.profiling.launch.RemoteProxyCMainTab;
 import org.eclipse.linuxtools.profiling.launch.RemoteProxyManager;
 import org.eclipse.linuxtools.tools.launch.core.factory.RuntimeProcessFactory;
 import org.eclipse.swt.widgets.Display;
@@ -67,7 +68,6 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-import org.osgi.framework.Version;
 
 public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
 
@@ -88,21 +88,27 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
         try {
             ConfigUtils configUtils = new ConfigUtils(config);
             project = configUtils.getProject();
+
+            // Set the current project that will be profiled
+            PerfPlugin.getDefault().setProfiledProject(project);
+
             // check if Perf exists in $PATH
             if (! PerfCore.checkPerfInPath(project))
             {
                 IStatus status = new Status(IStatus.ERROR, PerfPlugin.PLUGIN_ID, "Error: Perf was not found on PATH"); //$NON-NLS-1$
                 throw new CoreException(status);
             }
-            URI binURI = new URI(configUtils.getExecutablePath());
-            binPath=Path.fromPortableString(binURI.getPath().toString());
-            if(binPath==null) {
-                CDebugUtils.verifyProgramPath( config );
-            }
-            if (binPath.removeLastSegments(2).toPortableString().equals(EMPTY_STRING)) {
-                workingDirPath=Path.fromPortableString(getWorkingDirectory(config).toURI().getPath());
+
+            URI workingDirURI = new URI(config.getAttribute(RemoteProxyCMainTab.ATTR_REMOTE_WORKING_DIRECTORY_NAME, EMPTY_STRING));
+            // Local project
+            if (workingDirURI.toString().equals(EMPTY_STRING)) {
+            	workingDirURI = getWorkingDirectory(config).toURI();
+            	workingDirPath = Path.fromPortableString(workingDirURI.getPath());
+            	binPath = CDebugUtils.verifyProgramPath(config);
             } else {
-                workingDirPath=Path.fromPortableString((binPath.removeLastSegments(2).toPortableString()) + IPath.SEPARATOR);
+            	workingDirPath = Path.fromPortableString(workingDirURI.getPath() + IPath.SEPARATOR);
+            	URI binURI = new URI(configUtils.getExecutablePath());
+            	binPath = Path.fromPortableString(binURI.getPath().toString());
             }
 
             PerfPlugin.getDefault().setWorkingDir(workingDirPath);
@@ -112,15 +118,13 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
             } else {
                 String perfPathString = RuntimeProcessFactory.getFactory().whichCommand(PerfPlugin.PERF_COMMAND, project);
                 IFileStore workingDir;
-                URI workingDirURI = new URI(RemoteProxyManager.getInstance().getRemoteProjectLocation(project));
                 RemoteConnection workingDirRC = new RemoteConnection(workingDirURI);
                 IRemoteFileProxy workingDirRFP = workingDirRC.getRmtFileProxy();
                 workingDir = workingDirRFP.getResource(workingDirURI.getPath());
                 //Build the commandline string to run perf recording the given project
                 String arguments[] = getProgramArgumentsArray( config ); //Program args from launch config.
                 ArrayList<String> command = new ArrayList<>( 4 + arguments.length );
-                Version perfVersion = PerfCore.getPerfVersion(config);
-                command.addAll(Arrays.asList(PerfCore.getRecordString(config, perfVersion))); //Get the base commandline string (with flags/options based on config)
+                command.addAll(Arrays.asList(PerfCore.getRecordString(config))); //Get the base commandline string (with flags/options based on config)
                 command.add( binPath.toPortableString() ); // Add the path to the executable
                 command.set(0, perfPathString);
                 command.add(2,OUTPUT_STR + PerfPlugin.PERF_DEFAULT_DATA);
@@ -195,11 +199,11 @@ public class PerfLaunchConfigDelegate extends AbstractCLaunchDelegate {
                     print.println("Analysing recorded perf.data, please wait..."); //$NON-NLS-1$
                     //Possibly should pass this (the console reference) on to PerfCore.Report if theres anything we ever want to spit out to user.
                 }
-                PerfCore.report(config, getEnvironment(config), workingDirPath, monitor, null, print);
+                PerfCore.report(config, workingDirPath, monitor, null, print);
 
                 URI perfDataURI = null;
                 IRemoteFileProxy proxy = null;
-                perfDataURI = new URI(RemoteProxyManager.getInstance().getRemoteProjectLocation(project) + IPath.SEPARATOR + PerfPlugin.PERF_DEFAULT_DATA);
+                perfDataURI = new URI(workingDirURI.toString() + IPath.SEPARATOR + PerfPlugin.PERF_DEFAULT_DATA);
                 proxy = RemoteProxyManager.getInstance().getFileProxy(perfDataURI);
                 IFileStore perfDataFileStore = proxy.getResource(perfDataURI.getPath());
                 IFileInfo info = perfDataFileStore.fetchInfo();

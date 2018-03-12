@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,40 +8,53 @@
  * Contributors:
  *     Red Hat - Initial Contribution
  *******************************************************************************/
+
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
 
+/**
+ * 
+ */
 public class ImagePull extends Wizard {
 
-	private ImagePullPage mainPage;
-	private String imageId;
+	private final ImagePullPage imagePullPage;
 
-	public ImagePull() {
+	/**
+	 * Constructor when an {@link IDockerConnection} has been selected to run an
+	 * {@link IDockerImage}.
+	 * 
+	 * @param connection
+	 *            the {@link IDockerConnection} pointing to a specific Docker
+	 *            daemon/host.
+	 * @throws DockerException
+	 */
+	public ImagePull(final IDockerConnection connection) {
 		super();
-	}
-
-	public String getImageId() {
-		return imageId;
+		setWindowTitle(WizardMessages.getString("ImagePull.title")); //$NON-NLS-1$
+		this.imagePullPage = new ImagePullPage(connection);
 	}
 
 	@Override
 	public void addPages() {
-		// TODO Auto-generated method stub
-		mainPage = new ImagePullPage();
-		addPage(mainPage);
+		addPage(imagePullPage);
 	}
 
 	@Override
 	public boolean canFinish() {
-		return mainPage.isPageComplete();
+		return this.imagePullPage.isPageComplete();
 	}
 
 	@Override
 	public boolean performFinish() {
-		imageId = mainPage.getImageId();
-
 		return true;
+	}
+
+	public String getImageName() {
+		return this.imagePullPage.getImageName();
 	}
 
 }

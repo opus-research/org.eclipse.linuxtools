@@ -15,13 +15,16 @@ import java.util.List;
 public interface IDockerContainerListener {
 
 	/**
-	 * Listener notification method
+	 * Called when the list of {@link IDockerContainer} for the given
+	 * {@link IDockerConnection} changed (including when it was loaded for the
+	 * first time)
 	 * 
 	 * @param connection
-	 *            - Docker connection
-	 * @param list
-	 *            - new list of IDockerContainers
+	 *            - the Docker connection
+	 * @param containers
+	 *            the new list of containers
 	 */
-	void listChanged(IDockerConnection connection, List<IDockerContainer> list);
+	void listChanged(IDockerConnection connection,
+			List<IDockerContainer> containers);
 
 }

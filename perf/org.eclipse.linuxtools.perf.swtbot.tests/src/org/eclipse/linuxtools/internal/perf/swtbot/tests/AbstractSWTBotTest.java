@@ -13,9 +13,6 @@ package org.eclipse.linuxtools.internal.perf.swtbot.tests;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.waitForWidget;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.widgetIsEnabled;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -37,7 +34,6 @@ import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
@@ -55,12 +51,10 @@ import org.osgi.framework.FrameworkUtil;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class AbstractSWTBotTest extends AbstractTest {
     private static final String PROJ_NAME = "fibTest";
-    private static final Logger fLogger = Logger.getRootLogger();
     private static SWTBotView projectExplorer;
 
     @BeforeClass
     public static void setUpWorkbench() throws Exception {
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
         try {
             bot.viewByTitle("Welcome").close();
@@ -123,14 +117,12 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
         final Shell shellWidget = bot.activeShell().widget;
 
         // Open profiling configurations dialog
-        UIThreadRunnable.asyncExec(new VoidResult() {
-            @Override
-            public void run() {
-                DebugUITools.openLaunchConfigurationDialogOnGroup(shellWidget,
-                        (StructuredSelection) PlatformUI.getWorkbench().getWorkbenchWindows()[0].
-                        getSelectionService().getSelection(), "org.eclipse.debug.ui.launchGroup.profilee");
-            }
-        });
+		UIThreadRunnable.asyncExec(() -> {
+			DebugUITools.openLaunchConfigurationDialogOnGroup(shellWidget,
+					(StructuredSelection) PlatformUI.getWorkbench().getWorkbenchWindows()[0].getSelectionService()
+							.getSelection(),
+					"org.eclipse.debug.ui.launchGroup.profilee");
+		});
         bot.shell("Profiling Tools Configurations").activate();
 
         // Create new Perf configuration
@@ -212,12 +204,9 @@ public abstract class AbstractSWTBotTest extends AbstractTest {
         event.display = menuItem.getDisplay();
         event.type = SWT.Selection;
 
-        UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-            @Override
-            public void run() {
-                menuItem.notifyListeners(SWT.Selection, event);
-            }
-        });
+		UIThreadRunnable.asyncExec(menuItem.getDisplay(), () -> {
+			menuItem.notifyListeners(SWT.Selection, event);
+		});
     }
 
     @Override

@@ -74,7 +74,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 
 	private final IDockerConnection connection;
 
-	protected ContainerDataVolumeDialog(final Shell parentShell,
+	public ContainerDataVolumeDialog(final Shell parentShell,
 			final IDockerConnection connection,
 			final DataVolumeModel selectedDataVolume) {
 		super(parentShell);
@@ -83,7 +83,7 @@ public class ContainerDataVolumeDialog extends Dialog {
 		this.containerNames = WizardUtils.getContainerNames(connection);
 	}
 
-	protected ContainerDataVolumeDialog(final Shell parentShell,
+	public ContainerDataVolumeDialog(final Shell parentShell,
 			final IDockerConnection connection) {
 		super(parentShell);
 		this.connection = connection;
@@ -466,7 +466,9 @@ public class ContainerDataVolumeDialog extends Dialog {
 				return ValidationStatus.error(null);
 			}
 			final IDockerContainerInfo selectedContainerInfo = container.info();
-			if (!selectedContainerInfo.volumes()
+			if (selectedContainerInfo != null
+					&& selectedContainerInfo.volumes() != null
+					&& !selectedContainerInfo.volumes()
 					.containsKey(model.getContainerPath())) {
 				return ValidationStatus
 						.warning(WizardMessages.getFormattedString(

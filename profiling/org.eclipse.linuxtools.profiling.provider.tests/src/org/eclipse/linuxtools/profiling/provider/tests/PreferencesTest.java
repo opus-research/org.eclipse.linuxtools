@@ -18,9 +18,6 @@ import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,7 +36,6 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
@@ -64,8 +60,6 @@ public class PreferencesTest extends AbstractTest{
     private static final String PROFILING_PREFS_TYPE = "timing"; //$NON-NLS-1$
     private static final String[][] PROFILING_PREFS_INFO = {
             { "Coverage", "coverage" }, { "Memory", "memory" },{ "Timing", "timing" } };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-
-    private static final Logger fLogger = Logger.getRootLogger();
 
     private static class NodeAvailableAndSelect extends DefaultCondition {
 
@@ -109,7 +103,6 @@ public class PreferencesTest extends AbstractTest{
     public static void setUpWorkbench() throws Exception {
         // Set up is based from from GcovTest{c,CPP}.
 
-        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         SWTWorkbenchBot bot = new SWTWorkbenchBot();
         try {
             bot.viewByTitle("Welcome").close(); //$NON-NLS-1$
@@ -204,14 +197,12 @@ public class PreferencesTest extends AbstractTest{
         final Shell shellWidget = bot.activeShell().widget;
 
         // Open profiling configurations dialog
-        UIThreadRunnable.asyncExec(new VoidResult() {
-            @Override
-            public void run() {
-                DebugUITools.openLaunchConfigurationDialogOnGroup(shellWidget,
-                        (StructuredSelection) PlatformUI.getWorkbench().getWorkbenchWindows()[0].
-                        getSelectionService().getSelection(), "org.eclipse.debug.ui.launchGroup.profilee"); //$NON-NLS-1$
-            }
-        });
+		UIThreadRunnable.asyncExec(() -> {
+			DebugUITools.openLaunchConfigurationDialogOnGroup(shellWidget,
+					(StructuredSelection) PlatformUI.getWorkbench().getWorkbenchWindows()[0].getSelectionService()
+							.getSelection(),
+					"org.eclipse.debug.ui.launchGroup.profilee"); //$NON-NLS-1$
+		});
         SWTBotShell shell = bot.shell("Profiling Tools Configurations"); //$NON-NLS-1$
         shell.activate();
 
@@ -282,17 +273,13 @@ public class PreferencesTest extends AbstractTest{
      * @param name partial label of radio button to deselect.
      */
     private static void deselectSelectionByName(final String name, final SWTWorkbenchBot bot) {
-        UIThreadRunnable.syncExec(new VoidResult() {
-            @Override
-            public void run() {
-                @SuppressWarnings("unchecked")
-                Matcher<Widget> matcher = allOf(widgetOfType(Button.class),
-                        withStyle(SWT.RADIO, "SWT.RADIO"), //$NON-NLS-1$
-                        withRegex(name + ".*")); //$NON-NLS-1$
+		UIThreadRunnable.syncExec(() -> {
+			@SuppressWarnings("unchecked")
+			Matcher<Widget> matcher = allOf(widgetOfType(Button.class), withStyle(SWT.RADIO, "SWT.RADIO"), //$NON-NLS-1$
+					withRegex(name + ".*")); //$NON-NLS-1$
 
-                Button b = (Button) bot.widget(matcher); // the current selection
-                b.setSelection(false);
-            }
-        });
+			Button b = (Button) bot.widget(matcher); // the current selection
+			b.setSelection(false);
+		});
     }
 }
