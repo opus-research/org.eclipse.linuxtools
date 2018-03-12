@@ -414,6 +414,7 @@ public class EditDockerConnectionPage extends WizardPage {
 						try {
 							final DockerConnection dockerConnection = getDockerConnection();
 							dockerConnection.open(false);
+							dockerConnection.ping();
 							dockerConnection.close();
 							// ping succeeded
 							displaySuccessDialog();
