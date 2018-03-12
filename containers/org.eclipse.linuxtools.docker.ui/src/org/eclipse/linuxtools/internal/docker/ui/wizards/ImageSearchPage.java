@@ -247,8 +247,7 @@ public class ImageSearchPage extends WizardPage {
 						.getStatusMaxSeverity(
 								ctx.getValidationStatusProviders());
 				final String searchTerm = ImageSearchPage.this.model.getTerm();
-				if (event.character == SWT.CR && searchTerm != null
-						&& !searchTerm.isEmpty()
+				if (event.character == SWT.CR && !searchTerm.isEmpty()
 						&& status.isOK()) {
 					searchImages();
 				}
