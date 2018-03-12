@@ -30,7 +30,7 @@ import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
  * @see ITmfEventField
  * @see ITmfTrace
  */
-public class TmfEvent extends PlatformObject implements ITmfEvent {
+public class TmfEvent extends PlatformObject implements ITmfEvent2 {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -156,6 +156,14 @@ public class TmfEvent extends PlatformObject implements ITmfEvent {
     @Override
     public String getReference() {
         return fReference;
+    }
+
+    /**
+     * @since 3.1
+     */
+    @Override
+    public boolean isCollapsibleWith(ITmfEvent2 otherEvent) {
+        return false;
     }
 
     // ------------------------------------------------------------------------
