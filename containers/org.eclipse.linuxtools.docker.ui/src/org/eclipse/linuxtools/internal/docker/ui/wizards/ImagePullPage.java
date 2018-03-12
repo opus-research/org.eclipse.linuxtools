@@ -41,7 +41,7 @@ public class ImagePullPage extends WizardPage {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
+		setImageDescriptor(SWTImagesFactory.DESC_DOCKER_LARGE);
 	}
 
 	public String getImageId() {

@@ -38,13 +38,13 @@ public class ImageRemovePage extends WizardPage {
 
 	private Text nameText;
 
-	private List<String> images = new ArrayList<String>();
+	private List<String> images = new ArrayList<>();
 
 	public ImageRemovePage() {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
+		setImageDescriptor(SWTImagesFactory.DESC_DOCKER_LARGE);
 	}
 
 	public List<String> getImageNames() {
@@ -65,7 +65,7 @@ public class ImageRemovePage extends WizardPage {
 		boolean error = false;
 
 		String nameField = nameText.getText().trim();
-		ArrayList<String> validNames = new ArrayList<String>();
+		ArrayList<String> validNames = new ArrayList<>();
 
 		if (nameField.length() == 0) {
 			setErrorMessage(WizardMessages.getString(NAME_EMPTY_RULE));
