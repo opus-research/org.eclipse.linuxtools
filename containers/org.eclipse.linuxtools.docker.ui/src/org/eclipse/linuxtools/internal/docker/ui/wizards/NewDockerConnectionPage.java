@@ -425,7 +425,7 @@ public class NewDockerConnectionPage extends WizardPage {
 				}
 				try {
 					final Boolean result = resultQueue.poll(5000, TimeUnit.MILLISECONDS);
-					if(result) {
+					if (result != null && result) {
 						new MessageDialog(Display.getDefault().getActiveShell(), "Success", null, "Ping succeeded !", SWT.ICON_INFORMATION, new String[]{"OK"}, 0).open();
 					} else {
 						new MessageDialog(Display.getDefault().getActiveShell(), "Failure", null, "Ping failed !", SWT.ICON_ERROR, new String[]{"OK"}, 0).open();
