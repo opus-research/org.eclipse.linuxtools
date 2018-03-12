@@ -82,7 +82,7 @@ public final class TmfTraceTypeUIUtils {
     public static final String EVENTS_TABLE_TYPE_ELEM = "eventsTableType"; //$NON-NLS-1$
 
     /** Extension point element 'Event Table Columns'
-     * @since 3.1 */
+     * @since 3.2*/
     public static final String EVENT_TABLE_COLUMNS = "eventTableColumns"; //$NON-NLS-1$
 
     /** Extension point attribute 'tracetype' */
@@ -93,8 +93,6 @@ public final class TmfTraceTypeUIUtils {
 
     /** Extension point attribute 'class' (attribute of other elements) */
     public static final String CLASS_ATTR = "class"; //$NON-NLS-1$
-
-    private static final char SEPARATOR = ':';
 
     private TmfTraceTypeUIUtils() {
     }
@@ -116,7 +114,8 @@ public final class TmfTraceTypeUIUtils {
      * Only return the leaves of the trace types. Ignore custom trace types.
      */
     private static boolean isUnique(TraceTypeHelper trace, List<Pair<Integer, TraceTypeHelper>> set) {
-        if (isCustomTraceId(trace.getCanonicalName())) {
+        if (trace.getTraceClass().equals(CustomTxtTrace.class) ||
+                trace.getTraceClass().equals(CustomXmlTrace.class)) {
             return true;
         }
         // check if the trace type is the leaf. we make an instance of the trace
@@ -130,22 +129,6 @@ public final class TmfTraceTypeUIUtils {
             }
         }
         return count == 0;
-    }
-
-    /**
-     * Is the trace type id a custom (user-defined) trace type. These are the
-     * traces like : text and xml defined by the custom trace wizard.
-     *
-     * @param traceTypeId
-     *            the trace type id
-     * @return true if the trace is a custom type
-     */
-    private static boolean isCustomTraceId(String traceTypeId) {
-        TraceTypeHelper traceType = TmfTraceType.getTraceType(traceTypeId);
-        if (traceType != null) {
-            return TmfTraceType.isCustomTrace(traceType.getCategoryName() + SEPARATOR + traceType.getName());
-        }
-        return false;
     }
 
     private static TraceTypeHelper getTraceTypeToSet(List<Pair<Integer, TraceTypeHelper>> candidates, Shell shell) {
@@ -185,7 +168,7 @@ public final class TmfTraceTypeUIUtils {
                 display.sleep();
             }
         }
-        return TmfTraceType.getTraceTypeHelper(candidatesToSet[0]);
+        return TmfTraceType.getTraceType(candidatesToSet[0]);
     }
 
     /**
@@ -267,7 +250,7 @@ public final class TmfTraceTypeUIUtils {
     }
 
     /**
-     * Set the trace type of a {@Link TraceTypeHelper}. Should only be
+     * Set the trace type of a {@link TraceTypeHelper}. Should only be
      * used internally by this project.
      *
      * @param resource
@@ -282,7 +265,7 @@ public final class TmfTraceTypeUIUtils {
         return setTraceType(resource, traceType, true);
     }
         /**
-         * Set the trace type of a {@Link TraceTypeHelper}. Should only be
+         * Set the trace type of a {@link TraceTypeHelper}. Should only be
          * used internally by this project.
          *
          * @param resource
@@ -395,7 +378,7 @@ public final class TmfTraceTypeUIUtils {
      *            by the trace type.
      * @return The corresponding Event Table, or 'null' if this trace type did
      *         not specify any.
-     * @since 3.1
+     * @since 3.2
      */
     public static @Nullable TmfEventsTable getEventTable(ITmfTrace trace, Composite parent, int cacheSize) {
         final String traceType = getTraceType(trace);
@@ -439,7 +422,7 @@ public final class TmfTraceTypeUIUtils {
      *            The trace for which we want the columns.
      * @return The corresponding event table columns, or 'null' if this trace
      *         type did not specify any.
-     * @since 3.1
+     * @since 3.2
      */
     public static @Nullable Collection<? extends TmfEventTableColumn> getEventTableColumns(ITmfTrace trace) {
         final String traceType = getTraceType(trace);
