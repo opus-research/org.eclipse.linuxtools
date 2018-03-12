@@ -1234,7 +1234,7 @@
       
    </extension>
 
-    <!--extension
+    <extension
           point="org.eclipse.rse.core.systemTypes">
        <systemType
              description="%trace.control.rse.system.type.description"
@@ -1245,7 +1245,7 @@
              name="org.eclipse.linuxtools.internal.lttng2.ui.control.systemType"
              subsystemConfigurationIds="ssh.shells;ssh.files;ssh.terminals;processes.shell.linux">
        </systemType>
-    </extension-->
+    </extension>
 
    <extension
          point="org.eclipse.ui.preferencePages">
