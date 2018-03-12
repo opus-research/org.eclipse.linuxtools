@@ -110,8 +110,7 @@ public class DockerMachine {
 				return new String[0];
 			}
 			final String[] command = new String[args.length + 1];
-			command[0] = Paths.get(dockerMachineInstallDir,
-					getDockerMachineExecutableName()).toString();
+			command[0] = Paths.get(dockerMachineInstallDir, "docker-machine").toString(); //$NON-NLS-1$
 			System.arraycopy(args, 0, command, 1, args.length);
 			final ProcessBuilder processBuilder = new ProcessBuilder(command);
 			final Map<String, String> environment = processBuilder
@@ -141,7 +140,7 @@ public class DockerMachine {
 						new InputStreamReader(p.getErrorStream()))) {
 					String line;
 					while ((line = buff.readLine()) != null) {
-						errorMessage.append(line).append('\n'); // $NON-NLS-1$
+						errorMessage.append(line).append('\n');
 					}
 				}
 				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
@@ -164,7 +163,7 @@ public class DockerMachine {
 	public static boolean checkPathToDockerMachine(final String path) {
 		for (String pathFragment : path.split(File.pathSeparator)) {
 			final File pathToDockerMachine = new File(pathFragment,
-					getDockerMachineExecutableName());
+					"docker-machine"); //$NON-NLS-1$
 			if (pathToDockerMachine.exists()) {
 				return true;
 			}
@@ -172,14 +171,4 @@ public class DockerMachine {
 		return false;
 	}
 
-	/**
-	 * @return the name of the Docker Machine executable, depending on the
-	 *         current operating system.
-	 */
-	private static String getDockerMachineExecutableName() {
-		if (SystemUtils.isWindows()) {
-			return "docker-machine.exe"; //$NON-NLS-1$
-		}
-		return "docker-machine"; //$NON-NLS-1$
-	}
 }
