@@ -49,7 +49,12 @@ public class STDataViewersSortAction extends Action {
     @Override
     public void run() {
         if (dialog.open() == Window.OK && dialog.isDirty()) {
-            BusyIndicator.showWhile(null, () -> stViewer.setComparator(dialog.getSorter()));
+            BusyIndicator.showWhile(null, new Runnable() {
+                @Override
+                public void run() {
+                    stViewer.setComparator(dialog.getSorter());
+                }
+            });
 
         }
     }

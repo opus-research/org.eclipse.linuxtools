@@ -175,7 +175,7 @@ public class ImageRunSWTBotTest {
 		final ILaunchConfigurationType launchConfigType = LaunchConfigurationUtils
 				.getLaunchConfigType(IRunDockerImageLaunchConfigurationConstants.CONFIG_TYPE_ID);
 		final ILaunchConfiguration launchConfiguration = LaunchConfigurationUtils
-				.getLaunchConfigurationByName(launchConfigType, "foo_bar_latest");
+				.getLaunchConfigurationByName(launchConfigType, containerName);
 		assertThat(launchConfiguration).isNotNull();
 
 	}

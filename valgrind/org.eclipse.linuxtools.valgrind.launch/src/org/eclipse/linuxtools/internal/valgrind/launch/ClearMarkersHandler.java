@@ -30,7 +30,12 @@ public class ClearMarkersHandler extends AbstractHandler {
             // do nothing for now
         }
         // Clear Valgrind view
-        Display.getDefault().syncExec(() -> ValgrindUIPlugin.getDefault().resetView());
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                ValgrindUIPlugin.getDefault().resetView();
+            }
+        });
         return null;
     }
 
