@@ -1,13 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2012 IBM Corporation
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Corey Ashford <cjashfor@linux.vnet.ibm.com> - Initial API and implementation
- *******************************************************************************/
 package org.eclipse.linuxtools.profiling.launch;
 
 import java.net.URI;
@@ -36,9 +26,9 @@ public class ConfigUtils {
      * Get if the executable shall be copied to remote target before launch.
      *
      * @return To copy executable or not.
-     * @throws CoreException If a problem retrieving occurred.
+     * @throws CoreException
      */
-    public boolean getCopyExecutable() throws CoreException {
+    public boolean getCopyExecutable()    throws CoreException {
         return config.getAttribute(
                 RemoteProxyCMainTab.ATTR_ENABLE_COPY_FROM_EXE, false);
     }
@@ -48,9 +38,10 @@ public class ConfigUtils {
      * on a remote machine, this is the path to the executable on that machine.
      * @return The path to the executable.
      *
-     * @throws CoreException If a problem retrieving occurred.
+     * @throws CoreException
      */
-    public String getCopyFromExecutablePath() throws CoreException {
+    public String getCopyFromExecutablePath()
+            throws CoreException {
         return config.getAttribute(
                 RemoteProxyCMainTab.ATTR_COPY_FROM_EXE_NAME, EMPTY_STRING);
     }
@@ -60,9 +51,10 @@ public class ConfigUtils {
      * on a remote machine, this is the path to the executable on that machine.
      * @return The path to the executable to launch.
      *
-     * @throws CoreException If a problem retrieving occurred.
+     * @throws CoreException
      */
-    public String getExecutablePath() throws CoreException {
+    public String getExecutablePath()
+            throws CoreException {
         return config.getAttribute(
                 ICDTLaunchConfigurationConstants.ATTR_PROGRAM_NAME, EMPTY_STRING);
     }
@@ -71,15 +63,14 @@ public class ConfigUtils {
      * Get the working directory path for the application launch
      *
      * @return The working directory.
-     * @throws CoreException If a problem retrieving occurred.
+     * @throws CoreException
      * @since 5.0
      */
-    public String getWorkingDirectory() throws CoreException {
+    public String getWorkingDirectory()    throws CoreException {
         String workingDirectory = config.getAttribute(
                 RemoteProxyCMainTab.ATTR_REMOTE_WORKING_DIRECTORY_NAME, EMPTY_STRING);
-        if (workingDirectory.isEmpty()) {
+        if (workingDirectory.length() == 0)
             return null;
-        }
         URI workingDirectoryURI;
         try {
             workingDirectoryURI = new URI(workingDirectory);
@@ -109,7 +100,7 @@ public class ConfigUtils {
      * Get the name of the project
      *
      * @return The name of the project.
-     * @throws CoreException If a problem retrieving occurred.
+     * @throws CoreException
      */
     public String getProjectName() throws CoreException {
         return getProjectName(config);

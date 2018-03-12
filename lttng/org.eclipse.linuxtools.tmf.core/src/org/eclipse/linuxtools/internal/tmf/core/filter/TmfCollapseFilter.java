@@ -14,15 +14,15 @@ package org.eclipse.linuxtools.internal.tmf.core.filter;
 import java.util.List;
 
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent2;
 import org.eclipse.linuxtools.tmf.core.filter.model.ITmfFilterTreeNode;
 
 /**
- * Stateful filter that compares consecutive events for collapsing feature.
+ * Statefull filter that compares consecutive events for collapsing feature.
  *
  * Usage of this class in conjunction with other {@link ITmfFilterTreeNode}
- * filters is not supported. Will throw {@link UnsupportedOperationException}
- * in that case.
+ * filters is not supported. Will throw {@link UnsupportedOperationException} in
+ * that case.
  *
  * @author Bernd Hufmann
  */
@@ -30,24 +30,25 @@ public class TmfCollapseFilter implements ITmfFilterTreeNode {
 
     private static final String COLLAPSE_NODE_NAME = "Collapse"; //$NON-NLS-1$
 
-    private ITmfCollapsibleEvent fPrevEvent = null;
+    private ITmfEvent2 fPrevEvent = null;
 
     @Override
     public boolean matches(ITmfEvent event) {
 
         if (fPrevEvent != null) {
-            if (event instanceof ITmfCollapsibleEvent) {
-                boolean isCollapsible = fPrevEvent.isCollapsibleWith(event);
-                fPrevEvent = (ITmfCollapsibleEvent) event;
-                if (isCollapsible) {
+            if (event instanceof ITmfEvent2) {
+                ITmfEvent2 currEvent = (ITmfEvent2) event;
+                boolean matches = (fPrevEvent).isCollapsibleWith(currEvent);
+                fPrevEvent = currEvent;
+                if (matches) {
                     return false;
                 }
             } else {
                 fPrevEvent = null;
             }
         } else {
-            if (event instanceof ITmfCollapsibleEvent) {
-                fPrevEvent = (ITmfCollapsibleEvent) event;
+            if (event instanceof ITmfEvent2) {
+                fPrevEvent = (ITmfEvent2) event;
             }
         }
         return true;

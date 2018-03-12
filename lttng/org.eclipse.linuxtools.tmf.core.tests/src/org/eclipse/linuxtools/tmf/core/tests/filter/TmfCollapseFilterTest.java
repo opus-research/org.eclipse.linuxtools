@@ -20,12 +20,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.linuxtools.internal.tmf.core.filter.TmfCollapseFilter;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
+import org.eclipse.linuxtools.tmf.core.event.ITmfEvent2;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEventType;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
-import org.eclipse.linuxtools.tmf.core.event.collapse.ITmfCollapsibleEvent;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfNanoTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -43,10 +43,10 @@ public class TmfCollapseFilterTest {
     // Variables
     // ------------------------------------------------------------------------
 
-    private CollapsibleEvent fCollapsibleEvent1 = new CollapsibleEvent(true);
-    private CollapsibleEvent fCollapsibleEvent2 = new CollapsibleEvent(true);
-    private CollapsibleEvent fCollapsibleEvent3 = new CollapsibleEvent(false);
-    private NonCollapsibleEvent fNonCollapsibleEvent1 = new NonCollapsibleEvent();
+    private CollapsibleEvent collapsibleEvent1 = new CollapsibleEvent(true);
+    private CollapsibleEvent collapsibleEvent2 = new CollapsibleEvent(true);
+    private CollapsibleEvent collapsibleEvent3 = new CollapsibleEvent(false);
+    private NonCollapsibleEvent nonCollapsibleEvent1 = new NonCollapsibleEvent();
     private TmfCollapseFilter fFilter = new TmfCollapseFilter();
 
     // ------------------------------------------------------------------------
@@ -58,15 +58,15 @@ public class TmfCollapseFilterTest {
 
         TmfCollapseFilter filter = new TmfCollapseFilter();
 
-        assertTrue(filter.matches(fCollapsibleEvent1));
-        assertFalse(filter.matches(fCollapsibleEvent2));
-        assertFalse(filter.matches(fCollapsibleEvent1));
-        assertFalse(filter.matches(fCollapsibleEvent2));
-        assertTrue(filter.matches(fNonCollapsibleEvent1));
-        assertTrue(filter.matches(fNonCollapsibleEvent1));
-        assertTrue(filter.matches(fCollapsibleEvent1));
-        assertFalse(filter.matches(fCollapsibleEvent2));
-        assertTrue(filter.matches(fCollapsibleEvent3));
+        assertTrue(filter.matches(collapsibleEvent1));
+        assertFalse(filter.matches(collapsibleEvent2));
+        assertFalse(filter.matches(collapsibleEvent1));
+        assertFalse(filter.matches(collapsibleEvent2));
+        assertTrue(filter.matches(nonCollapsibleEvent1));
+        assertTrue(filter.matches(nonCollapsibleEvent1));
+        assertTrue(filter.matches(collapsibleEvent1));
+        assertFalse(filter.matches(collapsibleEvent2));
+        assertTrue(filter.matches(collapsibleEvent3));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class TmfCollapseFilterTest {
     // Helper Classes
     // ------------------------------------------------------------------------
 
-    private class CollapsibleEvent extends TmfEvent implements ITmfCollapsibleEvent {
+    private class CollapsibleEvent extends TmfEvent {
 
         private final boolean fIsCollapsible;
         CollapsibleEvent(boolean isCollapsible) {
@@ -125,7 +125,7 @@ public class TmfCollapseFilterTest {
             fIsCollapsible = isCollapsible;
         }
         @Override
-        public boolean isCollapsibleWith(ITmfEvent otherEvent) {
+        public boolean isCollapsibleWith(ITmfEvent2 otherEvent) {
             return ((CollapsibleEvent)otherEvent).fIsCollapsible;
         }
     }
