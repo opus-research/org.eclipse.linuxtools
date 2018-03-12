@@ -71,6 +71,7 @@ import org.eclipse.swt.widgets.Text;
 public class ImageSearchPage extends WizardPage {
 
 	private final ImageSearchModel model;
+	private Button searchImageButton;
 	private final DataBindingContext ctx = new DataBindingContext();
 
 	/**
@@ -110,7 +111,7 @@ public class ImageSearchPage extends WizardPage {
 				.grab(true, false).applyTo(searchImageText);
 		searchImageText.addKeyListener(onKeyPressed());
 		searchImageText.addTraverseListener(onSearchImageTextTraverse());
-		final Button searchImageButton = new Button(container, SWT.NONE);
+		searchImageButton = new Button(container, SWT.NONE);
 		searchImageButton
 				.setText(WizardMessages.getString("ImageSearchPage.search")); //$NON-NLS-1$
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)

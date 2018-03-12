@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -38,6 +39,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -97,9 +101,6 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -1544,7 +1545,8 @@ public class DockerConnection implements IDockerConnection {
 		try {
 			final LogStream pty_stream = client.attachContainer(id,
 					AttachParameter.STDIN, AttachParameter.STDOUT,
-					AttachParameter.STDERR, AttachParameter.STREAM);
+					AttachParameter.STDERR, AttachParameter.STREAM,
+					AttachParameter.LOGS);
 			final boolean isTtyEnabled = getContainerInfo(id).config().tty();
 
 			// Data from the given input stream
@@ -1633,6 +1635,17 @@ public class DockerConnection implements IDockerConnection {
 							}
 						}
 					} catch (Exception e) {
+						/*
+						 * Temporary workaround for BZ #469717
+						 * Remove this when we begin using a release with :
+						 * https://github.com/spotify/docker-client/pull/223
+						 */
+						if (e instanceof SocketTimeoutException) {
+							try {
+								attachCommand(id, in, out);
+							} catch (DockerException e1) {
+							}
+						}
 					}
 				}
 			});

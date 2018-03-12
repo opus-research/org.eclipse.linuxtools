@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-@Deprecated
 public class ImagePullPage extends WizardPage {
 
 	private final static String NAME = "ImagePull.name"; //$NON-NLS-1$
