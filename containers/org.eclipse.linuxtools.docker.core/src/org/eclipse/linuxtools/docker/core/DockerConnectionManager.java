@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -17,6 +19,7 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.internal.docker.core.DefaultDockerConnectionStorageManager;
+import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
 
 public class DockerConnectionManager {
 
@@ -44,12 +47,13 @@ public class DockerConnectionManager {
 		for (IDockerConnection connection : connections) {
 			try {
 				connection.open(true);
+				notifyListeners(connection,
+						IDockerConnectionManagerListener.ADD_EVENT);
 			} catch (DockerException e) {
 				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 						e.getMessage()));
 			}
 		}
-		notifyListeners(IDockerConnectionManagerListener.ADD_EVENT);
 	}
 
 	public void setConnectionSettingsFinder(
@@ -70,6 +74,17 @@ public class DockerConnectionManager {
 		return connections.toArray(new IDockerConnection[connections.size()]);
 	}
 
+	/**
+	 * @return an immutable {@link List} of the {@link IDockerConnection} names
+	 */
+	public List<String> getConnectionNames() {
+		final List<String> connectionNames = new ArrayList<>();
+		for (IDockerConnection connection : this.connections) {
+			connectionNames.add(connection.getName());
+		}
+		return Collections.unmodifiableList(connectionNames);
+	}
+
 	public IDockerConnection findConnection(final String name) {
 		if (name != null) {
 			for (IDockerConnection connection : connections) {
@@ -86,18 +101,17 @@ public class DockerConnectionManager {
 		}
 		connections.add(dockerConnection);
 		saveConnections();
-		notifyListeners(IDockerConnectionManagerListener.ADD_EVENT);
+		notifyListeners(dockerConnection,
+				IDockerConnectionManagerListener.ADD_EVENT);
 	}
 
-	public void removeConnection(IDockerConnection d) {
-		connections.remove(d);
+	public void removeConnection(final IDockerConnection connection) {
+		connections.remove(connection);
 		saveConnections();
-		notifyListeners(IDockerConnectionManagerListener.REMOVE_EVENT);
-	}
-
-	public void notifyConnectionRename() {
-		saveConnections();
-		notifyListeners(IDockerConnectionManagerListener.RENAME_EVENT);
+		notifyListeners(connection,
+				IDockerConnectionManagerListener.REMOVE_EVENT);
+		DockerContainerRefreshManager.getInstance()
+				.removeContainerRefreshThread(connection);
 	}
 
 	public void addConnectionManagerListener(
@@ -113,12 +127,22 @@ public class DockerConnectionManager {
 			connectionManagerListeners.remove(listener);
 	}
 
-	public void notifyListeners(int type) {
+	@SuppressWarnings("deprecation")
+	public void notifyListeners(final IDockerConnection connection,
+			final int type) {
 		if (connectionManagerListeners != null) {
 			Object[] listeners = connectionManagerListeners.getListeners();
 			for (int i = 0; i < listeners.length; ++i) {
-				((IDockerConnectionManagerListener) listeners[i])
-						.changeEvent(type);
+				if (listeners[i] instanceof IDockerConnectionManagerListener2) {
+					((IDockerConnectionManagerListener2) listeners[i])
+							.changeEvent(connection, type);
+				} else {
+					// keeping the call to the old method for the listeners that
+					// are
+					// interested
+					((IDockerConnectionManagerListener) listeners[i])
+							.changeEvent(type);
+				}
 			}
 		}
 	}

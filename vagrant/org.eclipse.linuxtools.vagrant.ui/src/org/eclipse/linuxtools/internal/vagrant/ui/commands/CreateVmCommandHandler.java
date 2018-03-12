@@ -34,6 +34,7 @@ import org.eclipse.linuxtools.internal.vagrant.ui.wizards.CreateVMWizard;
 import org.eclipse.linuxtools.internal.vagrant.ui.wizards.WizardMessages;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
+import org.eclipse.linuxtools.vagrant.core.VagrantException;
 import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -63,7 +64,7 @@ public class CreateVmCommandHandler extends AbstractHandler {
 				final boolean finished = CommandUtils.openWizard(wizard,
 						HandlerUtil.getActiveShell(event));
 				if (finished) {
-					performCreateVM(wizard.getVMName(), wizard.getBoxName(),
+					performCreateVM(wizard.getVMName(), wizard.getBoxReference(),
 							wizard.getVMFile(), wizard.getVMEnvironment());
 				}
 			}
@@ -71,7 +72,7 @@ public class CreateVmCommandHandler extends AbstractHandler {
 		return null;
 	}
 
-	private void performCreateVM(String vmName, String boxName, String vmFile,
+	private void performCreateVM(String vmName, String boxRef, String vmFile,
 			Map<String, String> environment) {
 		final Job createVMJob = new Job(DVMessages.getFormattedString(CREATE_VM_MSG)) {
 			@Override
@@ -80,7 +81,22 @@ public class CreateVmCommandHandler extends AbstractHandler {
 						IProgressMonitor.UNKNOWN);
 				IVagrantConnection connection = VagrantService.getInstance();
 				File vagrantDir;
+				String boxName = boxRef;
 				if (vmFile == null) {
+					// The boxRef is a reference to an actual box file
+					if (Paths.get(boxRef).toFile().canRead()) {
+						try {
+							String boxPath = boxRef;
+							// Generate the box name from the file name (basename)
+							boxName = boxRef.substring(
+									boxRef.lastIndexOf(File.separator) + 1)
+									.replace(".box", ""); //$NON-NLS-1$ //$NON-NLS-2$
+							connection.addBox(boxName, boxPath);
+						} catch (VagrantException e) {
+						} catch (InterruptedException e) {
+						}
+					}
+
 					// Init a new vagrant folder inside plugin metadata
 					vagrantDir = performInit(vmName, boxName, connection);
 				} else {
@@ -122,18 +138,18 @@ public class CreateVmCommandHandler extends AbstractHandler {
 		vagrantDir.mkdir();
 		connection.init(vagrantDir);
 
-		Path vagrantFilePath = Paths.get(stateLoc, vmName, "Vagrantfile");
+		Path vagrantFilePath = Paths.get(stateLoc, vmName, "Vagrantfile"); //$NON-NLS-1$
 		String defaultContent;
 		StringBuffer bcontent = new StringBuffer();
 		try {
 			defaultContent = new String(Files.readAllBytes(vagrantFilePath),
 					StandardCharsets.UTF_8);
-			for (String line : defaultContent.split("\n")) {
-				if (line.contains("config.vm.box")) {
-					String defLine = line.replaceAll("config.vm.box = \".*\"",
-							"config.vm.define :" + vmName);
-					String boxLine = line.replaceAll("config.vm.box = \".*\"",
-							"config.vm.box = \"" + boxName + "\"");
+			for (String line : defaultContent.split("\n")) { //$NON-NLS-1$
+				if (line.contains("config.vm.box")) { //$NON-NLS-1$
+					String defLine = line.replaceAll("config.vm.box = \".*\"", //$NON-NLS-1$
+							"config.vm.define :" + vmName); //$NON-NLS-1$
+					String boxLine = line.replaceAll("config.vm.box = \".*\"", //$NON-NLS-1$
+							"config.vm.box = \"" + boxName + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 					bcontent.append(defLine + '\n');
 					bcontent.append(boxLine + '\n');
 				} else {
