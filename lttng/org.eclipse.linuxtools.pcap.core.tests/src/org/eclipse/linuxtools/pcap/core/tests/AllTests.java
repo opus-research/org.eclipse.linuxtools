@@ -7,20 +7,20 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Vincent Perot - Initial API and implementation
+ *   Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.pcap.core.tests.protocol.udp;
+package org.eclipse.linuxtools.pcap.core.tests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * UDP test suite
+ * Master test suite
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        UDPPacketTest.class
+    //example: StateSystemPushPopTest.class,
 })
 public class AllTests {
 
