@@ -383,8 +383,9 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         return (annotation instanceof GcovAnnotation) ? ((GcovAnnotation) annotation).getPosition() : null;
     }
 
-    @Override
-    public Iterator<?> getAnnotationIterator() {
+    @SuppressWarnings("rawtypes")
+	@Override
+    public Iterator getAnnotationIterator() {
         return annotations.iterator();
     }
 
