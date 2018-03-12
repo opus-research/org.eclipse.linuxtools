@@ -88,7 +88,7 @@ public class ContainerVMRunner extends StandardVMRunner {
 				Arrays.asList(portMap),
 				false, true, true);
 
-		return super.exec(new String [] { "/bin/true" }, null); //$NON-NLS-1$
+		return null;
 	}
 
 	@Override
