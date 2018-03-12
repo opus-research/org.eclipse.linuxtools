@@ -40,7 +40,7 @@ public class SyncAlgorithmOffset extends SynchronizationAlgorithm {
      * Constructor
      *
      * @param offsets
-     *            a map of traces to time offsets in nanoseconds
+     *            a map of traces getPath() return to time offsets in nanoseconds
      */
     public SyncAlgorithmOffset(Map<String, Long> offsets) {
         Builder<String, TmfConstantTransform> builder = new Builder<>();

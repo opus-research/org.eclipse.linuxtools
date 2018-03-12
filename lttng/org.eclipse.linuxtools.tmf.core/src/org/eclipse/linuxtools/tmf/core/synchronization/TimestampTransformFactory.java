@@ -14,6 +14,7 @@ package org.eclipse.linuxtools.tmf.core.synchronization;
 import java.math.BigDecimal;
 
 import org.eclipse.linuxtools.internal.tmf.core.synchronization.TmfConstantTransform;
+import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 
 /**
  * A factory to generate timestamp tranforms
@@ -30,11 +31,25 @@ public final class TimestampTransformFactory {
      * Create an offsetted transform
      *
      * @param offset
-     *            the offset in long format
+     *            the offset in long format, nanosecond scale
      * @return the offsetted transform
      */
     public static ITmfTimestampTransform create(long offset) {
         if (offset == 0) {
+            return TmfTimestampTransform.IDENTITY;
+        }
+        return new TmfConstantTransform(offset);
+    }
+
+    /**
+     * Create an offsetted transform
+     *
+     * @param offset
+     *            the offset in a timestamp with scale
+     * @return the offsetted transform
+     */
+    public static ITmfTimestampTransform create(ITmfTimestamp offset) {
+        if (offset.getValue() == 0) {
             return TmfTimestampTransform.IDENTITY;
         }
         return new TmfConstantTransform(offset);
@@ -47,6 +62,22 @@ public final class TimestampTransformFactory {
      *            the slope
      * @param offset
      *            the offset
+     * @return the transform
+     */
+    public static ITmfTimestampTransform create(double factor, ITmfTimestamp offset) {
+        if (factor == 1.0) {
+            return create(offset);
+        }
+        return new TmfTimestampTransformLinear(factor, offset.normalize(0, ITmfTimestamp.NANOSECOND_SCALE).getValue());
+    }
+
+    /**
+     * Create an offsetted and slopped transform
+     *
+     * @param factor
+     *            the slope
+     * @param offset
+     *            the offset in nanoseconds
      * @return the transform
      */
     public static ITmfTimestampTransform create(double factor, long offset) {
@@ -62,7 +93,7 @@ public final class TimestampTransformFactory {
      * @param factor
      *            the slope
      * @param offset
-     *            the offset
+     *            the offset in nanoseconds
      * @return the transform
      */
     public static ITmfTimestampTransform create(BigDecimal factor, BigDecimal offset) {
