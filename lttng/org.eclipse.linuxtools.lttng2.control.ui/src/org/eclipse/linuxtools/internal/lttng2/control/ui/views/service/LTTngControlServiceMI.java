@@ -841,27 +841,8 @@ public class LTTngControlServiceMI extends LTTngControlService {
                         throw new ExecutionException(Messages.TraceControl_MiMissingRequiredError);
                     }
 
-                    Node rawDataNode = null;
-                    switch (probeEvent.getEventType()) {
-                    case PROBE:
-                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.PROBE_ATTRIBUTES);
-                        break;
-                    case FUNCTION:
-                        rawDataNode = getFirstOf(rawAttributes.getChildNodes(), MIStrings.FUNCTION_ATTRIBUTES);
-                        break;
-                    case SYSCALL:
-                    case TRACEPOINT:
-                    case UNKNOWN:
-                    default:
-                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-                    }
-
-                    if (rawDataNode == null) {
-                        throw new ExecutionException(Messages.TraceControl_MiInvalidElementError);
-                    }
-
                     // Extract info
-                    NodeList rawDatas = rawDataNode.getChildNodes();
+                    NodeList rawDatas = rawAttributes.getChildNodes();
                     for (int j = 0; j < rawDatas.getLength(); j++) {
                         Node rawData = rawDatas.item(j);
                         switch (rawData.getNodeName()) {
