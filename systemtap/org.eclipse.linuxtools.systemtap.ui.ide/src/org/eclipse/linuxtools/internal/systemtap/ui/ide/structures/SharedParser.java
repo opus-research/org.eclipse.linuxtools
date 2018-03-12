@@ -9,14 +9,13 @@
  *     Red Hat - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.tparsers;
+package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.Messages;
 
 /**
  * A helper class for performing tapset-loading operations,
@@ -83,7 +82,7 @@ public final class SharedParser extends TapsetParser {
      * Clear the cached tapset contents, so that the next call to {@link #getTapsetContents()}
      * will be guaranteed to use a new call of stap to gather up-to-date tapset contents.
      */
-    public synchronized void clearTapsetContents() {
+    synchronized void clearTapsetContents() {
         tapsetContents = null;
     }
 
@@ -103,7 +102,7 @@ public final class SharedParser extends TapsetParser {
     protected IStatus run(IProgressMonitor monitor) {
         return createStatus(verifyRunResult(runAction()));
     }
-
+    
     private String runAction() {
         String contents = runStap(STAP_OPTIONS, STAP_DUMMYPROBE, false);
         if (verifyRunResult(contents) == IStatus.OK) {
