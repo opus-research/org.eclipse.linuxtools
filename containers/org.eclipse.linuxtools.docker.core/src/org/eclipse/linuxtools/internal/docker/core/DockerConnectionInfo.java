@@ -86,7 +86,6 @@ public class DockerConnectionInfo implements IDockerConnectionInfo {
 		return memoryLimit;
 	}
 
-	@Override
 	public int getContainers() {
 		return containers;
 	}

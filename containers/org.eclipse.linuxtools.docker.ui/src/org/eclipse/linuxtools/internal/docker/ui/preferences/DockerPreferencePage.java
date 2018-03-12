@@ -45,7 +45,6 @@ public class DockerPreferencePage extends PreferencePage implements
 	 * 
 	 * @see PreferenceInitializer
 	 */
-	@Override
 	public void init(final IWorkbench workbench) {
 	}
 
