@@ -71,13 +71,4 @@ final class IntegerStateValue extends TmfStateValue {
         /* It's always safe to up-cast an int into a long */
         return value;
     }
-
-    @Override
-    public int compareTo(ITmfStateValue object) {
-        if (!(object instanceof IntegerStateValue)) {
-            return -1;
-        }
-        IntegerStateValue other = (IntegerStateValue) object;
-        return Integer.compare(this.value, other.value);
-    }
 }
