@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
+import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionManagerListener2;
@@ -39,6 +40,7 @@ import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageListener;
 import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.ui.DockerConnectionWatcher;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -76,7 +78,8 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	private static final String SHOW_ALL_IMAGES_COMMAND_ID = "org.eclipse.linuxtools.docker.ui.commands.showAllImages"; //$NON-NLS-1$
 	private static final String SHOW_ALL_IMAGES_PREFERENCE = "showAllImages"; //$NON-NLS-1$
 
-	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
+	private final static String NoConnectionSelected = "ViewerNoConnectionSelected.msg"; //$NON-NLS-1$
+	private final static String ConnectionNotAvailable = "ViewerConnectionNotAvailable.msg"; //$NON-NLS-1$
 	private final static String ViewAllTitle = "ImagesViewTitle.all.msg"; //$NON-NLS-1$
 	private final static String ViewFilteredTitle = "ImagesViewTitle.filtered.msg"; //$NON-NLS-1$
 
@@ -144,7 +147,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	public void createPartControl(final Composite parent) {
 		final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 		form = toolkit.createForm(parent);
-		form.setText(DVMessages.getString(DaemonMissing));
+		form.setText(DVMessages.getString(NoConnectionSelected));
 		final Composite container = form.getBody();
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(0, 0).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(container);
@@ -288,12 +291,16 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getImagesFilter());
-		final IDockerConnection[] connections = DockerConnectionManager
-				.getInstance()
-				.getConnections();
-		if (connections.length > 0) {
-			setConnection(connections[0]);
-			connection.addImageListener(this);
+		setConnection(DockerConnectionWatcher.getInstance()
+				.getCurrentOrDefaultConnection());
+		if (DockerConnectionWatcher.getInstance().getConnection() != null) {
+
+		} else {
+			final IDockerConnection[] connections = DockerConnectionManager
+					.getInstance().getConnections();
+			if (connections.length > 0) {
+				setConnection(connections[0]);
+			}
 		}
 		// get the current selection in the tableviewer
 		getSite().setSelectionProvider(viewer);
@@ -391,8 +398,14 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 				|| this.form == null
 				|| this.connection == null) {
 			return;
+		} else if (this.connection
+				.getState() == EnumDockerConnectionState.CLOSED) {
+			this.form.setText(DVMessages.getFormattedString(
+					ConnectionNotAvailable, connection.getName()));
+			this.form.setEnabled(false);
 		} else if (!this.connection.isImagesLoaded()) {
-			form.setText(connection.getName());
+			this.form.setEnabled(false);
+			this.form.setText(connection.getName());
 		} else {
 			final List<ViewerFilter> filters = Arrays
 					.asList(this.viewer.getFilters());
@@ -408,6 +421,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 								.toString(connection.getImages().size()) }));
 
 			}
+			this.form.setEnabled(true);
 		}
 	}
 	
@@ -418,14 +432,19 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 		return connection;
 	}
 
-	private void setConnection(final IDockerConnection conn) {
-		this.connection = conn;
-		if (conn != null) {
-			viewer.setInput(conn);
+	private void setConnection(final IDockerConnection connection) {
+		// remove 'this' as listener on the previous connection (if applicable)
+		if (this.connection != null) {
+			this.connection.removeImageListener(this);
+		}
+		this.connection = connection;
+		if (this.connection != null) {
+			this.connection.addImageListener(this);
+			viewer.setInput(this.connection);
 			refreshViewTitle();
 		} else {
 			viewer.setInput(new IDockerImage[0]);
-			form.setText(DVMessages.getString(DaemonMissing));
+			form.setText(DVMessages.getString(NoConnectionSelected));
 		}
 	}
 
@@ -489,7 +508,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 	public void changeEvent(final IDockerConnection connection,
 			final int type) {
 		if (type == IDockerConnectionManagerListener.RENAME_EVENT) {
-			refreshViewTitle();
+			Display.getDefault().asyncExec(() -> refreshViewTitle());
 		}
 	}
 }

@@ -55,7 +55,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 		final WizardDialog wizardDialog = new NonModalWizardDialog(HandlerUtil.getActiveShell(event), wizard);
 		wizardDialog.create();
 		connection = DockerConnectionWatcher.getInstance().getConnection();
-		if (connection == null || !connection.isActive()) {
+		if (connection == null || !connection.isOpen()) {
 			// if no active connection, issue error message dialog and return
 			Display.getDefault().syncExec(() -> MessageDialog.openError(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
