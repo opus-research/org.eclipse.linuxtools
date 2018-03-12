@@ -9,14 +9,12 @@
  * Contributors:
  *   Patrick Tasse - Initial API and implementation
  *   Bernd Hufmann - Updated signal handling
- *   Marc-Andre Laperle - Map from binary file
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,10 +30,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -95,8 +90,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 
@@ -120,7 +113,7 @@ public class CallStackView extends TmfView {
      */
     private enum State { IDLE, BUSY, PENDING }
 
-    private static final String[] COLUMN_TIMES = new String[] {
+    private static final String[] COLUMN_NAMES = new String[] {
             Messages.CallStackView_FunctionColumn,
             Messages.CallStackView_DepthColumn,
             Messages.CallStackView_EntryTimeColumn,
@@ -143,21 +136,6 @@ public class CallStackView extends TmfView {
     private static final Image STACKFRAME_IMAGE = Activator.getDefault().getImageFromPath("icons/obj16/stckframe_obj.gif"); //$NON-NLS-1$
 
     private static final String IMPORT_MAPPING_ICON_PATH = "icons/etool16/import.gif"; //$NON-NLS-1$
-    private static final String IMPORT_BINARY_ICON_PATH = "icons/obj16/binaries_obj.gif"; //$NON-NLS-1$
-
-    private static final ImageDescriptor SORT_BY_NAME_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_alpha.gif"); //$NON-NLS-1$
-    private static final ImageDescriptor SORT_BY_NAME_REV_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_alpha_rev.gif"); //$NON-NLS-1$
-    private static final ImageDescriptor SORT_BY_ID_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_num.gif"); //$NON-NLS-1$
-    private static final ImageDescriptor SORT_BY_ID_REV_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_num_rev.gif"); //$NON-NLS-1$
-    private static final ImageDescriptor SORT_BY_TIME_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_time.gif"); //$NON-NLS-1$
-    private static final ImageDescriptor SORT_BY_TIME_REV_ICON = Activator.getDefault().getImageDescripterFromPath("icons/etool16/sort_time_rev.gif"); //$NON-NLS-1$
-    private static final String SORT_OPTION_KEY = "sort.option"; //$NON-NLS-1$
-    private enum SortOption { BY_NAME, BY_NAME_REV, BY_ID, BY_ID_REV, BY_TIME, BY_TIME_REV }
-    private SortOption fSortOption;
-    private Comparator<ITimeGraphEntry> fThreadComparator = null;
-    private Action fSortByNameAction;
-    private Action fSortByIdAction;
-    private Action fSortByTimeAction;
 
     // ------------------------------------------------------------------------
     // Fields
@@ -205,11 +183,8 @@ public class CallStackView extends TmfView {
     // The previous item action
     private Action fPreviousItemAction;
 
-    // The action to import a function-name mapping file
+    /** The action to import a function-name mapping file */
     private Action fImportMappingAction;
-
-    // The action to import a binary file mapping */
-    private Action fImportBinaryFileMappingAction;
 
     // The zoom thread
     private ZoomThread fZoomThread;
@@ -246,13 +221,11 @@ public class CallStackView extends TmfView {
         private final int fCallStackQuark;
         // The state system from which this entry comes
         private final ITmfStateSystem fSS;
-        // The thread id
-        private final long fThreadId;
 
-        public ThreadEntry(ITmfStateSystem ss, String name, long threadId, int callStackQuark, long startTime, long endTime) {
+        public ThreadEntry(ITmfStateSystem ss, String name, int callStackQuark, long startTime, long endTime) {
             super(name, startTime, endTime);
             fCallStackQuark = callStackQuark;
-            fThreadId = threadId;
+
             fSS = ss;
         }
 
@@ -265,51 +238,9 @@ public class CallStackView extends TmfView {
             return fCallStackQuark;
         }
 
-        public long getThreadId() {
-            return fThreadId;
-        }
-
         @Nullable
         public ITmfStateSystem getStateSystem() {
             return fSS;
-        }
-    }
-
-    private class ThreadNameComparator implements Comparator<ITimeGraphEntry> {
-        private boolean reverse;
-        public ThreadNameComparator(boolean reverse) {
-            this.reverse = reverse;
-        }
-        @Override
-        public int compare(ITimeGraphEntry o1, ITimeGraphEntry o2) {
-            return reverse ? o2.getName().compareTo(o1.getName()) :
-                o1.getName().compareTo(o2.getName());
-        }
-    }
-
-    private class ThreadIdComparator implements Comparator<ITimeGraphEntry> {
-        private boolean reverse;
-        public ThreadIdComparator(boolean reverse) {
-            this.reverse = reverse;
-        }
-        @Override
-        public int compare(ITimeGraphEntry o1, ITimeGraphEntry o2) {
-            ThreadEntry t1 = (ThreadEntry) o1;
-            ThreadEntry t2 = (ThreadEntry) o2;
-            return reverse ? Long.compare(t2.getThreadId(), t1.getThreadId()) :
-                Long.compare(t1.getThreadId(), t2.getThreadId());
-        }
-    }
-
-    private class ThreadTimeComparator implements Comparator<ITimeGraphEntry> {
-        private boolean reverse;
-        public ThreadTimeComparator(boolean reverse) {
-            this.reverse = reverse;
-        }
-        @Override
-        public int compare(ITimeGraphEntry o1, ITimeGraphEntry o2) {
-            return reverse ? Long.compare(o2.getStartTime(), o1.getStartTime()) :
-                Long.compare(o1.getStartTime(), o2.getStartTime());
         }
     }
 
@@ -512,7 +443,7 @@ public class CallStackView extends TmfView {
 
         fTimeGraphCombo.setTreeLabelProvider(new TreeLabelProvider());
 
-        fTimeGraphCombo.setTreeColumns(COLUMN_TIMES);
+        fTimeGraphCombo.setTreeColumns(COLUMN_NAMES);
 
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(0).setWidth(COLUMN_WIDTHS[0]);
         fTimeGraphCombo.getTreeViewer().getTree().getColumn(1).setWidth(COLUMN_WIDTHS[1]);
@@ -604,8 +535,6 @@ public class CallStackView extends TmfView {
         // View Action Handling
         makeActions();
         contributeToActionBars();
-        createContextMenu();
-        loadSortOption();
 
         IEditorPart editor = getSite().getPage().getActiveEditor();
         if (editor instanceof ITmfTraceEditor) {
@@ -828,7 +757,6 @@ public class CallStackView extends TmfView {
             String[] threadPaths = module.getThreadsPattern();
             List<Integer> threadQuarks = ss.getQuarks(threadPaths);
             TraceEntry traceEntry = new TraceEntry(trace.getName(), startTime, endTime);
-            traceEntry.sortChildren(fThreadComparator);
             entryList.add(traceEntry);
             for (int i = 0; i < threadQuarks.size(); i++) {
                 if (monitor.isCanceled()) {
@@ -839,18 +767,7 @@ public class CallStackView extends TmfView {
                     String[] callStackPath = module.getCallStackPath();
                     int callStackQuark = ss.getQuarkRelative(threadQuark, callStackPath);
                     String threadName = ss.getAttributeName(threadQuark);
-                    long threadId = ss.querySingleState(ss.getCurrentEndTime() , threadQuark).getStateValue().unboxLong();
-                    long start = startTime;
-                    ITmfStateInterval startInterval = ss.querySingleState(startTime, callStackQuark);
-                    if (startInterval.getStateValue().isNull()) {
-                        start = Math.min(startInterval.getEndTime() + 1, endTime);
-                    }
-                    long end = endTime;
-                    ITmfStateInterval endInterval = ss.querySingleState(ss.getCurrentEndTime(), callStackQuark);
-                    if (endInterval.getStateValue().isNull()) {
-                        end = endInterval.getStartTime() == startTime ? endTime : endInterval.getStartTime();
-                    }
-                    ThreadEntry threadEntry = new ThreadEntry(ss, threadName, threadId, callStackQuark, start, end);
+                    ThreadEntry threadEntry = new ThreadEntry(ss, threadName, callStackQuark, startTime, endTime);
                     traceEntry.addChild(threadEntry);
                     int level = 1;
                     for (int stackLevelQuark : ss.getSubAttributes(callStackQuark, false)) {
@@ -859,8 +776,6 @@ public class CallStackView extends TmfView {
                     }
                 } catch (AttributeNotFoundException e) {
                     Activator.getDefault().logError("Error querying state system", e); //$NON-NLS-1$
-                } catch (StateSystemDisposedException e) {
-                    /* Ignored */
                 }
             }
         }
@@ -1021,9 +936,6 @@ public class CallStackView extends TmfView {
                         fEntryList = new ArrayList<>();
                     }
                     entries = fEntryList.toArray(new ITimeGraphEntry[0]);
-                    for (TraceEntry traceEntry : fEntryList) {
-                        traceEntry.sortChildren(fThreadComparator);
-                    }
                 }
                 fTimeGraphCombo.setInput(entries);
                 fTimeGraphCombo.getTimeGraphViewer().setTimeBounds(fStartTime, fEndTime);
@@ -1113,13 +1025,7 @@ public class CallStackView extends TmfView {
     }
 
     private void fillLocalToolBar(IToolBarManager manager) {
-        manager.add(getImportBinaryAction());
         manager.add(getImportMappingAction());
-        manager.add(new Separator());
-        manager.add(getSortByNameAction());
-        manager.add(getSortByIdAction());
-        manager.add(getSortByTimeAction());
-        manager.add(new Separator());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getResetScaleAction());
         manager.add(getPreviousEventAction());
         manager.add(getNextEventAction());
@@ -1128,17 +1034,6 @@ public class CallStackView extends TmfView {
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomInAction());
         manager.add(fTimeGraphCombo.getTimeGraphViewer().getZoomOutAction());
         manager.add(new Separator());
-    }
-
-    private void createContextMenu() {
-        final MenuManager contextMenu = new MenuManager();
-        contextMenu.add(getSortByNameAction());
-        contextMenu.add(getSortByIdAction());
-        contextMenu.add(getSortByTimeAction());
-
-        Tree tree = fTimeGraphCombo.getTreeViewer().getTree();
-        Menu menu = contextMenu.createContextMenu(tree);
-        tree.setMenu(menu);
     }
 
     /**
@@ -1273,58 +1168,28 @@ public class CallStackView extends TmfView {
     // ------------------------------------------------------------------------
 
     /**
-     * Common code for all import file mapping actions
-     */
-    private abstract class AbstractImportFileMappingAction extends Action {
-        private final String fDialogTitle;
-
-        private AbstractImportFileMappingAction(String dialogTitle) {
-            fDialogTitle = dialogTitle;
-        }
-
-        @Override
-        public void run() {
-            FileDialog dialog = new FileDialog(getViewSite().getShell());
-            dialog.setText(fDialogTitle);
-            final String filePath = dialog.open();
-            if (filePath == null) {
-                /* No file was selected, don't change anything */
-                return;
-            }
-
-            /*
-             * Start the mapping import in a separate thread (we do not want
-             * to UI thread to do this).
-             */
-            Job job = new Job(Messages.CallStackView_ImportMappingJobName) {
-                @Override
-                public IStatus run(IProgressMonitor monitor) {
-                    fNameMapping = doMapping(new File(filePath));
-
-                    /* Refresh the time graph and the list of entries */
-                    buildThreadList(fTrace, new NullProgressMonitor());
-                    redraw();
-
-                    return Status.OK_STATUS;
-                }
-            };
-            job.schedule();
-        }
-
-        abstract Map<String, String> doMapping(File file);
-    }
-
-    /**
      * Toolbar icon to import the function address-to-name mapping file.
      */
     private Action getImportMappingAction() {
         if (fImportMappingAction != null) {
             return fImportMappingAction;
         }
-        fImportMappingAction = new AbstractImportFileMappingAction(Messages.CallStackView_ImportMappingDialogTitle) {
+        fImportMappingAction = new Action() {
             @Override
-            Map<String, String> doMapping(File file) {
-                return FunctionNameMapper.mapFromNmTextFile(file);
+            public void run() {
+                FileDialog dialog = new FileDialog(getViewSite().getShell());
+                dialog.setText(Messages.CallStackView_ImportMappingDialogTitle);
+                String filePath = dialog.open();
+                if (filePath == null) {
+                    /* No file was selected, don't change anything */
+                    return;
+                }
+                /*
+                 * Start the mapping import in a separate thread (we do not want
+                 * to UI thread to do this).
+                 */
+                Job job = new ImportMappingJob(new File(filePath));
+                job.schedule();
             }
         };
 
@@ -1335,146 +1200,24 @@ public class CallStackView extends TmfView {
         return fImportMappingAction;
     }
 
-    private Action getSortByNameAction() {
-        if (fSortByNameAction == null) {
-            fSortByNameAction = new Action(Messages.CallStackView_SortByThreadName, IAction.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    if (fSortOption == SortOption.BY_NAME) {
-                        saveSortOption(SortOption.BY_NAME_REV);
-                    } else {
-                        saveSortOption(SortOption.BY_NAME);
-                    }
-                }
-            };
-            fSortByNameAction.setToolTipText(Messages.CallStackView_SortByThreadName);
-            fSortByNameAction.setImageDescriptor(SORT_BY_NAME_ICON);
-        }
-        return fSortByNameAction;
-    }
+    private class ImportMappingJob extends Job {
+        private final File fMappingFile;
 
-    private Action getSortByIdAction() {
-        if (fSortByIdAction == null) {
-            fSortByIdAction = new Action(Messages.CallStackView_SortByThreadId, IAction.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    if (fSortOption == SortOption.BY_ID) {
-                        saveSortOption(SortOption.BY_ID_REV);
-                    } else {
-                        saveSortOption(SortOption.BY_ID);
-                    }
-                }
-            };
-            fSortByIdAction.setToolTipText(Messages.CallStackView_SortByThreadId);
-            fSortByIdAction.setImageDescriptor(SORT_BY_ID_ICON);
-        }
-        return fSortByIdAction;
-    }
-
-    private Action getSortByTimeAction() {
-        if (fSortByTimeAction == null) {
-            fSortByTimeAction = new Action(Messages.CallStackView_SortByThreadTime, IAction.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    if (fSortOption == SortOption.BY_TIME) {
-                        saveSortOption(SortOption.BY_TIME_REV);
-                    } else {
-                        saveSortOption(SortOption.BY_TIME);
-                    }
-                }
-            };
-            fSortByTimeAction.setToolTipText(Messages.CallStackView_SortByThreadTime);
-            fSortByTimeAction.setImageDescriptor(SORT_BY_TIME_ICON);
-        }
-        return fSortByTimeAction;
-    }
-
-    private void loadSortOption() {
-        IDialogSettings settings = Activator.getDefault().getDialogSettings();
-        IDialogSettings section = settings.getSection(getClass().getName());
-        if (section == null) {
-            return;
-        }
-        String sortOption = section.get(SORT_OPTION_KEY);
-        if (sortOption == null) {
-            return;
+        public ImportMappingJob(File mappingFile) {
+            super(Messages.CallStackView_ImportMappingJobName);
+            fMappingFile = mappingFile;
         }
 
-        // reset defaults
-        getSortByNameAction().setChecked(false);
-        getSortByNameAction().setImageDescriptor(SORT_BY_NAME_ICON);
-        getSortByIdAction().setChecked(false);
-        getSortByIdAction().setImageDescriptor(SORT_BY_ID_ICON);
-        getSortByTimeAction().setChecked(false);
-        getSortByTimeAction().setImageDescriptor(SORT_BY_TIME_ICON);
+        @Override
+        public IStatus run(IProgressMonitor monitor) {
+            fNameMapping = FunctionNameMapper.mapFromNmTextFile(fMappingFile);
 
-        if (sortOption.equals(SortOption.BY_NAME.name())) {
-            fSortOption = SortOption.BY_NAME;
-            fThreadComparator = new ThreadNameComparator(false);
-            getSortByNameAction().setChecked(true);
-        } else if (sortOption.equals(SortOption.BY_NAME_REV.name())) {
-            fSortOption = SortOption.BY_NAME_REV;
-            fThreadComparator = new ThreadNameComparator(true);
-            getSortByNameAction().setChecked(true);
-            getSortByNameAction().setImageDescriptor(SORT_BY_NAME_REV_ICON);
-        } else if (sortOption.equals(SortOption.BY_ID.name())) {
-            fSortOption = SortOption.BY_ID;
-            fThreadComparator = new ThreadIdComparator(false);
-            getSortByIdAction().setChecked(true);
-        } else if (sortOption.equals(SortOption.BY_ID_REV.name())) {
-            fSortOption = SortOption.BY_ID_REV;
-            fThreadComparator = new ThreadIdComparator(true);
-            getSortByIdAction().setChecked(true);
-            getSortByIdAction().setImageDescriptor(SORT_BY_ID_REV_ICON);
-        } else if (sortOption.equals(SortOption.BY_TIME.name())) {
-            fSortOption = SortOption.BY_TIME;
-            fThreadComparator = new ThreadTimeComparator(false);
-            getSortByTimeAction().setChecked(true);
-        } else if (sortOption.equals(SortOption.BY_TIME_REV.name())) {
-            fSortOption = SortOption.BY_TIME_REV;
-            fThreadComparator = new ThreadTimeComparator(true);
-            getSortByTimeAction().setChecked(true);
-            getSortByTimeAction().setImageDescriptor(SORT_BY_TIME_REV_ICON);
+            /* Refresh the time graph and the list of entries */
+            buildThreadList(fTrace, new NullProgressMonitor());
+            redraw();
+
+            return Status.OK_STATUS;
         }
-    }
-
-    private void saveSortOption(SortOption sortOption) {
-        IDialogSettings settings = Activator.getDefault().getDialogSettings();
-        IDialogSettings section = settings.getSection(getClass().getName());
-        if (section == null) {
-            section = settings.addNewSection(getClass().getName());
-        }
-        section.put(SORT_OPTION_KEY, sortOption.name());
-        loadSortOption();
-        if (fEntryList == null) {
-            return;
-        }
-        for (TraceEntry traceEntry : fEntryList) {
-            traceEntry.sortChildren(fThreadComparator);
-        }
-        refresh();
-    }
-
-    /**
-     * Toolbar icon to import the function address-to-name mapping binary file.
-     */
-    private Action getImportBinaryAction() {
-        if (fImportBinaryFileMappingAction != null) {
-            return fImportBinaryFileMappingAction;
-        }
-
-        fImportBinaryFileMappingAction = new AbstractImportFileMappingAction(Messages.CallStackView_ImportBinaryFileDialogTitle) {
-            @Override
-            Map<String, String> doMapping(File file) {
-                return FunctionNameMapper.mapFromBinaryFile(file);
-            }
-        };
-
-        fImportBinaryFileMappingAction.setText(Messages.CallStackView_ImportBinaryFileButtonText);
-        fImportBinaryFileMappingAction.setToolTipText(Messages.CallStackView_ImportBinaryFileButtonTooltip);
-        fImportBinaryFileMappingAction.setImageDescriptor(Activator.getDefault().getImageDescripterFromPath(IMPORT_BINARY_ICON_PATH));
-
-        return fImportBinaryFileMappingAction;
     }
 
     String getFunctionName(String address) {
