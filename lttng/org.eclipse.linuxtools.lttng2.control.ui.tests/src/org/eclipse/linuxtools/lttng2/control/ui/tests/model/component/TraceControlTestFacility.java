@@ -200,8 +200,7 @@ public class TraceControlTestFacility {
      * @throws NotHandledException
      */
     public void executeCommand(String commandId) throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
-        Object handlerServiceObject = fControlView.getSite().getService(IHandlerService.class);
-        IHandlerService handlerService = (IHandlerService) handlerServiceObject;
+        IHandlerService handlerService = (IHandlerService) fControlView.getSite().getService(IHandlerService.class);
         handlerService.executeCommand(COMMAND_CATEGORY_PREFIX + commandId, null);
         waitForJobs();
     }
