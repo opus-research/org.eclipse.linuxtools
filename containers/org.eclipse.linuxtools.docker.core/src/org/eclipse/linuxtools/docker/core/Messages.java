@@ -42,7 +42,6 @@ public class Messages extends NLS {
 	public static String Docker_Machine_Process_Error;
 	public static String Docker_Machine_Process_Exception;
 	public static String Docker_Compose_Command_Not_Found;
-	public static String DockerConnectionManager_loading_connections;
 	public static String ImageTagsList_failure;
 	public static String ImageTagsList_failure_invalidWwwAuthenticateFormat;
 
