@@ -42,6 +42,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.Resolution;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.widgets.Utils.TimeFormat;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -55,6 +56,9 @@ import org.eclipse.swt.graphics.Rectangle;
 public class ResourcesPresentationProvider extends TimeGraphPresentationProvider {
 
     private long fLastThreadId = -1;
+    private Color fColorWhite;
+    private Color fColorGray;
+    private Integer fAverageCharWidth;
 
     private enum State {
         IDLE             (new RGB(200, 200, 200)),
@@ -264,8 +268,18 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
 
     @Override
     public void postDrawEvent(ITimeEvent event, Rectangle bounds, GC gc) {
+        if (fColorGray == null) {
+            fColorGray = gc.getDevice().getSystemColor(SWT.COLOR_GRAY);
+        }
+        if (fColorWhite == null) {
+            fColorWhite = gc.getDevice().getSystemColor(SWT.COLOR_WHITE);
+        }
+        if (fAverageCharWidth == null) {
+            fAverageCharWidth = gc.getFontMetrics().getAverageCharWidth();
+        }
+
         ITmfTimeGraphDrawingHelper drawingHelper = getDrawingHelper();
-        if (bounds.width <= gc.getFontMetrics().getAverageCharWidth()) {
+        if (bounds.width <= fAverageCharWidth) {
             return;
         }
 
@@ -297,50 +311,48 @@ public class ResourcesPresentationProvider extends TimeGraphPresentationProvider
                 int cpuQuark = entry.getQuark();
                 int currentThreadQuark = ss.getQuarkRelative(cpuQuark, Attributes.CURRENT_THREAD);
                 ITmfStateInterval tidInterval = ss.querySingleState(time, currentThreadQuark);
+                long startTime = Math.max(tidInterval.getStartTime(), event.getTime());
+                int x = Math.max(drawingHelper.getXForTime(startTime), bounds.x);
+                if (x >= bounds.x + bounds.width) {
+                    break;
+                }
                 if (!tidInterval.getStateValue().isNull()) {
                     ITmfStateValue value = tidInterval.getStateValue();
                     int currentThreadId = value.unboxInt();
-                    if (status == StateValues.CPU_STATUS_RUN_USERMODE && currentThreadId != fLastThreadId) {
-                        int execNameQuark = ss.getQuarkAbsolute(Attributes.THREADS, Integer.toString(currentThreadId), Attributes.EXEC_NAME);
-                        ITmfStateInterval interval = ss.querySingleState(time, execNameQuark);
-                        if (!interval.getStateValue().isNull()) {
-                            value = interval.getStateValue();
-                            gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
-                            long startTime = Math.max(tidInterval.getStartTime(), event.getTime());
-                            long endTime = Math.min(tidInterval.getEndTime() + 1, event.getTime() + event.getDuration());
-                            if (drawingHelper.getXForTime(endTime) > bounds.x) {
-                                int x = Math.max(drawingHelper.getXForTime(startTime), bounds.x);
-                                int width = Math.min(drawingHelper.getXForTime(endTime), bounds.x + bounds.width) - x;
-                                int drawn = Utils.drawText(gc, value.unboxStr(), x + 1, bounds.y - 2, width - 1, true, true);
-                                if (drawn > 0) {
-                                    fLastThreadId = currentThreadId;
+                    long endTime = Math.min(tidInterval.getEndTime() + 1, event.getTime() + event.getDuration());
+                    int xForEndTime = drawingHelper.getXForTime(endTime);
+                    if (xForEndTime > bounds.x) {
+                        int width = Math.min(xForEndTime, bounds.x + bounds.width) - x - 1;
+                        if (width > 0) {
+                            String attribute = null;
+                            int beginIndex = 0;
+                            if (status == StateValues.CPU_STATUS_RUN_USERMODE && currentThreadId != fLastThreadId) {
+                                attribute = Attributes.EXEC_NAME;
+                            } else if (status == StateValues.CPU_STATUS_RUN_SYSCALL) {
+                                attribute = Attributes.SYSTEM_CALL;
+                                beginIndex = 4; // skip the 'sys_'
+                            }
+                            if (attribute != null) {
+                                int quark = ss.getQuarkAbsolute(Attributes.THREADS, Integer.toString(currentThreadId), attribute);
+                                ITmfStateInterval interval = ss.querySingleState(time, quark);
+                                if (!interval.getStateValue().isNull()) {
+                                    value = interval.getStateValue();
+                                    gc.setForeground(fColorWhite);
+                                    int drawn = Utils.drawText(gc, value.unboxStr().substring(beginIndex), x + 1, bounds.y - 2, width, true, true);
+                                    if (drawn > 0) {
+                                        fLastThreadId = currentThreadId;
+                                    }
                                 }
                             }
-                        }
-                    } else if (status == StateValues.CPU_STATUS_RUN_SYSCALL) {
-                        int syscallQuark = ss.getQuarkAbsolute(Attributes.THREADS, Integer.toString(currentThreadId), Attributes.SYSTEM_CALL);
-                        ITmfStateInterval interval = ss.querySingleState(time, syscallQuark);
-                        if (!interval.getStateValue().isNull()) {
-                            value = interval.getStateValue();
-                            gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_WHITE));
-                            long startTime = Math.max(tidInterval.getStartTime(), event.getTime());
-                            long endTime = Math.min(tidInterval.getEndTime() + 1, event.getTime() + event.getDuration());
-                            if (drawingHelper.getXForTime(endTime) > bounds.x) {
-                                int x = Math.max(drawingHelper.getXForTime(startTime), bounds.x);
-                                int width = Math.min(drawingHelper.getXForTime(endTime), bounds.x + bounds.width) - x;
-                                Utils.drawText(gc, value.unboxStr().substring(4), x + 1, bounds.y - 2, width - 1, true, true);
+                            if (xForEndTime < bounds.x + bounds.width) {
+                                gc.setForeground(fColorGray);
+                                gc.drawLine(xForEndTime, bounds.y + 1, xForEndTime, bounds.y + bounds.height - 2);
                             }
                         }
                     }
                 }
-                time = tidInterval.getEndTime() + 1;
-                if (time < event.getTime() + event.getDuration()) {
-                    int x = drawingHelper.getXForTime(time);
-                    if (x >= bounds.x) {
-                        gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_GRAY));
-                        gc.drawLine(x, bounds.y + 1, x, bounds.y + bounds.height - 2);
-                    }
-                }
+                // make sure next time is at least at the next pixel
+                time = Math.max(tidInterval.getEndTime() + 1, drawingHelper.getTimeAtX(x + 1));
             }
         } catch (AttributeNotFoundException | TimeRangeException | StateValueTypeException e) {
             Activator.getDefault().logError("Error in ResourcesPresentationProvider", e); //$NON-NLS-1$
