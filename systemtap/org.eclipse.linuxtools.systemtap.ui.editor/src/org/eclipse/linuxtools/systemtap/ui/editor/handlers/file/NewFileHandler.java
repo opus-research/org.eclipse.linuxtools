@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2017 IBM Corporation and others.
+ * Copyright (c) 2006 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,9 @@
  *     Red Hat - migration to Handler implementation
  *******************************************************************************/
 
-package org.eclipse.linuxtools.internal.systemtap.ui.ide;
+package org.eclipse.linuxtools.systemtap.ui.editor.handlers.file;
 
+import org.eclipse.linuxtools.internal.systemtap.ui.editor.Localization;
 import org.eclipse.swt.SWT;
 
 /**
