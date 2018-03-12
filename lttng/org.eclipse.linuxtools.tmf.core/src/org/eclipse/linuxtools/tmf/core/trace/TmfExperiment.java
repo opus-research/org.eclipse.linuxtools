@@ -19,7 +19,8 @@ package org.eclipse.linuxtools.tmf.core.trace;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -101,6 +102,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      * The set of traces that constitute the experiment
      */
     private boolean fInitialized = false;
+
+    /**
+     * Lock for synchronization methods. These methods cannot be 'synchronized'
+     * since it makes it impossible to use an event request on the experiment
+     * during synchronization (the request thread would block)
+     */
+    private final ReentrantLock fSyncLock = new ReentrantLock();
 
     // ------------------------------------------------------------------------
     // Construction
@@ -500,7 +508,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      *             propagate TmfTraceExceptions
      * @since 3.0
      */
-    public synchronized SynchronizationAlgorithm synchronizeTraces() throws TmfTraceException {
+    public SynchronizationAlgorithm synchronizeTraces() throws TmfTraceException {
         return synchronizeTraces(false);
     }
 
@@ -515,7 +523,8 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
      *             propagate TmfTraceExceptions
      * @since 3.0
      */
-    public synchronized SynchronizationAlgorithm synchronizeTraces(boolean doSync) throws TmfTraceException {
+    public SynchronizationAlgorithm synchronizeTraces(boolean doSync) throws TmfTraceException {
+        fSyncLock.lock();
 
         /* Set up the path to the synchronization file we'll use */
         IResource resource = this.getResource();
@@ -532,12 +541,13 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
                 }
             }
         } catch (CoreException e) {
+            fSyncLock.unlock();
             throw new TmfTraceException(e.toString(), e);
         }
 
         final File syncFile = (supplDirectory != null) ? new File(supplDirectory + File.separator + SYNCHRONIZATION_DIRECTORY + File.separator + SYNCHRONIZATION_FILE_NAME) : null;
 
-        final SynchronizationAlgorithm syncAlgo = SynchronizationManager.synchronizeTraces(syncFile, Arrays.asList(fTraces), doSync);
+        final SynchronizationAlgorithm syncAlgo = SynchronizationManager.synchronizeTraces(syncFile, Collections.singleton(this), doSync);
 
         final TmfTraceSynchronizedSignal signal = new TmfTraceSynchronizedSignal(this, syncAlgo);
 
@@ -549,6 +559,7 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
             }
         }.start();
 
+        fSyncLock.unlock();
         return syncAlgo;
     }
 
