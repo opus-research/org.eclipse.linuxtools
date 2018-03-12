@@ -42,7 +42,6 @@ import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceProperties;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceWithPreDefinedEvents;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
@@ -63,7 +62,7 @@ import com.google.common.collect.ImmutableSet;
  * @author Matthew khouzam
  */
 public class CtfTmfTrace extends TmfTrace
-        implements ITmfEventParser, ITmfTraceProperties, ITmfPersistentlyIndexable,
+implements ITmfTraceProperties, ITmfPersistentlyIndexable,
         ITmfTraceWithPreDefinedEvents, AutoCloseable {
 
     // -------------------------------------------
@@ -496,7 +495,8 @@ public class CtfTmfTrace extends TmfTrace
             sessionName = getResource().getPersistentProperty(CtfConstants.LIVE_SESSION_NAME);
         } catch (CoreException e) {
             Activator.getDefault().logError(e.getMessage(), e);
-            // Something happened to the resource, assume we won't get any more data from it
+            // Something happened to the resource, assume we won't get any more
+            // data from it
             return true;
         }
         return host == null || port == null || sessionName == null;

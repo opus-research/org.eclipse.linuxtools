@@ -56,7 +56,7 @@ import org.eclipse.linuxtools.tmf.core.trace.location.ITmfLocation;
  * @version 1.0
  * @author Francois Chouinard
  */
-public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPersistentlyIndexable {
+public class TmfExperiment extends TmfTrace implements ITmfPersistentlyIndexable {
 
     // ------------------------------------------------------------------------
     // Constants
@@ -218,7 +218,6 @@ public class TmfExperiment extends TmfTrace implements ITmfEventParser, ITmfPers
     public void initExperiment(final Class<? extends ITmfEvent> type, final String path, final ITmfTrace[] traces, final int indexPageSize, IResource resource) {
         setCacheSize(indexPageSize);
         setStreamingInterval(0);
-        setParser(this);
         // traces have to be set before super.initialize()
         fTraces = traces;
         try {
