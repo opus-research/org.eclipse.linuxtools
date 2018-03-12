@@ -28,6 +28,8 @@ import org.eclipse.core.runtime.Platform;
  */
 public class SafeMappedByteBuffer {
 
+    private static final boolean IS_WIN32 = Platform.OS_WIN32.equals(Platform.getOS());
+
     /**
      * Maps a region of this channel's file directly into memory. On Windows,
      * this will allocate a new ByteBuffer and read the file.
@@ -46,7 +48,7 @@ public class SafeMappedByteBuffer {
      */
     public static ByteBuffer map(FileChannel fc, FileChannel.MapMode mode, long position, long size) throws IOException {
         ByteBuffer byteBuffer;
-        if (Platform.OS_WIN32.equals(Platform.getOS())) {
+        if (IS_WIN32) {
             byteBuffer = ByteBuffer.allocate((int) size);
             fc.read(byteBuffer, position);
         } else {
