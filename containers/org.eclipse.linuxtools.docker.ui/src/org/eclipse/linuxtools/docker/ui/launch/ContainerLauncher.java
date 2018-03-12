@@ -319,8 +319,7 @@ public class ContainerLauncher {
 						.createContainer(config, hostConfig, null);
 				OutputStream stream = null;
 				RunConsole oldConsole = getConsole();
-				final RunConsole rc = RunConsole.findConsole(connection,
-						containerId,
+				final RunConsole rc = RunConsole.findConsole(containerId,
 						consoleId);
 				setConsole(rc);
 				rc.clearConsole();

@@ -42,7 +42,7 @@ public class RemoveContainersCommandHandler extends BaseContainersCommandHandler
 			final IDockerConnection connection) {
 		try {
 			connection.removeContainer(container.id());
-			RunConsole rc = RunConsole.findConsole(connection, container.id());
+			RunConsole rc = RunConsole.findConsole(container.id());
 			if (rc != null)
 				RunConsole.removeConsole(rc);
 		} catch (DockerException | InterruptedException e) {

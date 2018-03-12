@@ -17,12 +17,8 @@ import java.io.OutputStream;
 
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
-import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
-import org.eclipse.linuxtools.docker.core.IDockerContainerState;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
-import org.eclipse.tm.terminal.view.ui.interfaces.ITerminalsView;
-import org.eclipse.tm.terminal.view.ui.manager.ConsoleManager;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IOConsole;
@@ -40,11 +36,9 @@ public class RunConsole extends IOConsole {
 
 	private String containerId;
 	private String id;
-	private IDockerConnection connection;
 
 	private OutputStream outputStream;
 	private boolean attached = false;
-	private boolean isTerminal = false;
 
 	/**
 	 * Returns a reference to the console that is for the given container id. If
@@ -56,11 +50,10 @@ public class RunConsole extends IOConsole {
 	 * @return A console instance or <code>null</code> if the given containerId
 	 *         was <code>null</code>.
 	 */
-	public static RunConsole findConsole(IDockerConnection connection,
-			String containerId) {
+	public static RunConsole findConsole(String containerId) {
 		if (containerId == null)
 			return null;
-		return findConsole(connection, containerId, DEFAULT_ID);
+		return findConsole(containerId, DEFAULT_ID);
 	}
 
 	/**
@@ -76,8 +69,7 @@ public class RunConsole extends IOConsole {
 	public static RunConsole findConsole(IDockerContainer container) {
 		if (container == null)
 			return null;
-		return findConsole(container.getConnection(), container.id(),
-				DEFAULT_ID, container.name());
+		return findConsole(container.id(), DEFAULT_ID, container.name());
 	}
 
 	/**
@@ -92,10 +84,8 @@ public class RunConsole extends IOConsole {
 	 *            various owners.
 	 * @return A console instance.
 	 */
-	public static RunConsole findConsole(IDockerConnection connection,
-			String containerId, String id) {
-		return findConsole(connection, containerId, id,
-				containerId.substring(0, 8));
+	public static RunConsole findConsole(String containerId, String id) {
+		return findConsole(containerId, id, containerId.substring(0, 8));
 	}
 
 	/**
@@ -112,37 +102,22 @@ public class RunConsole extends IOConsole {
 	 *            the name of the console to create if it did not already exist
 	 * @return A console instance.
 	 */
-	public static RunConsole findConsole(IDockerConnection connection,
-			String containerId, String id,
+	public static RunConsole findConsole(String containerId, String id,
 			String name) {
 		RunConsole ret = null;
-		IDockerContainerInfo info = connection.getContainerInfo(containerId);
-
-		if (info.config().tty()) {
-			ITerminalsView tv = ConsoleManager.getInstance().findConsoleView(
-					containerId,
-					"org.eclipse.linuxtools.docker." + connection.hashCode()); //$NON-NLS-1$
-			if (tv == null) {
-				ret = new RunConsole(connection, containerId, id, name);
-				ret.setTerminal(true);
+		for (IConsole cons : ConsolePlugin.getDefault().getConsoleManager()
+				.getConsoles()) {
+			if (cons instanceof RunConsole
+					&& ((RunConsole) cons).containerId.equals(containerId)
+					&& ((RunConsole) cons).id.equals(id)) {
+				ret = (RunConsole) cons;
 			}
-		} else {
-			for (IConsole cons : ConsolePlugin.getDefault().getConsoleManager()
-					.getConsoles()) {
-				if (cons instanceof RunConsole
-						&& ((RunConsole) cons).containerId.equals(containerId)
-						&& ((RunConsole) cons).connection == connection
-						&& ((RunConsole) cons).id.equals(id)) {
-					ret = (RunConsole) cons;
-				}
-			}
-			// no existing console, create new one
-			if (ret == null) {
-				ret = new RunConsole(connection, containerId, id, name);
-				ConsolePlugin.getDefault().getConsoleManager()
-						.addConsoles(new IConsole[] { ret });
-				ret.setTerminal(false);
-			}
+		}
+		// no existing console, create new one
+		if (ret == null) {
+			ret = new RunConsole(containerId, id, name);
+			ConsolePlugin.getDefault().getConsoleManager()
+					.addConsoles(new IConsole[] { ret });
 		}
 
 		return ret;
@@ -159,16 +134,6 @@ public class RunConsole extends IOConsole {
 	}
 
 	/**
-	 * Set whether this RunConsole represents a TM Terminal
-	 * 
-	 * @param isTerminal
-	 *            - true if this is a TM Terminal, false otherwise
-	 */
-	public void setTerminal(boolean isTerminal) {
-		this.isTerminal = isTerminal;
-	}
-
-	/**
 	 * The console will be attached to the underlying container.
 	 *
 	 * @param connection
@@ -181,12 +146,10 @@ public class RunConsole extends IOConsole {
 			try {
 				DockerConnection conn = (DockerConnection) connection;
 				if (conn.getContainerInfo(containerId).config().openStdin()) {
-					IDockerContainerState state = conn
-							.getContainerInfo(containerId).state();
-					do {
-						if (!state.running())
-							Thread.sleep(1000);
-					} while (!state.running() && state.finishDate() == null);
+					while (!conn.getContainerInfo(containerId).state()
+							.running()) {
+						Thread.sleep(1000);
+					}
 					conn.attachCommand(containerId, in, out);
 				}
 			} catch (Exception e) {
@@ -196,9 +159,25 @@ public class RunConsole extends IOConsole {
 		attached = true;
 	}
 
+	public static void attachToTerminal (final IDockerConnection connection, final String containerId) {
+		Thread t = new Thread(() -> {
+			try {
+				DockerConnection conn = (DockerConnection) connection;
+				if (conn.getContainerInfo(containerId).config().openStdin()) {
+					while (!conn.getContainerInfo(containerId).state()
+							.running()) {
+						Thread.sleep(1000);
+					}
+					conn.attachCommand(containerId, null, null);
+				}
+			} catch (Exception e) {
+			}
+		});
+		t.start();
+	}
+
 	public void attachToConsole(final IDockerConnection connection,
 			String containerId) {
-		this.connection = connection;
 		this.containerId = containerId;
 		attachToConsole(connection);
 	}
@@ -270,11 +249,9 @@ public class RunConsole extends IOConsole {
 	 * @param name
 	 *            The name to use for the console.
 	 */
-	private RunConsole(IDockerConnection connection, String containerId,
-			String id, String name) {
+	private RunConsole(String containerId, String id, String name) {
 		super(DVMessages.getFormattedString(CONTAINER_LOG_TITLE, name), ID,
 				null, true);
-		this.connection = connection;
 		this.containerId = containerId;
 		this.id = id;
 	}

@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.docker.core;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.linuxtools.docker.core.DockerException;
@@ -30,9 +29,9 @@ public class DefaultTCPConnectionSettingsProvider implements IDockerConnectionSe
 			conn.open(false);
 			conn.close();
 		} catch (DockerException e) {
-			return Collections.emptyList();
+			return null;
 		}
-		return Arrays.asList(tcp);
+		return Arrays.asList(new IDockerConnectionSettings[] { tcp });
 	}
 
 }

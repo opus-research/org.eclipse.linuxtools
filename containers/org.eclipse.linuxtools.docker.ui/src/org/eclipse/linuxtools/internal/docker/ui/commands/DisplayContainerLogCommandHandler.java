@@ -48,27 +48,29 @@ public class DisplayContainerLogCommandHandler extends AbstractHandler {
 		final String id = container.id();
 		final String name = container.name();
 
+		if (connection.getContainerInfo(id).config().tty()) {
+			RunConsole.attachToTerminal(connection, id);
+			return null;
+		}
 		try {
-			final RunConsole rc = RunConsole.findConsole(connection, id);
+			final RunConsole rc = RunConsole.findConsole(id);
 			if (rc != null) {
 				if (!rc.isAttached()) {
 					rc.attachToConsole(connection);
 				}
-				if (!connection.getContainerInfo(id).config().tty()) {
-					Display.getDefault().syncExec(() -> rc.setTitle(DVMessages
-							.getFormattedString(CONTAINER_LOG_TITLE, name)));
-					OutputStream stream = rc.getOutputStream();
-					// Only bother to ask for a log if
-					// one isn't currently active
-					EnumDockerLoggingStatus status = ((DockerConnection) connection)
-							.loggingStatus(id);
-					if (status != EnumDockerLoggingStatus.LOGGING_ACTIVE
-							&& !((DockerConnection) connection)
-									.getContainerInfo(id).config().tty()) {
-						rc.clearConsole();
-						((DockerConnection) connection).logContainer(id,
-								stream);
-					}
+				Display.getDefault().syncExec(() -> rc.setTitle(DVMessages
+						.getFormattedString(CONTAINER_LOG_TITLE, name)));
+				OutputStream stream = rc
+						.getOutputStream();
+				// Only bother to ask for a log if
+				// one isn't currently active
+				EnumDockerLoggingStatus status = ((DockerConnection) connection)
+						.loggingStatus(id);
+				if (status != EnumDockerLoggingStatus.LOGGING_ACTIVE
+						&& !((DockerConnection) connection)
+								.getContainerInfo(id).config().tty()) {
+					rc.clearConsole();
+					((DockerConnection) connection).logContainer(id, stream);
 				}
 				rc.showConsole();
 			}

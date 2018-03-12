@@ -576,19 +576,16 @@ public class DockerConnection
 		private DockerClient copyClient;
 		private OutputStream outputStream;
 		private boolean follow;
-		private long timestamp;
 
-		public LogThread(String id, DockerClient copyClient, boolean follow,
-				long timestamp) {
+		public LogThread(String id, DockerClient copyClient, boolean follow) {
 			this.id = id;
 			this.copyClient = copyClient;
 			this.follow = follow;
-			this.timestamp = timestamp;
 		}
 
 		@Override
 		public LogThread clone() {
-			return new LogThread(id, copyClient, follow, timestamp);
+			return new LogThread(id, copyClient, follow);
 		}
 
 		@Override
@@ -606,23 +603,15 @@ public class DockerConnection
 				boolean timestamps = preferences.getBoolean(
 						"logTimestamp", true); //$NON-NLS-1$
 
-				boolean showOldLogs = preferences.getBoolean("showOldLogs",
-						false);
-
 				LogStream stream = null;
 
-				ArrayList<LogsParam> params = new ArrayList<>();
-
-				params.add(LogsParam.follow());
-				params.add(LogsParam.stdout());
-				params.add(LogsParam.stderr());
 				if (timestamps)
-					params.add(LogsParam.timestamps());
-				if (!showOldLogs)
-					params.add(LogsParam
-							.since(Integer.valueOf((int) (timestamp / 1000L))));
-				stream = copyClient.logs(id,
-						params.toArray(new LogsParam[] {}));
+					stream = copyClient.logs(id, LogsParam.follow(),
+							LogsParam.stdout(), LogsParam.stderr(),
+							LogsParam.timestamps());
+				else
+					stream = copyClient.logs(id, LogsParam.follow(),
+							LogsParam.stdout(), LogsParam.stderr());
 
 				// First time through, don't sleep before showing log data
 				int delayTime = 100;
@@ -1589,8 +1578,7 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(id);
 					if (t == null || !t.isAlive()) {
-						long timestamp = System.currentTimeMillis();
-						t = new LogThread(id, getClientCopy(), true, timestamp);
+						t = new LogThread(id, getClientCopy(), true);
 						loggingThreads.put(id, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1661,8 +1649,7 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(id);
 					if (t == null || !t.isAlive()) {
-						long timestamp = System.currentTimeMillis();
-						t = new LogThread(id, getClientCopy(), true, timestamp);
+						t = new LogThread(id, getClientCopy(), true);
 						loggingThreads.put(id, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1698,8 +1685,7 @@ public class DockerConnection
 				synchronized (loggingThreads) {
 					LogThread t = loggingThreads.get(loggingId);
 					if (t == null || !t.isAlive()) {
-						long timestamp = System.currentTimeMillis();
-						t = new LogThread(id, getClientCopy(), true, timestamp);
+						t = new LogThread(id, getClientCopy(), true);
 						loggingThreads.put(loggingId, t);
 						t.setOutputStream(stream);
 						t.start();
@@ -1846,7 +1832,7 @@ public class DockerConnection
 				LogThread t = loggingThreads.get(id);
 				if (t == null || !t.isAlive()) {
 					t = new LogThread(id, getClientCopy(), info.state()
-							.running(), 0);
+							.running());
 					loggingThreads.put(id, t);
 					t.setOutputStream(stream);
 					t.start();
@@ -1971,15 +1957,8 @@ public class DockerConnection
 			InputStream tin = HttpHijackWorkaround.getInputStream(pty_stream);
 			// org.eclipse.tm.terminal.connector.ssh.controls.SshWizardConfigurationPanel
 			Map<String, Object> properties = new HashMap<>();
-			properties.put(ITerminalsConnectorConstants.PROP_ID,
-					name);
-			properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID,
-					"org.eclipse.linuxtools.terminal"); //$NON-NLS-1$
-			properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID,
-					"org.eclipse.tm.terminal.connector.streams.launcher.streams"); //$NON-NLS-1$
-			properties.put(
-					ITerminalsConnectorConstants.PROP_TERMINAL_CONNECTOR_ID,
-					"org.eclipse.tm.terminal.connector.streams.StreamsConnector"); //$NON-NLS-1$
+			properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "org.eclipse.tm.terminal.connector.streams.launcher.streams");
+			properties.put(ITerminalsConnectorConstants.PROP_TERMINAL_CONNECTOR_ID, "org.eclipse.tm.terminal.connector.streams.StreamsConnector");
 			properties.put(ITerminalsConnectorConstants.PROP_TITLE, name);
 			properties.put(ITerminalsConnectorConstants.PROP_LOCAL_ECHO, false);
 			properties.put(ITerminalsConnectorConstants.PROP_FORCE_NEW, true);

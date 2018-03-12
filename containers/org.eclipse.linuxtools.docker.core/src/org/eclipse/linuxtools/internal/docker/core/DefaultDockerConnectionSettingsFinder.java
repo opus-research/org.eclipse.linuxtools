@@ -149,9 +149,9 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         is readable and writable, {@code null} otherwise.
 	 */
 	public IDockerConnectionSettings defaultsWithUnixSocket() {
-		final List<IDockerConnectionSettings> res = new DefaultUnixConnectionSettingsProvider()
+		List<IDockerConnectionSettings> res = new DefaultUnixConnectionSettingsProvider()
 				.getConnectionSettings();
-		if (res != null && !res.isEmpty()) {
+		if (res != null) {
 			return res.get(0);
 		}
 		return null;
@@ -165,9 +165,9 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         environment variables exist, {@code null} otherwise.
 	 */
 	public IDockerConnectionSettings defaultsWithSystemEnv() {
-		final List<IDockerConnectionSettings> res = new SystemConnectionSettingsProvider()
+		List<IDockerConnectionSettings> res = new SystemConnectionSettingsProvider()
 				.getConnectionSettings();
-		if (res != null && !res.isEmpty()) {
+		if (res != null) {
 			return res.get(0);
 		}
 		return null;
@@ -181,9 +181,9 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         environment variables exist, {@code null} otherwise.
 	 */
 	public IDockerConnectionSettings defaultsWithShellEnv() {
-		final List<IDockerConnectionSettings> res = new ShellConnectionSettingsProvider()
+		List<IDockerConnectionSettings> res = new ShellConnectionSettingsProvider()
 				.getConnectionSettings();
-		if (res != null && !res.isEmpty()) {
+		if (res != null) {
 			return res.get(0);
 		}
 		return null;
@@ -263,7 +263,7 @@ public class DefaultDockerConnectionSettingsFinder
 				if (obj instanceof IDockerConnectionSettingsProvider) {
 					List<IDockerConnectionSettings> settings = ((IDockerConnectionSettingsProvider) obj)
 							.getConnectionSettings();
-					if (settings != null && !settings.isEmpty()) {
+					if (settings != null) {
 						result.addAll(settings);
 					}
 				}
