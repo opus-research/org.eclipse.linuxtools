@@ -270,6 +270,11 @@
 	        name="%command.copyfromcontainer.name">
         </command>
 		<command
+	        description="%command.copytocontainer.description"
+	        id="org.eclipse.linuxtools.docker.ui.commands.copytocontainer"
+	        name="%command.copytocontainer.name">
+        </command>
+		<command
 	        description="%command.displaycontainerlog.description"
 	        id="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
 	        name="%command.displaycontainerlog.name">
@@ -677,18 +682,36 @@
                  			<instanceof
                        			value="org.eclipse.linuxtools.docker.core.IDockerContainer">
                  			</instanceof>
-                 			<or>
-                    			<test
-                          			forcePluginActivation="true"
-                          			property="org.eclipse.linuxtools.docker.propertytesters.container.isStopped"
-                          			value="false">
-                    			</test>
-                    			<test
-                          			forcePluginActivation="true"
-                          			property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
-                          			value="true">
-                    			</test>
-                 			</or>
+                    		<test
+                          		forcePluginActivation="true"
+                          		property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
+                          		value="false">
+                    		</test>
+              			</and>
+           			</iterate>
+        		</with>
+     		</enabledWhen>
+  		</handler>
+     	<handler
+        	class="org.eclipse.linuxtools.internal.docker.ui.commands.CopyToContainerCommandHandler"
+        	commandId="org.eclipse.linuxtools.docker.ui.commands.copytocontainer">
+     		<enabledWhen>
+        		<with
+              		variable="selection">
+           			<count
+                 		value="1">
+           			</count>
+          			<iterate
+                 		ifEmpty="false">
+              			<and>
+                 			<instanceof
+                       			value="org.eclipse.linuxtools.docker.core.IDockerContainer">
+                 			</instanceof>
+                    		<test
+                          		forcePluginActivation="true"
+                          		property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
+                          		value="false">
+                    		</test>
               			</and>
            			</iterate>
         		</with>
@@ -1022,6 +1045,34 @@
 		          style="push">
 				</command>
 		</menuContribution>
+		<!-- explorer view context menu: enable connection -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=?after=group.edit">
+				<command
+          commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+          icon="icons/repository-synchronize-attributes.png"
+          id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+          label="%command.enableconnection.menu.name"
+          style="push">
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="or">
+	                      <or>
+			                 <instanceof
+			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
+	                      </or>
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+				</command>
+		</menuContribution>
 		<!-- explorer view context menu: remove connection -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=?after=group.edit">
@@ -1285,6 +1336,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
 		          id="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
+		          icon="icons/commit.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -1309,6 +1361,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
+		          icon="icons/display_log.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -1333,6 +1386,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
+		          icon="icons/remove_log.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -1553,6 +1607,60 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
+		
+		<!-- explorer view context menu: copy from containers -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.execContainer">
+	  		<command
+	           commandId="org.eclipse.linuxtools.docker.ui.commands.copyfromcontainer"
+	           id="org.eclipse.linuxtools.docker.ui.commands.copyfromcontainer"
+	           icon="icons/copy_from_container.gif"
+	           style="push">
+		      </command>
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerContainer" />
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+		</menuContribution>
+		
+		<!-- explorer view context menu: copy to container -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.copyfromcontainer">
+	  		<command
+	           commandId="org.eclipse.linuxtools.docker.ui.commands.copytocontainer"
+	           id="org.eclipse.linuxtools.docker.ui.commands.copytocontainer"
+	           icon="icons/copy_to_container.gif"
+	           style="push">
+		      </command>
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerContainer" />
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+		</menuContribution>
+		
+		
 		<!-- explorer view context menu: tag image -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.pushImage">
@@ -1642,6 +1750,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
 		          id="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
+		          icon="icons/commit.gif"
 		          style="push">
 				</command>
 		</menuContribution>
@@ -1650,6 +1759,7 @@
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerContainersView">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.restartContainers"
+		          icon="icons/restart.gif"
 		          id="org.eclipse.linuxtools.docker.ui.commands.restartContainers"
 		          style="push">
 				</command>
@@ -1660,6 +1770,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
+		          icon="icons/display_log.gif"
 		          style="push">
 				</command>
 		</menuContribution>
@@ -1669,6 +1780,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
+		          icon="icons/remove_log.gif"
 		          style="push">
 				</command>
 		</menuContribution>
@@ -1689,6 +1801,17 @@
 	  		<command
 	           commandId="org.eclipse.linuxtools.docker.ui.commands.copyfromcontainer"
 	           id="org.eclipse.linuxtools.docker.ui.commands.copyfromcontainer"
+	           icon="icons/copy_from_container.gif"
+	           style="push">
+		      </command>
+		</menuContribution>
+		<!-- containers view context menu: copy to container -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerContainersView">
+	  		<command
+	           commandId="org.eclipse.linuxtools.docker.ui.commands.copytocontainer"
+	           id="org.eclipse.linuxtools.docker.ui.commands.copytocontainer"
+	           icon="icons/copy_to_container.gif"
 	           style="push">
 		      </command>
 		</menuContribution>
@@ -1828,6 +1951,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.tagImage"
 		          id="org.eclipse.linuxtools.docker.ui.commands.tagImage2"
+		          icon="icons/tag.gif"
 		          style="push">
 				</command>
 		</menuContribution>
@@ -1837,6 +1961,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeTag"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeTag"
+		          icon="icons/remove_tag.gif"
 		          style="push">
 				</command>
 		</menuContribution>
@@ -1890,6 +2015,7 @@
 				<command
 					commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
 					id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+					icon="icons/console_view.gif"
 					style="push">
 			</command>
 	    </menuContribution>
@@ -1999,6 +2125,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeTag"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeTag"
+		          icon="icons/remove_tag.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -2191,6 +2318,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
 		          id="org.eclipse.linuxtools.docker.ui.commands.commitContainer"
+		          icon="icons/commit.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -2214,6 +2342,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.displayContainerLog"
+		          icon="icons/display_log.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">
@@ -2237,6 +2366,7 @@
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeContainerLog"
+		          icon="icons/remove_log.gif"
 		          style="push">
 		          <visibleWhen
 	               checkEnabled="false">

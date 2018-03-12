@@ -16,6 +16,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystems;
@@ -185,9 +189,8 @@ public class DockerConnection
 	private Map<String, IDockerContainer> containersById = new HashMap<>();
 	// flag to indicate if the state of the connection to the Docker daemon
 	private EnumDockerConnectionState state = EnumDockerConnectionState.UNKNOWN;
-	private boolean containersLoaded = false;
 	private List<IDockerImage> images;
-	private boolean imagesLoaded = false;
+	private Boolean isLocalConnection;
 
 	ListenerList<IDockerContainerListener> containerListeners;
 	ListenerList<IDockerImageListener> imageListeners;
@@ -287,7 +290,7 @@ public class DockerConnection
 			this.connectionInfo = getInfo();
 		} catch (Exception e) {
 			// ignore for now as this seems to occur too often and we always
-			// check the value of connectioninfo before using
+			// check the value of connectionInfo before using
 		}
 	}
 	/**
@@ -315,8 +318,6 @@ public class DockerConnection
 			this.images = Collections.emptyList();
 			this.containers = Collections.emptyList();
 			this.containersById = new HashMap<>();
-			this.imagesLoaded = true;
-			this.containersLoaded = true;
 			notifyContainerListeners(this.containers);
 			notifyImageListeners(this.images);
 			break;
@@ -574,7 +575,7 @@ public class DockerConnection
 
 	@Override
 	public boolean isContainersLoaded() {
-		return containersLoaded;
+		return this.containers != null;
 	}
 
 	/**
@@ -744,7 +745,6 @@ public class DockerConnection
 						(container, otherContainer) -> container.name()
 								.compareTo(otherContainer.name()));
 				this.containers = sortedContainers;
-				this.containersLoaded = true;
 			}
 		}
 		// perform notification outside of containerLock so we don't have a View
@@ -958,7 +958,7 @@ public class DockerConnection
 		} else if (this.state == EnumDockerConnectionState.UNKNOWN) {
 			try {
 				open(true);
-				getImages(force);
+				latestImages = getImages(force);
 			} catch (DockerException e) {
 				Activator.log(e);
 			}
@@ -970,8 +970,6 @@ public class DockerConnection
 					this.images = Collections.emptyList();
 				}
 				Activator.log(e);
-			} finally {
-				this.imagesLoaded = true;
 			}
 		}
 		return latestImages;
@@ -979,7 +977,7 @@ public class DockerConnection
 
 	@Override
 	public boolean isImagesLoaded() {
-		return imagesLoaded;
+		return this.images != null;
 	}
 
 	// TODO: remove this method from the API
@@ -1049,7 +1047,6 @@ public class DockerConnection
 				}
 			} finally {
 				this.images = tempImages;
-				this.imagesLoaded = true;
 			}
 		}
 		// Perform notification outside of lock so that listener doesn't cause a
@@ -1865,6 +1862,36 @@ public class DockerConnection
 			throw new DockerException(e.getMessage(), e.getCause());
 		}
 		return stream;
+	}
+
+	public boolean isLocal() {
+		if (isLocalConnection != null)
+			return isLocalConnection.booleanValue();
+		isLocalConnection = new Boolean(false);
+		if (connectionSettings
+				.getType() == BindingType.UNIX_SOCKET_CONNECTION) {
+			isLocalConnection = new Boolean(true);
+		} else if (connectionSettings.getType() == BindingType.TCP_CONNECTION) {
+			TCPConnectionSettings settings = (TCPConnectionSettings) connectionSettings;
+			try {
+				InetAddress addr = InetAddress.getByName(settings.getAddr());
+				if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+					isLocalConnection = new Boolean(true);
+				} else {
+					// Check if the address is defined on any interface
+					try {
+						isLocalConnection = new Boolean(NetworkInterface
+								.getByInetAddress(addr) != null);
+					} catch (SocketException e) {
+						isLocalConnection = new Boolean(false);
+					}
+				}
+			} catch (UnknownHostException e) {
+				// should not happen
+				Activator.log(e);
+			}
+		}
+		return isLocalConnection.booleanValue();
 	}
 
 	@Override
