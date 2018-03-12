@@ -47,7 +47,7 @@ public class ContainerVMRunner extends StandardVMRunner {
 
 	@Override
 	protected Process exec(String[] cmdLine, File workingDirectory, String[] envp) throws CoreException {
-		String connectionUri = ((ContainerVMInstall) fVMInstance).getConnection().getUri();
+		String connectionUri = DockerConnectionManager.getInstance().getFirstConnection().getUri();
 		String command = String.join(" ", cmdLine); //$NON-NLS-1$
 		String newWD = workingDirectory.getAbsolutePath();
 
@@ -62,28 +62,13 @@ public class ContainerVMRunner extends StandardVMRunner {
 			newWD = UnixFile.convertDOSPathToUnixPath(workingDirectory.getAbsolutePath());
 		}
 
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=520275
-		if (!newWD.endsWith("/")) { //$NON-NLS-1$
-			newWD = newWD + "/"; //$NON-NLS-1$
-		}
-
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=520275
-		List<String> modAdditionalDirs = new ArrayList<> ();
-		for (String addDir : additionalDirs) {
-			if (!addDir.endsWith("/")) { //$NON-NLS-1$
-				modAdditionalDirs.add(addDir + "/"); //$NON-NLS-1$
-			} else {
-				modAdditionalDirs.add(addDir);
-			}
-		}
-
 		ContainerLauncher launch = new ContainerLauncher();
 		int port = ((ContainerVMInstall)fVMInstance).getPort();
 		String [] portMap = port != -1
 				? new String [] {String.valueOf(port) + ':' + String.valueOf(port)}
 				: new String [0];
 		launch.launch("org.eclipse.linuxtools.jdt.docker.launcher", new JavaAppInContainerLaunchListener(), connectionUri, //$NON-NLS-1$
-				fVMInstance.getId(), command, null, newWD, modAdditionalDirs,
+				fVMInstance.getId(), command, null, newWD, additionalDirs,
 				System.getenv(), null,
 				Arrays.asList(portMap),
 				false, true, true);
@@ -142,7 +127,7 @@ public class ContainerVMRunner extends StandardVMRunner {
 
 	@Override
 	protected boolean fileExists(File file) {
-		DockerConnection conn = ((ContainerVMInstall) fVMInstance).getConnection();
+		DockerConnection conn = (DockerConnection) DockerConnectionManager.getInstance().getFirstConnection();
 		ImageQuery q = new ImageQuery(conn, fVMInstance.getId());
 		try {
 			return q.isFile(file);
