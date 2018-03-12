@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,12 +19,9 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.observable.list.IObservableList;
-import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
-import org.eclipse.core.databinding.validation.MultiValidator;
+import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,15 +42,19 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
+import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.utils.IRunnableWithResult;
+import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageNameValidator;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
@@ -93,45 +94,14 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		return model;
 	}
 
-	private class ImageSelectionValidator extends MultiValidator {
-
-		private final IObservableValue imageSelectionObservable;
-
-		ImageSelectionValidator(
-				final IObservableValue imageSelectionObservable) {
-			this.imageSelectionObservable = imageSelectionObservable;
-		}
-
-		@Override
-		protected IStatus validate() {
-			final String selectedImageName = (String) imageSelectionObservable
-					.getValue();
-			if (selectedImageName.isEmpty()) {
-				model.setSelectedImageNeedsPulling(false);
-				return ValidationStatus.error(WizardMessages
-						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
-			}
-			if (model.getSelectedImage() != null) {
-				model.setSelectedImageNeedsPulling(false);
-				return ValidationStatus.ok();
-			}
-			model.setSelectedImageNeedsPulling(true);
-			return ValidationStatus.warning(WizardMessages.getFormattedString(
-					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
-					selectedImageName));
-		}
-
-		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
-			targets.add(imageSelectionObservable);
-			return targets;
-		}
+	@Override
+	public String getName() {
+		return LaunchMessages.getString(TAB_NAME);
 	}
 
 	@Override
 	public void createControl(Composite parent) {
-		final Composite container = new Composite(parent, SWT.NONE);
+ 		final Composite container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1)
 				.grab(true, false).applyTo(container);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
@@ -157,9 +127,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					.observe(model);
 			imageSelectionObservable
 					.addValueChangeListener(onImageSelectionChange());
-			final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
-					imageSelectionObservable);
-			dbc.addValidationStatusProvider(imageSelectionValidator);
 		}
 		setControl(container);
 	}
@@ -340,63 +307,49 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 	 */
 	private IContentProposalProvider getImageNameContentProposalProvider(
 			final Combo imageSelectionCombo) {
-		return new IContentProposalProvider() {
-
-			@Override
-			public IContentProposal[] getProposals(final String contents,
-					final int position) {
-				final List<IContentProposal> proposals = new ArrayList<>();
-				for (String imageName : imageSelectionCombo.getItems()) {
-					if (imageName.contains(contents)) {
-						proposals.add(new ContentProposal(imageName, imageName,
-								imageName, position));
-					}
+		return (contents, position) -> {
+			final List<IContentProposal> proposals = new ArrayList<>();
+			for (String imageName : imageSelectionCombo.getItems()) {
+				if (imageName.contains(contents)) {
+					proposals.add(new ContentProposal(imageName, imageName,
+							imageName, position));
 				}
-				return proposals.toArray(new IContentProposal[0]);
 			}
+			return proposals.toArray(new IContentProposal[0]);
 		};
 	}
 
 	private IValueChangeListener onImageSelectionChange() {
-		return new IValueChangeListener() {
-
-			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				final IDockerImage selectedImage = model.getSelectedImage();
-				// skip if the selected image does not exist in the local Docker
-				// host
-				if (selectedImage == null) {
-					model.setExposedPorts(new ArrayList<ExposedPortModel>());
-					return;
-				}
-				findImageInfo(selectedImage);
-				volumesModel.setSelectedImage(selectedImage);
+		return event -> {
+			final IDockerImage selectedImage = model.getSelectedImage();
+			// skip if the selected image does not exist in the local Docker
+			// host
+			if (selectedImage == null) {
+				model.setExposedPorts(new ArrayList<ExposedPortModel>());
+				return;
 			}
+			findImageInfo(selectedImage);
+			volumesModel.setSelectedImage(selectedImage);
 		};
 	}
 
 	private IValueChangeListener onConnectionSelectionChange() {
-		return new IValueChangeListener() {
-
-			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				IDockerImage selectedImage = model.getSelectedImage();
-				// skip if the selected image does not exist in the local Docker
-				// host
-				if (selectedImage == null) {
-					List<String> imageNames = model.getImageNames();
-					if (imageNames.size() > 0) {
-						model.setSelectedImageName(imageNames.get(0));
-						selectedImage = model.getSelectedImage();
-					} else {
-						model.setExposedPorts(
-								new ArrayList<ExposedPortModel>());
-						return;
-					}
+		return event -> {
+			IDockerImage selectedImage = model.getSelectedImage();
+			// skip if the selected image does not exist in the local Docker
+			// host
+			if (selectedImage == null) {
+				List<String> imageNames = model.getImageNames();
+				if (imageNames.size() > 0) {
+					model.setSelectedImageName(imageNames.get(0));
+					selectedImage = model.getSelectedImage();
+				} else {
+					model.setExposedPorts(new ArrayList<ExposedPortModel>());
+					return;
 				}
-				findImageInfo(selectedImage);
-				volumesModel.setSelectedImage(selectedImage);
 			}
+			findImageInfo(selectedImage);
+			volumesModel.setSelectedImage(selectedImage);
 		};
 	}
 
@@ -445,8 +398,8 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				}
 			}
 			model.setExposedPorts(availablePorts);
-			model.setCommand(selectedImageInfo.config().cmd());
 			model.setEntrypoint(selectedImageInfo.config().entrypoint());
+			model.setCommand(selectedImageInfo.config().cmd());
 
 		} catch (InvocationTargetException | InterruptedException e) {
 			Activator.log(e);
@@ -490,6 +443,18 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						.value(ImageRunSelectionModel.class,
 								ImageRunSelectionModel.REMOVE_WHEN_EXITS)
 						.observe(model));
+
+		// privileged
+		final Button privilegedButton = new Button(container, SWT.CHECK);
+		privilegedButton.setText(
+				WizardMessages.getString("ImageRunSelectionPage.privileged")); //$NON-NLS-1$
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.span(COLUMNS, 1).grab(true, false).applyTo(privilegedButton);
+		dbc.bindValue(WidgetProperties.selection().observe(privilegedButton),
+				BeanProperties
+						.value(ImageRunSelectionModel.class,
+								ImageRunSelectionModel.PRIVILEGED)
+						.observe(model));
 	}
 
 	private SelectionListener onSearchImage() {
@@ -499,7 +464,8 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 			public void widgetSelected(SelectionEvent e) {
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						RunImageMainTab.this.model.getSelectedConnection(),
-						RunImageMainTab.this.model.getSelectedImageName());
+						RunImageMainTab.this.model.getSelectedImageName(),
+						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY));
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
@@ -526,19 +492,32 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				.getInstance()
 				.getConnections();
 		try {
+			String defaultConnectionName = ""; //$NON-NLS-1$
+			// Default to first active connection name
+			if (connections != null && connections.length > 0) {
+				for (int i = 0; i < connections.length; ++i) {
+					if (connections[i].isOpen())
+						defaultConnectionName = connections[i].getName();
+				}
+			}
+			// Mark in error if there is no active connection
+			if (defaultConnectionName.equals("")) { //$NON-NLS-1$
+				setErrorMessage(WizardMessages
+						.getString("ErrorNoActiveConnection.msg")); //$NON-NLS-1$
+			}
 			String connectionName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					connections[0].getName());
+					defaultConnectionName);
 			model.setSelectedConnectionName(connectionName);
 			String imageName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME, ""); //$NON-NLS-1$
 			model.setSelectedImageName(imageName);
-			String command = configuration.getAttribute(
-					IRunDockerImageLaunchConfigurationConstants.COMMAND, ""); //$NON-NLS-1$
-			model.setCommand(command);
 			String entryPoint = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.ENTRYPOINT, ""); //$NON-NLS-1$
 			model.setEntrypoint(entryPoint);
+			String command = configuration.getAttribute(
+					IRunDockerImageLaunchConfigurationConstants.COMMAND, ""); //$NON-NLS-1$
+			model.setCommand(command);
 			String containerName = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONTAINER_NAME,
 					""); //$NON-NLS-1$
@@ -555,6 +534,10 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					IRunDockerImageLaunchConfigurationConstants.ALLOCATE_PSEUDO_CONSOLE,
 					false);
 			model.setAllocatePseudoTTY(useTTY);
+			boolean privileged = configuration.getAttribute(
+					IRunDockerImageLaunchConfigurationConstants.PRIVILEGED,
+					false);
+			model.setPrivileged(privileged);
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
 					LaunchMessages.getString(
@@ -601,20 +584,53 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.INTERACTIVE,
 				model.isInteractiveMode());
+		configuration.setAttribute(
+				IRunDockerImageLaunchConfigurationConstants.PRIVILEGED,
+				model.isPrivileged());
 	}
 
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
 		try {
-			if (launchConfig.getAttribute(
+			String connectionName = launchConfig.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					"").isEmpty()) {
+					"");
+			if (connectionName.isEmpty()) {
+				return false;
+			} else {
+				// Verify Connection is active
+				IDockerConnection connection = DockerConnectionManager
+						.getInstance().findConnection(connectionName);
+				if (connection == null || !connection.isOpen()) {
+					setErrorMessage(WizardMessages
+							.getString("ErrorInactiveConnection.msg")); //$NON-NLS-1$
+					return false;
+				}
+			}
+			final IStatus imageSelectionValidationStatus = new ImageSelectionValidator()
+					.validate(model.getSelectedImageName());
+			if (!imageSelectionValidationStatus.isOK()) {
+				setErrorMessage(imageSelectionValidationStatus.getMessage());
 				return false;
 			}
+			final IStatus imageNameValidationStatus = new ImageNameValidator()
+					.validate(model.getSelectedImageName());
+			if (!imageNameValidationStatus.isOK()) {
+				setErrorMessage(imageNameValidationStatus.getMessage());
+				return false;
+			}
+			final IStatus containerNameValidationStatus = new ContainerNameValidator()
+					.validate(model.getContainerName());
+			if (!containerNameValidationStatus.isOK()) {
+				setErrorMessage(containerNameValidationStatus.getMessage());
+				return false;
+			}
+
 		} catch (CoreException e) {
 			Activator.log(e);
 		}
-		return super.isValid(launchConfig);
+		setErrorMessage(null);
+		return true;
 	}
 
 	private class LaunchConfigurationChangeListener
@@ -626,14 +642,44 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
+	private class ImageSelectionValidator implements IValidator {
+
+		@Override
+		public IStatus validate(final Object value) {
+			final String selectedImageName = (String) value;
+			if (selectedImageName.isEmpty()) {
+				model.setSelectedImageNeedsPulling(false);
+				return ValidationStatus.error(WizardMessages
+						.getString("ImageRunSelectionPage.specifyImageMsg")); //$NON-NLS-1$
+			}
+			if (model.getSelectedImage() != null) {
+				model.setSelectedImageNeedsPulling(false);
+				return ValidationStatus.ok();
+			}
+			model.setSelectedImageNeedsPulling(true);
+			return ValidationStatus.warning(WizardMessages.getFormattedString(
+					"ImageRunSelectionPage.imageNotFoundMessage", //$NON-NLS-1$
+					selectedImageName));
+		}
+
 	}
 
-	@Override
-	public String getName() {
-		return LaunchMessages.getString(TAB_NAME);
+	private class ContainerNameValidator implements IValidator {
+
+		@Override
+		public IStatus validate(Object value) {
+			final String containerName = (String) value;
+
+			for (IDockerContainer container : model.getSelectedConnection()
+					.getContainers()) {
+				if (container.name().equals(containerName)) {
+					return ValidationStatus.error(WizardMessages.getString(
+							"ImageRunSelectionPage.containerWithSameName")); //$NON-NLS-1$
+				}
+			}
+			return ValidationStatus.ok();
+		}
+
 	}
 
 }

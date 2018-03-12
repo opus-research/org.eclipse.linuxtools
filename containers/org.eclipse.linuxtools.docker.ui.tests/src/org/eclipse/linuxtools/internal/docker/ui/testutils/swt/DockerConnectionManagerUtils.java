@@ -11,15 +11,18 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.testutils.swt;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionStorageManager;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionStorageManagerFactory;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 
 /**
  * 
@@ -32,22 +35,47 @@ public class DockerConnectionManagerUtils {
 	 * {@link DockerExplorerView}.
 	 * 
 	 * @param connections the connection to configure in the {@link DockerConnectionManager} via a mocked {@link IDockerConnectionStorageManager}
-	 * @throws InterruptedException
 	 */
 	public static void configureConnectionManager(
-			final IDockerConnection... connections) throws InterruptedException {
+			final IDockerConnection... connections) {
+		final IDockerConnectionStorageManager connectionStorageManager = MockDockerConnectionStorageManagerFactory.providing(connections);
+		configureConnectionManager(connectionStorageManager);
+	}
+	
+	/**
+	 * Configures the {@link DockerConnectionManager} with the given array of
+	 * {@link IDockerConnection} (can be mocked) and refreshes the associated
+	 * {@link DockerExplorerView}.
+	 * 
+	 * @param connectionStorageManager the {@link IDockerConnectionStorageManager} to use (can be mocked)
+	 */
+	public static void configureConnectionManager(final IDockerConnectionStorageManager connectionStorageManager) {
 		DockerConnectionManager.getInstance()
-				.setConnectionStorageManager(MockDockerConnectionStorageManagerFactory.providing(connections));
+				.setConnectionStorageManager(connectionStorageManager);
 		final SWTWorkbenchBot bot = new SWTWorkbenchBot();
-		final SWTBotView dockerExplorerViewBot = bot.viewById("org.eclipse.linuxtools.docker.ui.dockerExplorerView");
-		if(dockerExplorerViewBot != null) {
-			final DockerExplorerView dockerExplorerView = (DockerExplorerView) (dockerExplorerViewBot.getViewReference().getView(true));
-			SWTUtils.syncExec(() -> {
-				DockerConnectionManager.getInstance().reloadConnections();
+		final DockerExplorerView dockerExplorerView = getView(bot, DockerExplorerView.VIEW_ID);
+		final DockerContainersView dockerContainersView = getView(bot, DockerContainersView.VIEW_ID);
+		SWTUtils.syncExec(() -> {
+			DockerConnectionManager.getInstance().reloadConnections();
+			if (dockerExplorerView != null) {
 				dockerExplorerView.getCommonViewer().refresh();
 				dockerExplorerView.showConnectionsOrExplanations();
-			});
-			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
-		}
+			}
+			if (dockerContainersView != null) {
+				dockerContainersView.getViewer().refresh();
+			}
+		});
+		SWTUtils.wait(1, TimeUnit.SECONDS);
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T> T getView(final SWTWorkbenchBot bot, final String viewId) {
+		final Optional<SWTBotView> viewBot = bot.views().stream().filter(v -> v.getReference().getId().equals(viewId))
+				.findFirst();
+		if(viewBot.isPresent()) {
+			return UIThreadRunnable.syncExec(() ->  (T) (viewBot.get().getViewReference().getView(true)));
+		}
+		return null;
+	}
+
 }

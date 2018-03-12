@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,16 +25,23 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.ui.jobs.BuildDockerImageJob;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
-import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
-import org.eclipse.linuxtools.internal.docker.ui.views.ImageBuildProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class BuildImageCommandHandler extends AbstractHandler {
@@ -47,15 +54,37 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) {
-		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 		final ImageBuild wizard = new ImageBuild();
-		final boolean buildImage = CommandUtils.openWizard(wizard,
-				HandlerUtil.getActiveShell(event));
+		final WizardDialog wizardDialog = new NonModalWizardDialog(HandlerUtil.getActiveShell(event), wizard);
+		wizardDialog.create();
+		IWorkbenchWindow window = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow();
+		IWorkbenchPage activePage = null;
+		IWorkbenchPart activePart = null;
+		if (window != null)
+			activePage = window.getActivePage();
+		if (activePage != null)
+			activePart = activePage.getActivePart();
+		connection = CommandUtils.getCurrentConnection(activePart);
+		// if no current connection, try the first connection in the list of
+		// connections
+		if (connection == null) {
+			IDockerConnection[] connections = DockerConnectionManager
+					.getInstance().getConnections();
+			if (connections.length > 0)
+				connection = connections[0];
+		}
+		if (connection == null || !connection.isOpen()) {
+			// if no active connection, issue error message dialog and return
+			Display.getDefault().syncExec(() -> MessageDialog.openError(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getShell(),
+					WizardMessages.getString("ErrorNoActiveConnection.msg"), //$NON-NLS-1$
+					WizardMessages.getString("ErrorNoActiveConnection.desc"))); //$NON-NLS-1$
+			return null;
+		}
+		final boolean buildImage = wizardDialog.open() == Window.OK;
 		if (buildImage) {
-			if (activePart instanceof DockerImagesView) {
-				connection = ((DockerImagesView) activePart)
-						.getConnection();
-			}
 			performBuildImage(wizard);
 		}
 		return null;
@@ -68,6 +97,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String id = wizard.getImageName();
+				@SuppressWarnings("unused")
 				final int lines = wizard.getNumberOfLines();
 				final IPath path = wizard.getDirectory();
 
@@ -106,18 +136,14 @@ public class BuildImageCommandHandler extends AbstractHandler {
 								}
 							});
 				} catch (final IOException e) {
-					Display.getDefault().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							MessageDialog.openError(
-									Display.getCurrent().getActiveShell(),
-											WizardMessages.getString(
-													"ErrorInvalidDirectory.msg"),
-									WizardMessages.getFormattedString(
-											"ErrorInvalidPermissions.msg",
-											path.toString()));
-						}
-					});
+					Display.getDefault().syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							WizardMessages
+									.getString("ErrorInvalidDirectory.msg"), //$NON-NLS-1$
+							WizardMessages.getFormattedString(
+									"ErrorInvalidPermissions.msg", //$NON-NLS-1$
+									path.toString())));
 					return Status.OK_STATUS;
 				}
 				monitor.worked(1);
@@ -127,27 +153,22 @@ public class BuildImageCommandHandler extends AbstractHandler {
 				try {
 					monitor.subTask(
 							DVMessages.getString(BUILD_IMAGE_JOB_TITLE));
-					((DockerConnection) connection)
-							.buildImage(path, id,
-									new ImageBuildProgressHandler(connection,
-											id, lines));
+					final Job buildImageJob = new BuildDockerImageJob(
+							connection, path, id, null);
+					buildImageJob.schedule();
 					monitor.worked(1);
 				} catch (final DockerException e) {
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog.openError(Display.getCurrent()
-									.getActiveShell(), DVMessages
-									.getFormattedString(ERROR_BUILDING_IMAGE,
-											id), e.getMessage());
-
-						}
-
-					});
+					Display.getDefault().syncExec(() -> MessageDialog.openError(
+							// Use the Workbench shell so we don't find
+							// the non-modal dialog that will be
+							// destroyed shortly after a failure will be
+							// reported.
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(ERROR_BUILDING_IMAGE,
+									id),
+							e.getMessage()));
 					// for now
-				} catch (InterruptedException e) {
-					// do nothing
 				} finally {
 					monitor.done();
 				}
@@ -158,6 +179,18 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 		buildImageJob.schedule();
 
+	}
+
+	/**
+	 * We need a non-modal (omitting SWT.APPLICATION_MODAL) wizard dialog to
+	 * ensure that any detatched editor windows are brought up can be accessed.
+	 */
+	private static class NonModalWizardDialog extends WizardDialog {
+		public NonModalWizardDialog(Shell parentShell, IWizard newWizard) {
+			super(parentShell, newWizard);
+			setShellStyle(SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER
+					| SWT.RESIZE | getDefaultOrientation());
+		}
 	}
 
 }

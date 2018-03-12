@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ import org.eclipse.linuxtools.internal.docker.ui.ConsoleOutputStream;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 public class ContainerLauncher {
 
@@ -84,6 +85,52 @@ public class ContainerLauncher {
 			List<String> additionalDirs, Map<String, String> origEnv,
 			Map<String, String> envMap, List<String> ports, boolean keep,
 			boolean stdinSupport) {
+		launch(id, listener, connectionUri, image, command, commandDir,
+				workingDir, additionalDirs, origEnv, envMap, ports, keep,
+				stdinSupport, false);
+	}
+
+	/**
+	 * Perform a launch of a command in a container.
+	 * 
+	 * @param id
+	 *            - id of caller to use to distinguish console owner
+	 * @param listener
+	 *            - optional listener of the run console
+	 * @param connectionUri
+	 *            - the specified connection to use
+	 * @param image
+	 *            - the image to use
+	 * @param command
+	 *            - command to run
+	 * @param commandDir
+	 *            - directory command requires or null
+	 * @param workingDir
+	 *            - working directory or null
+	 * @param additionalDirs
+	 *            - additional directories to mount or null
+	 * @param origEnv
+	 *            - original environment if we are appending to our existing
+	 *            environment
+	 * @param envMap
+	 *            - map of environment variable settings
+	 * @param ports
+	 *            - ports to expose
+	 * @param keep
+	 *            - keep container after running
+	 * @param stdinSupport
+	 *            - true if stdin support is required, false otherwise
+	 * @param privilegedMode
+	 *            - true if privileged mode is required, false otherwise
+	 * @since 2.1
+	 */
+	public void launch(String id, IContainerLaunchListener listener,
+			final String connectionUri, String image, String command,
+			String commandDir, String workingDir, List<String> additionalDirs,
+			Map<String, String> origEnv, Map<String, String> envMap,
+			List<String> ports, boolean keep, boolean stdinSupport,
+			boolean privilegedMode) {
+
 
 		final String LAUNCH_TITLE = "ContainerLaunch.title"; //$NON-NLS-1$
 		final String LAUNCH_EXITED_TITLE = "ContainerLaunchExited.title"; //$NON-NLS-1$
@@ -165,7 +212,7 @@ public class ContainerLauncher {
 		final DockerContainerConfig config = builder.build();
 
 		DockerHostConfig.Builder hostBuilder = new DockerHostConfig.Builder()
-				.binds(volumes);
+				.binds(volumes).privileged(privilegedMode);
 
 		// add any port bindings if specified
 		if (portBindingsMap.size() > 0)
@@ -176,17 +223,12 @@ public class ContainerLauncher {
 		final IDockerConnection[] connections = DockerConnectionManager
 				.getInstance().getConnections();
 		if (connections.length == 0) {
-			Display.getDefault().syncExec(new Runnable() {
-
-				@Override
-				public void run() {
-					MessageDialog.openError(Display.getCurrent()
-							.getActiveShell(), DVMessages
-							.getString(ERROR_LAUNCHING_CONTAINER), DVMessages
-							.getString(ERROR_NO_CONNECTIONS));
-				}
-
-			});
+			Display.getDefault()
+					.syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getString(ERROR_LAUNCHING_CONTAINER),
+							DVMessages.getString(ERROR_NO_CONNECTIONS)));
 			return;
 		}
 
@@ -201,19 +243,14 @@ public class ContainerLauncher {
 		}
 
 		if (defaultIndex == -1) {
-			Display.getDefault().syncExec(new Runnable() {
-
-				@Override
-				public void run() {
-					MessageDialog.openError(
-							Display.getCurrent().getActiveShell(),
+			Display.getDefault()
+					.syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
 							DVMessages.getString(ERROR_LAUNCHING_CONTAINER),
 							DVMessages.getFormattedString(
 									ERROR_NO_CONNECTION_WITH_URI,
-									connectionUri));
-				}
-
-			});
+									connectionUri)));
 			return;
 
 		}
@@ -223,128 +260,106 @@ public class ContainerLauncher {
 		final String consoleId = id;
 		final IContainerLaunchListener containerListener = listener;
 
-		Thread t = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				// create the container
-				String containerId = null;
-				try {
-					containerId = ((DockerConnection) connection)
-							.createContainer(config, hostConfig, null);
-					OutputStream stream = null;
-					RunConsole oldConsole = getConsole();
-					final RunConsole rc = RunConsole.findConsole(containerId,
-							consoleId);
-					setConsole(rc);
-					rc.clearConsole();
-					if (oldConsole != null)
-						RunConsole.removeConsole(oldConsole);
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							rc.setTitle(Messages.getFormattedString(
-									LAUNCH_TITLE, new String[] {
-											cmdList.get(0), imageName }));
-						}
-
-					});
-					// if (!rc.isAttached()) {
-					rc.attachToConsole(connection, containerId);
-					// }
-					if (rc != null) {
-						stream = rc.getOutputStream();
-						if (containerListener != null) {
-							((ConsoleOutputStream) stream)
-									.addConsoleListener(containerListener);
-						}
-					}
-					// Create a unique logging thread id which has container id
-					// and console id
-					String loggingId = containerId + "." + consoleId;
-					((DockerConnection) connection).startContainer(containerId,
-							loggingId, stream);
-					if (rc != null)
-						rc.showConsole();
+		Thread t = new Thread(() -> {
+			// create the container
+			String containerId = null;
+			try {
+				containerId = ((DockerConnection) connection)
+						.createContainer(config, hostConfig, null);
+				OutputStream stream = null;
+				RunConsole oldConsole = getConsole();
+				final RunConsole rc = RunConsole.findConsole(containerId,
+						consoleId);
+				setConsole(rc);
+				rc.clearConsole();
+				if (oldConsole != null)
+					RunConsole.removeConsole(oldConsole);
+				Display.getDefault()
+						.syncExec(() -> rc.setTitle(Messages.getFormattedString(
+								LAUNCH_TITLE, new String[] { cmdList.get(0),
+										imageName })));
+				// if (!rc.isAttached()) {
+				rc.attachToConsole(connection, containerId);
+				// }
+				if (rc != null) {
+					stream = rc.getOutputStream();
 					if (containerListener != null) {
-						IDockerContainerInfo info = ((DockerConnection) connection)
-								.getContainerInfo(containerId);
-						containerListener.containerInfo(info);
+						((ConsoleOutputStream) stream)
+								.addConsoleListener(containerListener);
 					}
-					
-					// Wait for the container to finish
-					final IDockerContainerExit status = ((DockerConnection) connection)
-							.waitForContainer(containerId);
-					Display.getDefault().syncExec(new Runnable() {
+				}
+				// Create a unique logging thread id which has container id
+				// and console id
+				String loggingId = containerId + "." + consoleId;
+				((DockerConnection) connection).startContainer(containerId,
+						loggingId, stream);
+				if (rc != null)
+					rc.showConsole();
+				if (containerListener != null) {
+					IDockerContainerInfo info = ((DockerConnection) connection)
+							.getContainerInfo(containerId);
+					containerListener.containerInfo(info);
+				}
 
-						@Override
-						public void run() {
-							rc.setTitle(Messages.getFormattedString(
-									LAUNCH_EXITED_TITLE, new String[] {
+				// Wait for the container to finish
+				final IDockerContainerExit status = ((DockerConnection) connection)
+						.waitForContainer(containerId);
+				Display.getDefault().syncExec(() -> {
+					rc.setTitle(
+							Messages.getFormattedString(LAUNCH_EXITED_TITLE,
+									new String[] {
 											status.statusCode().toString(),
 											cmdList.get(0), imageName }));
-							rc.showConsole();
-						}
+					rc.showConsole();
+				});
 
-					});
-					
-					// Let any container listener know that the container is finished
-					if (containerListener != null)
-						containerListener.done();
-					
-					if (!keepContainer) {
-						// Drain the logging thread before we remove the
-						// container (we need to use the logging id)
-						((DockerConnection) connection)
-								.stopLoggingThread(loggingId);
-						while (((DockerConnection) connection)
-								.loggingStatus(loggingId) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
-							Thread.sleep(1000);
-						}
-						// Look for any Display Log console that the user may
-						// have opened which would be
-						// separate and make sure it is removed as well
-						RunConsole rc2 = RunConsole
-								.findConsole(((DockerConnection) connection)
-										.getContainer(containerId));
-						if (rc2 != null)
-							RunConsole.removeConsole(rc2);
+				// Let any container listener know that the container is
+				// finished
+				if (containerListener != null)
+					containerListener.done();
+
+				if (!keepContainer) {
+					// Drain the logging thread before we remove the
+					// container (we need to use the logging id)
+					((DockerConnection) connection)
+							.stopLoggingThread(loggingId);
+					while (((DockerConnection) connection).loggingStatus(
+							loggingId) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
+						Thread.sleep(1000);
+					}
+					// Look for any Display Log console that the user may
+					// have opened which would be
+					// separate and make sure it is removed as well
+					RunConsole rc2 = RunConsole
+							.findConsole(((DockerConnection) connection)
+									.getContainer(containerId));
+					if (rc2 != null)
+						RunConsole.removeConsole(rc2);
+					((DockerConnection) connection)
+							.removeContainer(containerId);
+				}
+
+			} catch (final DockerException e2) {
+				// error in creation, try and remove Container if possible
+				if (!keepContainer && containerId != null) {
+					try {
 						((DockerConnection) connection)
 								.removeContainer(containerId);
+					} catch (DockerException | InterruptedException e1) {
+						// ignore exception
 					}
-
-				} catch (final DockerException e) {
-					// error in creation, try and remove Container if possible
-					if (!keepContainer && containerId != null) {
-						try {
-							((DockerConnection) connection)
-									.removeContainer(containerId);
-						} catch (DockerException | InterruptedException e1) {
-							// ignore exception
-						}
-					}
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog.openError(Display.getCurrent()
-									.getActiveShell(),
-									DVMessages
-											.getFormattedString(
-													ERROR_CREATING_CONTAINER,
-													imageName), e.getMessage());
-
-						}
-
-					});
-				} catch (InterruptedException e) {
-					// for now
-					// do nothing
 				}
-				((DockerConnection) connection).getContainers(true);
+				Display.getDefault().syncExec(() -> MessageDialog.openError(
+						PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+								.getShell(),
+						DVMessages.getFormattedString(ERROR_CREATING_CONTAINER,
+								imageName),
+						e2.getMessage()));
+			} catch (InterruptedException e3) {
+				// for now
+				// do nothing
 			}
-
+			((DockerConnection) connection).getContainers(true);
 		});
 		t.start();
 	}

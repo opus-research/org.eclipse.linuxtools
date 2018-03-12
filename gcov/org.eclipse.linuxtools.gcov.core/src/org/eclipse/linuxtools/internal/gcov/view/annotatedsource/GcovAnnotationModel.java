@@ -63,7 +63,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     private static final Object KEY = new Object();
 
     /** List of GcovAnnotation elements */
-    private List<GcovAnnotation> annotations = new ArrayList<>();
+    private List<Annotation> annotations = new ArrayList<>();
 
     /** List of IAnnotationModelListener */
     private List<IAnnotationModelListener> annotationModelListeners = new ArrayList<>();
@@ -174,6 +174,8 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         final private ICElement element;
         private boolean keepSearching = true;
         private boolean found;
+        private IResource resource;
+        private String lastLinkPath;
 
         public FindLinkedResourceVisitor(ICElement element) {
             this.element = element;
@@ -183,10 +185,21 @@ public final class GcovAnnotationModel implements IAnnotationModel {
             return found;
         }
 
+        public IResource getResource() {
+        	return resource;
+        }
+        
         @Override
         public boolean visit(IResourceProxy proxy) {
-            if (proxy.isLinked() && proxy.requestResource().getLocationURI().equals(element.getLocationURI())) {
+        	// To correctly find a file in a linked directory, we cannot just look at the isLinked() attribute
+        	// which is not set for the file but is set for one of its parent directories.  So, we keep track
+        	// of linked directories and use them to determine if we should bother getting the resource to compare with.
+        	if (proxy.isLinked()) {
+        		lastLinkPath = proxy.requestFullPath().toString();
+        	}
+            if (lastLinkPath != null && proxy.requestFullPath().toString().startsWith(lastLinkPath) && proxy.requestResource().getLocationURI().equals(element.getLocationURI())) {
                 found = true;
+                resource = proxy.requestResource();
                 keepSearching = false;
             }
             return keepSearching;
@@ -197,6 +210,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     private SourceFile findSourceCoverageForElement(ICElement element) {
         List<SourceFile> sources = new ArrayList<> ();
         ICProject cProject = element.getCProject();
+        IResource elementResource = element.getResource();
         IPath target = GcovAnnotationModelTracker.getInstance().getBinaryPath(cProject.getProject());
         if (target == null) {
             // We cannot find a target for this element, using it's project.
@@ -214,6 +228,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
                     if (visitor.foundElement()) {
                         target = GcovAnnotationModelTracker.getInstance().getBinaryPath(proj);
                         cProject = CoreModel.getDefault().getCModel().getCProject(proj.getName());
+                        elementResource = visitor.getResource();
                         break;
                     }
                 } catch (CoreException e) {
@@ -236,7 +251,6 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         } catch (IOException|CoreException|InterruptedException e) {
         }
 
-        IResource elementResource = element.getResource();
         if (elementResource != null) {
             IPath elementLocation = elementResource.getLocation();
             if (elementLocation != null) {
@@ -245,6 +259,16 @@ public final class GcovAnnotationModel implements IAnnotationModel {
                     IFile file = STLink2SourceSupport.getFileForPath(sfPath, cProject.getProject());
                     if (file != null && elementLocation.equals(file.getLocation())) {
                         return sf;
+                    }
+                    // No match up to here...see if we have a relative path (Windows) to the
+                    // source file from the binary in which case check if creating the relative
+                    // location results in an existing file that matches one of the
+                    // the sources.  Fixes Bug 447554
+                    if (!sfPath.isAbsolute()) {
+                    	sfPath = target.removeLastSegments(1).append(sf.getName());
+                    	if (elementLocation.equals(sfPath.makeAbsolute()) &&
+                    			sfPath.toFile().exists())
+                    		return sf;
                     }
                 }
             }
@@ -317,8 +341,8 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     }
 
     private void clear(AnnotationModelEvent event) {
-        for (final GcovAnnotation ca : annotations) {
-            event.annotationRemoved(ca, ca.getPosition());
+        for (final Annotation ca : annotations) {
+            event.annotationRemoved(ca, ((GcovAnnotation)ca).getPosition());
         }
         annotations.clear();
     }
@@ -354,9 +378,9 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         if (this.document != document) {
             throw new IllegalArgumentException("Can't connect to different document."); //$NON-NLS-1$
         }
-        for (final GcovAnnotation ca : annotations) {
+        for (final Annotation ca : annotations) {
             try {
-                document.addPosition(ca.getPosition());
+                document.addPosition(((GcovAnnotation)ca).getPosition());
             } catch (BadLocationException ex) {
             }
         }
@@ -370,8 +394,10 @@ public final class GcovAnnotationModel implements IAnnotationModel {
         if (this.document != document) {
             throw new IllegalArgumentException("Can't disconnect from different document."); //$NON-NLS-1$
         }
-        for (final GcovAnnotation ca : annotations) {
-            document.removePosition(ca.getPosition());
+        for (final Annotation ca : annotations) {
+            if (ca instanceof GcovAnnotation) {
+                document.removePosition(((GcovAnnotation) ca).getPosition());
+            }
         }
         if (--openConnections == 0) {
             document.removeDocumentListener(documentListener);
@@ -384,7 +410,7 @@ public final class GcovAnnotationModel implements IAnnotationModel {
     }
 
     @Override
-    public Iterator<?> getAnnotationIterator() {
+    public Iterator<Annotation> getAnnotationIterator() {
         return annotations.iterator();
     }
 

@@ -42,6 +42,9 @@ import org.eclipse.linuxtools.docker.core.IDockerConnectionSettings;
 import org.eclipse.linuxtools.docker.core.IDockerConnectionSettingsFinder;
 import org.eclipse.linuxtools.docker.core.Messages;
 
+import com.spotify.docker.client.DockerCertificateException;
+import com.spotify.docker.client.DockerClient;
+
 import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
 
@@ -58,6 +61,7 @@ public class DefaultDockerConnectionSettingsFinder
 	public static final String DOCKER_HOST = "DOCKER_HOST"; //$NON-NLS-1$
 
 	@Override
+	@Deprecated
 	public List<IDockerConnectionSettings> findConnectionSettings() {
 		final List<IDockerConnectionSettings> availableConnectionSettings = new ArrayList<>();
 		final IDockerConnectionSettings defaultsWithUnixSocket = defaultsWithUnixSocket();
@@ -78,23 +82,36 @@ public class DefaultDockerConnectionSettingsFinder
 			case UNIX_SOCKET_CONNECTION:
 				final UnixSocketConnectionSettings unixSocketConnectionSettings = (UnixSocketConnectionSettings) connectionSettings;
 				final DockerConnection unixSocketConnection = new DockerConnection.Builder()
-						.unixSocket(unixSocketConnectionSettings.getPath())
-						.build();
+						.unixSocketConnection(unixSocketConnectionSettings);
 				resolveDockerName(unixSocketConnectionSettings,
 						unixSocketConnection);
 				break;
 			case TCP_CONNECTION:
 				final TCPConnectionSettings tcpConnectionSettings = (TCPConnectionSettings) connectionSettings;
 				final DockerConnection tcpConnection = new DockerConnection.Builder()
-						.tcpHost(tcpConnectionSettings.getHost())
-						.tcpCertPath(
-								tcpConnectionSettings.getPathToCertificates())
-						.build();
+						.tcpConnection(tcpConnectionSettings);
 				resolveDockerName(tcpConnectionSettings, tcpConnection);
 				break;
 			}
 		}
 		return availableConnectionSettings;
+	}
+
+	@Override
+	public IDockerConnectionSettings findDefaultConnectionSettings() {
+		final IDockerConnectionSettings defaultsWithUnixSocket = defaultsWithUnixSocket();
+		if (defaultsWithUnixSocket != null) {
+			return defaultsWithUnixSocket;
+		}
+		final IDockerConnectionSettings defaultsWithSystemEnv = defaultsWithSystemEnv();
+		if (defaultsWithSystemEnv != null) {
+			return defaultsWithSystemEnv;
+		}
+		final IDockerConnectionSettings defaultsWithShellEnv = defaultsWithShellEnv();
+		if (defaultsWithShellEnv != null) {
+			return defaultsWithShellEnv;
+		}
+		return null;
 	}
 
 	private void resolveDockerName(
@@ -104,15 +121,35 @@ public class DefaultDockerConnectionSettingsFinder
 			connection.open(false);
 			final IDockerConnectionInfo info = connection.getInfo();
 			if (info != null) {
-				connectionSettings.setName(info.getName());
+				connection.setName(info.getName());
 				connectionSettings.setSettingsResolved(true);
 			}
 		} catch (DockerException e) {
-			// ignore and keep 'settingsResolved' to false
+			// ignore and keep 'settingsResolved' as false
 			connectionSettings.setSettingsResolved(false);
 		} finally {
 			connection.close();
 		}
+	}
+
+	@Override
+	public String resolveConnectionName(
+			final IDockerConnectionSettings connectionSettings) {
+		if (connectionSettings == null) {
+			return null;
+		}
+		try {
+			final DockerClient client = new DockerClientFactory()
+					.getClient(connectionSettings);
+			if (client != null) {
+				return client.info().name();
+			}
+		} catch (DockerCertificateException
+				| com.spotify.docker.client.DockerException
+				| InterruptedException e) {
+			// ignore and return null
+		}
+		return null;
 	}
 
 	/**
@@ -121,7 +158,7 @@ public class DefaultDockerConnectionSettingsFinder
 	 * @return {@code IDockerConnectionSettings} if the Unix socket exists and
 	 *         is readable and writable, {@code null} otherwise.
 	 */
-	private IDockerConnectionSettings defaultsWithUnixSocket() {
+	public IDockerConnectionSettings defaultsWithUnixSocket() {
 		final File unixSocketFile = new File("/var/run/docker.sock"); //$NON-NLS-1$
 		if (unixSocketFile.exists() && unixSocketFile.canRead()
 				&& unixSocketFile.canWrite()) {
@@ -146,14 +183,11 @@ public class DefaultDockerConnectionSettingsFinder
 	 * @return {@code IDockerConnectionSettings} if the {@code DOCKER_xxx}
 	 *         environment variables exist, {@code null} otherwise.
 	 */
-	private IDockerConnectionSettings defaultsWithSystemEnv() {
+	public IDockerConnectionSettings defaultsWithSystemEnv() {
 		final String dockerHostEnv = System.getenv(DOCKER_HOST);
 		if (dockerHostEnv != null) {
-			final String tlsVerifyEnv = System.getenv(DOCKER_TLS_VERIFY);
-			final boolean useTls = tlsVerifyEnv != null
-					&& tlsVerifyEnv.equals(DOCKER_TLS_VERIFY_TRUE); // $NON-NLS-1$
 			final String pathToCertificates = System.getenv(DOCKER_CERT_PATH);
-			return new TCPConnectionSettings(dockerHostEnv, useTls,
+			return new TCPConnectionSettings(dockerHostEnv,
 					pathToCertificates);
 		}
 		return null;
@@ -165,9 +199,8 @@ public class DefaultDockerConnectionSettingsFinder
 	 * 
 	 * @return {@code IDockerConnectionSettings} if the {@code DOCKER_xxx}
 	 *         environment variables exist, {@code null} otherwise.
-	 * @throws DockerException
 	 */
-	private IDockerConnectionSettings defaultsWithShellEnv() {
+	public IDockerConnectionSettings defaultsWithShellEnv() {
 		try {
 			final String connectionSettingsDetectionScriptName = getConnectionSettingsDetectionScriptName();
 			if (connectionSettingsDetectionScriptName == null) {
@@ -187,20 +220,7 @@ public class DefaultDockerConnectionSettingsFinder
 				// read content from process input stream
 				final Properties dockerSettings = new Properties();
 				dockerSettings.load(processInputStream);
-				final Object dockerHostEnvVariable = dockerSettings.get(DOCKER_HOST);
-				final Object dockerTlsVerifyEnvVariable = dockerSettings
-						.get(DOCKER_TLS_VERIFY);
-				final Object dockerCertPathEnvVariable = dockerSettings
-						.get(DOCKER_CERT_PATH);
-				return new TCPConnectionSettings(
-						dockerHostEnvVariable != null
-								? dockerHostEnvVariable.toString() : null,
-						dockerTlsVerifyEnvVariable != null
-								? dockerTlsVerifyEnvVariable
-										.equals(DOCKER_TLS_VERIFY_TRUE)
-								: null,
-						dockerCertPathEnvVariable != null
-								? dockerCertPathEnvVariable.toString() : null);
+				return createDockerConnectionSettings(dockerSettings);
 			} else {
 				// log what happened if the process did not end as expected
 				// an exit value of 1 should indicate no connection found
@@ -219,6 +239,31 @@ public class DefaultDockerConnectionSettingsFinder
 					Messages.Retrieve_Default_Settings_Failure, e));
 		}
 		return null;
+	}
+
+	/**
+	 * Creates connection settings from the given {@code docerSettings}, or
+	 * <code>null</code> if the settings did not contain a property with the
+	 * {@code DOCKER_HOST} key.
+	 * 
+	 * @param dockerSettings
+	 *            the connection settings
+	 * @return the {@link IDockerConnectionSettings} or <code>null</code> if the
+	 *         settings are invalid.
+	 */
+	public IDockerConnectionSettings createDockerConnectionSettings(
+			final Properties dockerSettings) {
+		final Object dockerHostEnvVariable = dockerSettings.get(DOCKER_HOST);
+		final Object dockerCertPathEnvVariable = dockerSettings
+				.get(DOCKER_CERT_PATH);
+		// at least 'dockerHostEnvVariable' should be not null
+		if (dockerHostEnvVariable == null) {
+			return null;
+		}
+		return new TCPConnectionSettings(
+				dockerHostEnvVariable.toString(),
+				dockerCertPathEnvVariable != null
+						? dockerCertPathEnvVariable.toString() : null);
 	}
 
 	/**
@@ -278,11 +323,11 @@ public class DefaultDockerConnectionSettingsFinder
 	 *         *Nix) or <code>null</code> if the current OS is not supported.
 	 */
 	private String getConnectionSettingsDetectionScriptName() {
-		if (Platform.getOS().equals(Platform.OS_LINUX)) {
+		if (SystemUtils.isLinux()) {
 			return "script.sh";//$NON-NLS-1$
-		} else if (Platform.getOS().equals(Platform.OS_MACOSX)) {
+		} else if (SystemUtils.isMac()) {
 			return "script-macosx.sh";//$NON-NLS-1$
-		} else if (Platform.getOS().equals(Platform.OS_WIN32)) {
+		} else if (SystemUtils.isWindows()) {
 			return "script.bat"; //$NON-NLS-1$
 		}
 		return null;

@@ -13,11 +13,11 @@ package org.eclipse.linuxtools.internal.docker.ui.commands;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerFactory;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.MockContainerInfoFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerClientFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerConnectionFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerContainerFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerContainerInfoFactory;
-import org.eclipse.linuxtools.internal.docker.ui.testutils.MockDockerImageFactory;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.MockImageFactory;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ClearConnectionManagerRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
@@ -51,7 +51,7 @@ public class CommandUtilsSWTBotTest {
 	public ClearConnectionManagerRule clearConnectionManager = new ClearConnectionManagerRule();
 	
 	@Before
-	public void lookupDockerExplorerView() throws InterruptedException {
+	public void lookupDockerExplorerView() {
 		SWTUtils.asyncExec(() -> {
 			try {
 				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
@@ -70,181 +70,159 @@ public class CommandUtilsSWTBotTest {
 	}
 
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainersCategory() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainersCategory() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build()).build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+				.container(MockContainerFactory.name("foo_bar").build()).build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
+		final SWTBotTreeItem containers = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers");
 		// when selecting the container
-		SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Containers").select();
+		containers.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainer() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainer() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build()).build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+				.container(MockContainerFactory.name("foo_bar").build()).build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.syncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
+		final SWTBotTreeItem container = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar");
 		// when selecting the container
-		SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Containers", "foo_bar").select();
+		container.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerLinksCategory() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerLinksCategory() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.link("/foo:/bar/foo").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.link("/foo:/bar/foo").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
-		// when selecting the port
-		SWTUtils.getTreeItem(containerTreeItem, "Links").select();
+		final SWTBotTreeItem links = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Links");
+		// when
+		links.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 	
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerLink() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerLink() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.link("/foo:/bar/foo").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.link("/foo:/bar/foo").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
-		SWTUtils.asyncExec(() -> SWTUtils.getTreeItem(containerTreeItem, "Links").expand());
-		// when selecting the port
-		SWTUtils.getTreeItem(containerTreeItem, "Links", "foo (foo)").select();
+		final SWTBotTreeItem link = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Links", "foo (foo)");
+		// when selecting the Link
+		link.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 	
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerVolumesCategory() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerVolumesCategory() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.volume("/path/to/host:/path/to/container:Z,ro").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.volume("/path/to/host:/path/to/container:Z,ro").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
-		SWTUtils.asyncExec(() -> SWTUtils.getTreeItem(containerTreeItem, "Volumes").expand());
-		// when selecting the port
-		SWTUtils.getTreeItem(containerTreeItem, "Volumes").select();
+		final SWTBotTreeItem volumes = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Volumes");
+		volumes.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerVolume() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerVolume() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.volume("/path/to/host:/path/to/container:Z,ro").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.volume("/path/to/host:/path/to/container:Z,ro").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
-		SWTUtils.asyncExec(() -> SWTUtils.getTreeItem(containerTreeItem, "Volumes").expand());
+		final SWTBotTreeItem volume = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Volumes", "/path/to/host");
 		// when selecting the volume
-		SWTUtils.getTreeItem(containerTreeItem, "Volumes", "/path/to/host").select();
+		volume.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerPortsCategory() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerPortsCategory() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.port("8080/tcp", "0.0.0.0", "8080").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.port("8080/tcp", "0.0.0.0", "8080").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
+		final SWTBotTreeItem ports = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Ports");
 		// when selecting the port
-		SWTUtils.getTreeItem(containerTreeItem, "Ports").select();
+		ports.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 	
 	@Test
-	public void shouldRetrieveConnectionFromSelectedContainerPort() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedContainerPort() {
 		// given
 		final DockerClient client = MockDockerClientFactory
-				.container(MockDockerContainerFactory.name("foo_bar").build(),
-						MockDockerContainerInfoFactory.port("8080/tcp", "0.0.0.0", "8080").build())
+				.container(MockContainerFactory.name("foo_bar").build(),
+						MockContainerInfoFactory.port("8080/tcp", "0.0.0.0", "8080").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem containersTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test",
-				"Containers");
-		final SWTBotTreeItem containerTreeItem = SWTUtils.getTreeItem(containersTreeItem, "foo_bar");
-		SWTUtils.asyncExec(() -> containerTreeItem.expand());
-		SWTUtils.asyncExec(() -> SWTUtils.getTreeItem(containerTreeItem, "Ports").expand());
+		final SWTBotTreeItem port = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Containers",
+				"foo_bar", "Ports", "0.0.0.0:8080 -> 8080 (tcp)");
 		// when selecting the port
-		SWTUtils.getTreeItem(containerTreeItem, "Ports", "0.0.0.0:8080 -> 8080 (tcp)").select();
+		port.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 	
 	@Test
-	public void shouldRetrieveConnectionFromSelectedImagesCategory() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedImagesCategory() {
 		// given
-		final DockerClient client = MockDockerClientFactory.image(MockDockerImageFactory.name("foo").build())
+		final DockerClient client = MockDockerClientFactory.image(MockImageFactory.name("foo").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
+		final SWTBotTreeItem images = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Images");
 		// when selecting the images category
-		SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images").select();
+		images.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}
 	
 	@Test
-	public void shouldRetrieveConnectionFromSelectedImage() throws InterruptedException {
+	public void shouldRetrieveConnectionFromSelectedImage() {
 		// given
-		final DockerClient client = MockDockerClientFactory.image(MockDockerImageFactory.name("foo").build())
+		final DockerClient client = MockDockerClientFactory.image(MockImageFactory.name("foo").build())
 				.build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).withDefaultTCPConnectionSettings();
 		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
+		final SWTBotTreeItem image = SWTUtils.expand(dockerExplorerViewBot.bot().tree(), "Test", "Images", "foo");
 		// when selecting the image
-		SWTUtils.getTreeItem(dockerExplorerViewBot, "Test", "Images", "foo").select();
+		image.select();
 		// then current connection should be found
 		Assertions.assertThat(CommandUtils.getCurrentConnection(dockerExplorerView)).isEqualTo(dockerConnection);
 	}

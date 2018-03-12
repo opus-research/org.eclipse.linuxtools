@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,21 +10,27 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -34,6 +40,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 
 public class ImageBuildPage extends WizardPage {
 
@@ -55,6 +67,14 @@ public class ImageBuildPage extends WizardPage {
 	private Text nameText;
 	private Text directoryText;
 	private Button editButton;
+	private Set<IEditorPart> editors = new HashSet<>();
+
+	/*
+	 * For now just hold the last directory path used here. If this page gets
+	 * more complicated (and ends up requiring a model) we should consider using
+	 * a launch configuration to store all other previous values.
+	 */
+	private static String lastDirectoryPath;
 
 	public ImageBuildPage() {
 		super(WizardMessages.getString(NAME));
@@ -71,14 +91,17 @@ public class ImageBuildPage extends WizardPage {
 		return directoryText.getText();
 	}
 
-	private ModifyListener Listener = new ModifyListener() {
+	@Override
+	public void dispose() {
+		super.dispose();
+		for (IEditorPart p : editors) {
+			p.getEditorSite().getPage().closeEditor(p, true);
 
-		@Override
-		public void modifyText(ModifyEvent e) {
-			// TODO Auto-generated method stub
-			validate();
 		}
-	};
+		editors.clear();
+	}
+
+	private ModifyListener Listener = e -> validate();
 
 	private void validate() {
 		boolean complete = true;
@@ -92,7 +115,7 @@ public class ImageBuildPage extends WizardPage {
 			error = true;
 		} else {
 			if (name.contains(":")) { //$NON-NLS-$
-				if (name.substring(name.indexOf(":") + 1).contains(":")) { //$NON-NLS-1$ //$NON-NLS-2$
+				if (name.substring(name.indexOf(':') + 1).contains(":")) { //$NON-NLS-1$
 					setErrorMessage(WizardMessages.getString(INVALID_ID));
 					error = true;
 				}
@@ -128,6 +151,7 @@ public class ImageBuildPage extends WizardPage {
 								IMessageProvider.INFORMATION);
 					} else {
 						setMessage(null, IMessageProvider.INFORMATION);
+						lastDirectoryPath = dir;
 					}
 
 				}
@@ -170,7 +194,7 @@ public class ImageBuildPage extends WizardPage {
 
 		Button browse = new Button(container, SWT.NULL);
 		browse.setText(WizardMessages.getString(BROWSE_LABEL));
-		browse.addSelectionListener(new SelectionListener() {
+		browse.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -179,36 +203,39 @@ public class ImageBuildPage extends WizardPage {
 				if (k != null)
 					directoryText.setText(k);
 			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// ignore for now
-			}
-
 		});
 
 		editButton = new Button(container, SWT.NULL);
 		editButton.setText(WizardMessages.getString(EDIT_LABEL));
 		editButton.setEnabled(false);
-		editButton.addSelectionListener(new SelectionListener() {
+		editButton.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String dir = directoryText.getText();
 				IFileStore fileStore = EFS.getLocalFileSystem().getStore(
 						new Path(dir).append("Dockerfile")); //$NON-NLS-1$
-				DockerfileEditDialog d = new DockerfileEditDialog(
-						container.getShell(),
-						fileStore);
-				d.open();
+				java.nio.file.Path filePath = Paths.get(dir, "Dockerfile"); //$NON-NLS-1$
+				if (!Files.exists(filePath)) {
+					try {
+						Files.createFile(filePath);
+					} catch (IOException e1) {
+						// File won't exist, and directory should be writable
+					}
+				}
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				try {
+					IEditorPart dockerFileEditor = IDE.openEditorOnFileStore(page, fileStore);
+					IWorkbenchPartSite site = page.getActivePart().getSite();
+					EModelService s = site.getService(EModelService.class);
+					MPartSashContainerElement p = site.getService(MPart.class);
+					s.detach(p, 100, 100, 500, 375);
+					editors.add(dockerFileEditor);
+				} catch (PartInitException e1) {
+					Activator.log(e1);
+				}
 				validate();
 			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// ignore for now
-			}
-
 		});
 
 		Point p1 = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -252,6 +279,10 @@ public class ImageBuildPage extends WizardPage {
 		f.left = new FormAttachment(dirLabel, 5);
 		f.right = new FormAttachment(browse, -10);
 		directoryText.setLayoutData(f);
+
+		if (lastDirectoryPath != null) {
+			directoryText.setText(lastDirectoryPath);
+		}
 
 		setControl(container);
 		setPageComplete(false);

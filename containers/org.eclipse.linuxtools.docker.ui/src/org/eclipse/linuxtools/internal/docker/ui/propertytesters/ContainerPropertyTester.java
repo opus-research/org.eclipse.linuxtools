@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.internal.docker.ui.propertytesters;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 
@@ -44,7 +45,16 @@ public class ContainerPropertyTester extends PropertyTester {
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
 		if (receiver instanceof IDockerContainer) {
-			final IDockerContainer container = (IDockerContainer) receiver;
+			IDockerContainer container = (IDockerContainer) receiver;
+			/*
+			 * The 'receiver' is not updated if the selection remains unchanged
+			 * but a context menu command may have modified container state
+			 * requiring a change in menu items.
+			 */
+			final IDockerContainer newContainer = container.getConnection().getContainer(container.id());
+			if (newContainer != null) {
+				container = newContainer;
+			}
 			switch (property) {
 			case IS_RUNNING:
 				return checkIfStateMatchesExpectation(container, EnumDockerStatus.RUNNING, expectedValue);
@@ -80,6 +90,64 @@ public class ContainerPropertyTester extends PropertyTester {
 		}
 		final EnumDockerStatus containerStatus = EnumDockerStatus.fromStatusMessage(container.status());
 		return expectedMatch.equals((containerStatus == expectedStatus));
+	}
+
+	/**
+	 * Check if the given IStructuredSelection containing IDockerContainer
+	 * elements are all in the specified state
+	 * @param ss an IStructuredSelection of IDockerContainer elements
+	 * @param state the state of the IDockerContainer to test
+	 * @return true if all IDockerContainer elements match the specified
+	 * and false otherwise.
+	 */
+	private static boolean checkState(IStructuredSelection ss, EnumDockerStatus state) {
+		if (ss.toList().isEmpty()) {
+			return false;
+		}
+		for (Object o : ss.toList()) {
+			IDockerContainer c = (IDockerContainer) o;
+			if (EnumDockerStatus.fromStatusMessage(c.status()) != state) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check if any of the given IStructuredSelection containing IDockerContainer
+	 * elements are in the specified state
+	 * @param ss an IStructuredSelection of IDockerContainer elements
+	 * @param state the state of the IDockerContainer to test
+	 * @return true if any IDockerContainer elements match the specified
+	 * and false otherwise.
+	 */
+	private static boolean checkAnyState(IStructuredSelection ss, EnumDockerStatus state) {
+		if (ss.toList().isEmpty()) {
+			return false;
+		}
+		for (Object o : ss.toList()) {
+			IDockerContainer c = (IDockerContainer) o;
+			if (EnumDockerStatus.fromStatusMessage(c.status()) == state) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isStopped(IStructuredSelection ss) {
+		return checkState(ss, EnumDockerStatus.STOPPED);
+	}
+
+	public static boolean isRunning(IStructuredSelection ss) {
+		return checkState(ss, EnumDockerStatus.RUNNING);
+	}
+
+	public static boolean isPaused(IStructuredSelection ss) {
+		return checkState(ss, EnumDockerStatus.PAUSED);
+	}
+
+	public static boolean isAnyRunning(IStructuredSelection ss) {
+		return checkAnyState(ss, EnumDockerStatus.RUNNING);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.eclipse.linuxtools.internal.docker.ui.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +28,8 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
+import org.eclipse.linuxtools.docker.core.DockerException;
+import org.eclipse.linuxtools.docker.core.EnumDockerConnectionState;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
@@ -37,7 +38,10 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerNetworkSettings;
 import org.eclipse.linuxtools.docker.core.IDockerPortBinding;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
+import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainer;
+import org.eclipse.linuxtools.internal.docker.core.DockerImage;
 import org.eclipse.linuxtools.internal.docker.core.DockerPortMapping;
 import org.eclipse.swt.widgets.Display;
 
@@ -48,16 +52,17 @@ import org.eclipse.swt.widgets.Display;
 public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	private final Object[] EMPTY = new Object[0];
-	
+
 	private TreeViewer viewer;
-	
+
 	@Override
 	public void dispose() {
 	}
 
 	@Override
-	public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-		this.viewer = (TreeViewer)viewer;
+	public void inputChanged(final Viewer viewer, final Object oldInput,
+			final Object newInput) {
+		this.viewer = (TreeViewer) viewer;
 	}
 
 	@Override
@@ -72,9 +77,18 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	@Override
 	public Object[] getChildren(final Object parentElement) {
 		if (parentElement instanceof IDockerConnection) {
-			final IDockerConnection dockerConnection = (IDockerConnection) parentElement;
-			return new Object[] { new DockerImagesCategory(dockerConnection),
-					new DockerContainersCategory(dockerConnection) };
+			// check the connection availability before returning the
+			// 'containers' and 'images' child nodes.
+			final IDockerConnection connection = (IDockerConnection) parentElement;
+			if (connection.isOpen()) {
+				return new Object[] { new DockerImagesCategory(connection),
+						new DockerContainersCategory(connection) };
+			} else if (connection
+					.getState() == EnumDockerConnectionState.UNKNOWN) {
+				open(connection);
+				return new Object[] { new LoadingStub(connection) };
+			}
+			return new Object[0];
 		} else if (parentElement instanceof DockerContainersCategory) {
 			final DockerContainersCategory containersCategory = (DockerContainersCategory) parentElement;
 			final IDockerConnection connection = containersCategory.getConnection();
@@ -87,7 +101,27 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			final DockerImagesCategory imagesCategory = (DockerImagesCategory) parentElement;
 			final IDockerConnection connection = imagesCategory.getConnection();
 			if(connection.isImagesLoaded()) {
-				return connection.getImages().toArray();
+				// here we duplicate the images to show one org/repo with all
+				// its tags per node in the tree
+				final List<IDockerImage> allImages = connection.getImages();
+				final List<IDockerImage> explorerImages = new ArrayList<>();
+				for (IDockerImage image : allImages) {
+					final Map<String, List<String>> tagsByRepo = DockerImage
+							.extractTagsByRepo(image.repoTags());
+					for (Entry<String, List<String>> entry : tagsByRepo
+							.entrySet()) {
+						final IDockerImage explorerImage = new DockerImage(
+								(DockerConnection) image.getConnection(),
+								image.repoTags(), entry.getKey(),
+								entry.getValue(), image.id(), image.parentId(),
+								image.created(), image.size(),
+								image.virtualSize(),
+								image.isIntermediateImage(),
+								image.isDangling());
+						explorerImages.add(explorerImage);
+					}
+				}
+				return explorerImages.toArray();
 			}
 			loadImages(imagesCategory);
 			return new Object[] { new LoadingStub(imagesCategory) };
@@ -95,16 +129,22 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			final DockerContainer container = (DockerContainer) parentElement;
 			if (container.isInfoLoaded()) {
 				final IDockerContainerInfo info = container.info();
-				final IDockerNetworkSettings networkSettings = info
-						.networkSettings();
-				final IDockerHostConfig hostConfig = info.hostConfig();
+				final IDockerNetworkSettings networkSettings = (info != null)
+						? info.networkSettings() : null;
+				final IDockerHostConfig hostConfig = (info != null)
+						? info.hostConfig() : null;
 				return new Object[] {
 						new DockerContainerPortMappingsCategory(container,
-								networkSettings.ports()),
+								(networkSettings != null)
+										? networkSettings.ports()
+										: Collections
+												.<String, List<IDockerPortBinding>> emptyMap()),
 						new DockerContainerVolumesCategory(container,
-								hostConfig.binds()),
+								(hostConfig != null) ? hostConfig.binds()
+										: Collections.<String> emptyList()),
 						new DockerContainerLinksCategory(container,
-								hostConfig.links()) };
+								(hostConfig != null) ? hostConfig.links()
+										: Collections.<String> emptyList()) };
 			}
 			loadContainerInfo(container);
 			return new Object[] { new LoadingStub(container) };
@@ -124,35 +164,49 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	}
 
 	/**
-	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background job to avoid blocking the UI.
-	 * @param containersCategory the selected {@link DockerContainersCategory}
+	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background
+	 * job to avoid blocking the UI.
+	 * 
+	 * @param connection
+	 *            the connection to ping
 	 */
-	private void loadContainers(final DockerContainersCategory containersCategory) {
-		final Job loadContainersJob = new Job(
-				DVMessages.getString("ContainersLoadJob.msg")) { //$NON-NLS-1$
+	private void open(final IDockerConnection connection) {
+		final Job pingJob = new LoadingJob(DVMessages.getString("PingJob.msg"), //$NON-NLS-1$
+				connection) {
+			@Override
+			protected IStatus run(final IProgressMonitor monitor) {
+				try {
+					connection.open(true);
+					connection.ping();
+					return Status.OK_STATUS;
+				} catch (DockerException e) {
+					Activator.logErrorMessage(DVMessages.getFormattedString(
+							"PingJobError.msg", connection.getUri())); //$NON-NLS-1$
+					return Status.CANCEL_STATUS;
+				}
+			}
+		};
+		pingJob.schedule();
+	}
+
+	/**
+	 * Call the {@link IDockerConnection#getContainers(boolean)} in a background
+	 * job to avoid blocking the UI.
+	 * 
+	 * @param containersCategory
+	 *            the selected {@link DockerContainersCategory}
+	 */
+	private void loadContainers(
+			final DockerContainersCategory containersCategory) {
+		final Job loadContainersJob = new LoadingJob(
+				DVMessages.getString("ContainersLoadJob.msg"), //$NON-NLS-1$
+				containersCategory) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				containersCategory.getConnection().getContainers(true);
 				return Status.OK_STATUS;
 			}
-
-			@Override
-			public boolean belongsTo(Object family) {
-				return family == DockerExplorerView.class;
-			}
 		};
-		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(final IJobChangeEvent event) {
-				event.getResult();
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						refreshTarget(containersCategory);
-					}
-				});
-			}
-		});
 		loadContainersJob.schedule();
 	}
 
@@ -164,63 +218,36 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	 *            the selected {@link DockerContainersCategory}
 	 */
 	private void loadContainerInfo(final IDockerContainer container) {
-		// only retain expanded tree paths if container was expanded
-		final TreePath[] expandedTreePaths = this.viewer.getExpandedState(
-				container) ? this.viewer.getExpandedTreePaths() : null;
-		final Job loadContainersJob = new Job(
-				DVMessages.getString("ContainerInfoLoadJob.msg")) { //$NON-NLS-1$
+		final Job loadContainersJob = new LoadingJob(
+				DVMessages.getString("ContainerInfoLoadJob.msg"), container) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				((DockerContainer) container).info(true);
 				return Status.OK_STATUS;
 			}
 		};
-		loadContainersJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(final IJobChangeEvent event) {
-				event.getResult();
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						refreshTarget(container);
-						if (expandedTreePaths != null) {
-							viewer.setExpandedTreePaths(expandedTreePaths);
-						}
-					}
-				});
-			}
-		});
 		loadContainersJob.schedule();
 	}
 
 	/**
-	 * Call the {@link IDockerConnection#getImages(boolean)} in a background job to avoid blocking the UI.
-	 * @param imagesCategory the selected {@link DockerImagesCategory}
+	 * Call the {@link IDockerConnection#getImages(boolean)} in a background job
+	 * to avoid blocking the UI.
+	 * 
+	 * @param imagesCategory
+	 *            the selected {@link DockerImagesCategory}
 	 */
 	private void loadImages(final DockerImagesCategory imagesCategory) {
-		final Job loadImagesJob = new Job(
-				DVMessages.getString("ImagesLoadJob.msg")) { //$NON-NLS-1$
+		final Job loadImagesJob = new LoadingJob(
+				DVMessages.getString("ImagesLoadJob.msg"), imagesCategory) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				imagesCategory.getConnection().getImages(true);
 				return Status.OK_STATUS;
 			}
-
-			@Override
-			public boolean belongsTo(Object family) {
-				return family == DockerExplorerView.class;
-			}
-
 		};
-		loadImagesJob.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(final IJobChangeEvent event) {
-				refreshTarget(imagesCategory);
-			}
-		});
 		loadImagesJob.schedule();
 	}
-	
+
 	@Override
 	public Object getParent(final Object element) {
 		if (element instanceof DockerImagesCategory) {
@@ -233,7 +260,11 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(final Object element) {
-		return (element instanceof IDockerConnection
+		return ((element instanceof IDockerConnection
+				&& (((IDockerConnection) element)
+						.getState() == EnumDockerConnectionState.ESTABLISHED
+						|| ((IDockerConnection) element)
+								.getState() == EnumDockerConnectionState.UNKNOWN))
 				|| element instanceof DockerContainersCategory
 				|| element instanceof DockerImagesCategory
 				|| element instanceof IDockerContainer
@@ -247,28 +278,8 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 						&& !((DockerContainerVolumesCategory) element)
 								.getVolumes().isEmpty()));
 	}
-	
-	/**
-	 * Refresh the whole content tree for the <strong>given target node and all
-	 * its subelements</strong>.
-	 * 
-	 * @param target
-	 *            the node to refresh
-	 */
-	private void refreshTarget(final Object target) {
-		// this piece of code must run in an async manner to avoid reentrant
-		// call while viewer is busy.
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				if (viewer != null) {
-					final TreePath[] treePaths = viewer.getExpandedTreePaths();
-					viewer.refresh(target, true);
-					viewer.setExpandedTreePaths(treePaths);
-				}
-			}
-		});
-	}
+
+
 
 	/**
 	 * Wrapper node to display {@link IDockerImage} of a given
@@ -364,7 +375,7 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Wrapper node to display {@link IDockerPortMapping} of a given
 	 * {@link IDockerContainer}
@@ -402,15 +413,9 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 				}
 			}
 			Collections.sort(portMappings,
-					new Comparator<IDockerPortMapping>() {
-
-						@Override
-						public int compare(final IDockerPortMapping portMapping,
-								final IDockerPortMapping otherPortMapping) {
-							return portMapping.getPrivatePort()
-									- otherPortMapping.getPrivatePort();
-						}
-					});
+					(portMapping,
+							otherPortMapping) -> portMapping.getPrivatePort()
+									- otherPortMapping.getPrivatePort());
 		}
 
 		public IDockerContainer getContainer() {
@@ -592,7 +597,8 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((containerAlias == null) ? 0 : containerAlias.hashCode());
+			result = prime * result + ((containerAlias == null) ? 0
+					: containerAlias.hashCode());
 			result = prime * result
 					+ ((containerName == null) ? 0 : containerName.hashCode());
 			return result;
@@ -793,15 +799,53 @@ public class DockerExplorerContentProvider implements ITreeContentProvider {
 	 * Node to indicate that a job is running and loading data.
 	 */
 	public static class LoadingStub {
-		
+
 		private final Object element;
-		
+
 		public LoadingStub(final Object element) {
 			this.element = element;
 		}
-		
+
 		public Object getElement() {
 			return element;
+		}
+	}
+
+	private abstract class LoadingJob extends Job {
+
+		public LoadingJob(final String name, final Object target) {
+			super(name);
+			this.addJobChangeListener(new JobChangeAdapter() {
+
+				@Override
+				public void done(final IJobChangeEvent event) {
+					refreshTarget(target);
+				}
+			});
+		}
+
+		@Override
+		public boolean belongsTo(Object family) {
+			return DockerExplorerView.class.equals(family);
+		}
+
+		/**
+		 * Refresh the whole content tree for the <strong>given target node and
+		 * all its subelements</strong>.
+		 * 
+		 * @param target
+		 *            the node to refresh
+		 */
+		private void refreshTarget(final Object target) {
+			// this piece of code must run in an async manner to avoid reentrant
+			// call while viewer is busy.
+			Display.getDefault().asyncExec(() -> {
+				if (viewer != null) {
+					final TreePath[] treePaths = viewer.getExpandedTreePaths();
+					viewer.refresh(target, true);
+					viewer.setExpandedTreePaths(treePaths);
+				}
+			});
 		}
 	}
 

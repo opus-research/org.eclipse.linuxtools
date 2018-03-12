@@ -11,7 +11,6 @@
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.linuxtools.internal.docker.ui.validators.ImageNameValidator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +38,11 @@ public class ImagePullPatternTest {
 			match("localhost/wildfly/", IStatus.WARNING),
 			match("localhost/jboss/wildfly", IStatus.WARNING),
 			match("localhost/jboss/wildfly:", IStatus.WARNING),
-			match("localhost/jboss/wildfly:latest", IStatus.WARNING),
-			match("localhost/jboss/wildfly:9", IStatus.WARNING),
+			match("localhost/jboss/wildfly:latest", IStatus.OK),
+			match("localhost/jboss/wildfly:9", IStatus.OK),
 			match("localhost/jboss/wildfly:9.", IStatus.WARNING),
 			match("localhost/jboss/wildfly:9.0.1.", IStatus.WARNING),
-			match("localhost/jboss/wildfly:9.0.1.Final", IStatus.WARNING),
+			match("localhost/jboss/wildfly:9.0.1.Final", IStatus.OK),
 			match("localhost:", IStatus.WARNING),
 			match("localhost:5000", IStatus.OK), // bc it matches the REPO:TAG pattern.
 			match("localhost:5000/", IStatus.WARNING),

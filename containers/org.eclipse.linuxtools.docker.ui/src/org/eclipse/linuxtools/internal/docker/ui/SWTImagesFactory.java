@@ -62,6 +62,7 @@ public class SWTImagesFactory {
 	public static final String IMG_KILL = NAME_PREFIX + "kill.gif"; //$NON-NLS-1$
 	public static final String IMG_KILLD = NAME_PREFIX + "killd.gif"; //$NON-NLS-1$
 	public static final String IMG_LINKS = NAME_PREFIX + "links_obj.gif"; //$NON-NLS-1$
+	public static final String IMG_LABELS_TAB = NAME_PREFIX + "labels.gif"; //$NON-NLS-1$
 	public static final String IMG_MAIN_TAB = NAME_PREFIX + "main_tab.gif"; //$NON-NLS-1$
 	public static final String IMG_PULL = NAME_PREFIX + "pull.gif"; //$NON-NLS-1$
 	public static final String IMG_PUSH = NAME_PREFIX + "push.gif"; //$NON-NLS-1$
@@ -84,6 +85,8 @@ public class SWTImagesFactory {
 
 	public static final String IMG_REPOSITORY_MIDDLE = NAME_PREFIX
 			+ "repository-middle.gif"; //$NON-NLS-1$
+	public static final String IMG_REPOSITORY_MIDDLED = NAME_PREFIX
+			+ "repository-middled.gif"; //$NON-NLS-1$
 	public static final String IMG_DB_GROUP = NAME_PREFIX + "dbgroup_obj.gif"; //$NON-NLS-1$
 	public static final String IMG_CONTAINER = NAME_PREFIX + "container.png"; //$NON-NLS-1$
 	public static final String IMG_CONTAINER_STARTED = NAME_PREFIX
@@ -138,6 +141,8 @@ public class SWTImagesFactory {
 			IMG_WIZARD);
 	public static final ImageDescriptor DESC_FILTER = createManaged("",
 			IMG_FILTER);
+	public static final ImageDescriptor DESC_LABELS_TAB = createManaged("",
+			IMG_LABELS_TAB);
 	public static final ImageDescriptor DESC_MAIN_TAB = createManaged("",
 			IMG_MAIN_TAB);
 	public static final ImageDescriptor DESC_PULL = createManaged("", IMG_PULL);
@@ -175,6 +180,8 @@ public class SWTImagesFactory {
 			IMG_REBOOTD);
 	public static final ImageDescriptor DESC_REPOSITORY_MIDDLE = createManaged(
 			"", IMG_REPOSITORY_MIDDLE);
+	public static final ImageDescriptor DESC_REPOSITORY_MIDDLED = createManaged(
+			"", IMG_REPOSITORY_MIDDLED);
 	public static final ImageDescriptor DESC_DB_GROUP = createManaged("",
 			IMG_DB_GROUP);
 	public static final ImageDescriptor DESC_CONTAINER = createManaged("",

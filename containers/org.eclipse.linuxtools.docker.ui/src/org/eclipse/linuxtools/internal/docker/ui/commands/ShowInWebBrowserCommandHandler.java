@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,8 @@ import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.browser.IWebBrowser;
+import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -65,9 +67,11 @@ public class ShowInWebBrowserCommandHandler extends AbstractHandler {
 									.equalsIgnoreCase(connectionURI.getScheme())
 							|| "https".equalsIgnoreCase( //$NON-NLS-1$
 									connectionURI.getScheme())) {
-						final String host = connectionURI.getHost();
+						final String host = "unix" //$NON-NLS-1$
+								.equalsIgnoreCase(connectionURI.getScheme())
+										? "127.0.0.1" : connectionURI.getHost(); //$NON-NLS-1$
 						final URL location = new URL("http", host, //$NON-NLS-1$
-								selectedPort.getPublicPort(), "/");
+								selectedPort.getPublicPort(), "/"); //$NON-NLS-1$
 						openLocationInWebBrowser(location);
 					}
 				} catch (URISyntaxException | MalformedURLException e) {
@@ -86,18 +90,22 @@ public class ShowInWebBrowserCommandHandler extends AbstractHandler {
 	}
 
 	private void openLocationInWebBrowser(final URL location) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					PlatformUI.getWorkbench().getBrowserSupport()
-							.getExternalBrowser().openURL(location);
-				} catch (Exception e) {
-					Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-							CommandMessages.getString(
-									"command.showIn.webBrowser.failure"), //$NON-NLS-1$
-							e));
-				}
+		Display.getDefault().asyncExec(() -> {
+			try {
+				final IWebBrowser browser = PlatformUI.getWorkbench()
+						.getBrowserSupport()
+						.createBrowser(IWorkbenchBrowserSupport.AS_EDITOR
+								| IWorkbenchBrowserSupport.LOCATION_BAR
+								| IWorkbenchBrowserSupport.NAVIGATION_BAR,
+								Activator.PLUGIN_ID,
+								CommandMessages.getString("ShowInWebBrowserCommandHandler.internal.browser.label"), //$NON-NLS-1$
+								CommandMessages.getString("ShowInWebBrowserCommandHandler.internal.browser.tooltip")); //$NON-NLS-1$
+				browser.openURL(location);
+			} catch (Exception e) {
+				Activator.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+						CommandMessages
+								.getString("command.showIn.webBrowser.failure"), //$NON-NLS-1$
+						e));
 			}
 		});
 	}

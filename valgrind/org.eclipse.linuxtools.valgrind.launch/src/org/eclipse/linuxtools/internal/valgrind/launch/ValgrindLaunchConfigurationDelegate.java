@@ -47,6 +47,7 @@ import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.containers.LocalFileStorage;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCommand;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindCoreParser;
 import org.eclipse.linuxtools.internal.valgrind.core.ValgrindError;
@@ -109,7 +110,14 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
             String valgrindCommand= getValgrindCommand().getValgrindCommand();
             // also ensure Valgrind version is usable
-            valgrindVersion = getPlugin().getValgrindVersion(project);
+        	try {
+        		valgrindVersion = getPlugin().getValgrindVersion(project);
+        	} catch(CoreException e) {
+        		// if versioning failed, issue an error dialog and return
+        		errorDialog(Messages.getString("ValgrindLaunchConfigurationDelegate.Valgrind_version_failed_msg"), //$NON-NLS-1$
+        				e.getMessage());
+        		return;
+        	}
 
             monitor.worked(1);
             IPath exePath = CDebugUtils.verifyProgramPath(config);
@@ -235,7 +243,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
                 if (children[i] instanceof ValgrindStackFrame && marker == null) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
                     if (frame.getLine() > 0) {
-                        ISourceLocator locator = frame.getLaunch().getSourceLocator();
+                        ISourceLocator locator = frame.getSourceLocator();
                         ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
                         Object sourceElement = result.getSourceElement();
 
@@ -388,4 +396,11 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
         root.deleteMarkers(ValgrindLaunchPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
         return super.finalLaunchCheck(configuration, mode, monitor);
     }
+
+    // Display an error dialog to denote an error scenario.
+    private void errorDialog(final String title, final String message) {
+        ValgrindLaunchPlugin.getShell().getDisplay().asyncExec( () -> MessageDialog.openError(ValgrindLaunchPlugin.getShell(), title, message));
+    }
+
+
 }

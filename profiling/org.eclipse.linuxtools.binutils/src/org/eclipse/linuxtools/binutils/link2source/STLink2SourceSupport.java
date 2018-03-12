@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009-2015 STMicroelectronics and others.
+ * Copyright (c) 2009, 2016 STMicroelectronics and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@
 package org.eclipse.linuxtools.binutils.link2source;
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,10 +26,13 @@ import org.eclipse.cdt.debug.core.CDebugCorePlugin;
 import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -205,24 +209,65 @@ public final class STLink2SourceSupport {
         return f;
     }
 
-    private static IFile getFileForPathImpl(IPath path, IProject project) {
+    // Private resource proxy visitor to run through a project's resources to see if
+    // it contains a link to an element.  This allows us to locate the
+    // project (and it's binary) that has gcov data for a particular resource that has been linked into
+    // the project.  We can't just query the resource for it's project in such a case.  This
+    // is part of the fix for bug: 447554
+    private static class FindLinkedResourceVisitor implements IResourceProxyVisitor {
+
+        final private URI element;
+        private boolean keepSearching = true;
+        private boolean found;
+        private IResource resource;
+        private String lastLinkPath;
+
+        public FindLinkedResourceVisitor(URI element) {
+            this.element = element;
+        }
+
+        public boolean foundElement() {
+            return found;
+        }
+
+        public IResource getResource() {
+        	return resource;
+        }
+        
+        @Override
+        public boolean visit(IResourceProxy proxy) {
+        	// To correctly find a file in a linked directory, we cannot just look at the isLinked() attribute
+        	// which is not set for the file but is set for one of its parent directories.  So, we keep track
+        	// of linked directories and use them to determine if we should bother getting the resource to compare with.
+        	if (proxy.isLinked()) {
+        		lastLinkPath = proxy.requestFullPath().toString();
+        	}
+            if (lastLinkPath != null && proxy.requestFullPath().toString().startsWith(lastLinkPath) && proxy.requestResource().getLocationURI().equals(element)) {
+                found = true;
+                resource = proxy.requestResource();
+                keepSearching = false;
+            }
+            return keepSearching;
+        }
+
+    }
+    
+   private static IFile getFileForPathImpl(IPath path, IProject project) {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         if (path.isAbsolute()) {
             return root.getFileForLocation(path);
         }
         if (project != null && project.exists()) {
+
             ICProject cproject = CoreModel.getDefault().create(project);
             if (cproject != null) {
                 try {
                     ISourceRoot[] roots = cproject.getAllSourceRoots();
                     for (ISourceRoot sourceRoot : roots) {
-                        IResource r = sourceRoot.getResource();
-                        if (r instanceof IContainer) {
-                            IContainer parent = (IContainer) r;
-                            IResource res = parent.findMember(path);
-                            if (res != null && res.exists() && res instanceof IFile) {
-                                return (IFile) res;
-                            }
+                        IContainer r = sourceRoot.getResource();
+                        IResource res = r.findMember(path);
+                        if (res != null && res.exists() && res instanceof IFile) {
+                            return (IFile) res;
                         }
                     }
 
@@ -244,6 +289,20 @@ public final class STLink2SourceSupport {
                 }
             }
         }
+       
+        // no match found...try and see if we are dealing with a link
+    	IPath realPath = project.getLocation().append(path).makeAbsolute();
+    	URI realURI = URIUtil.toURI(realPath.toString());
+        try {
+            FindLinkedResourceVisitor visitor = new STLink2SourceSupport.FindLinkedResourceVisitor(realURI);
+            project.accept(visitor, IResource.DEPTH_INFINITE);
+            // If we find a match, make note of the target and the real C project.
+            if (visitor.foundElement()) {
+                return (IFile) visitor.getResource();
+            }
+        } catch (CoreException e) {
+        }
+
         return null;
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,18 +10,24 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.linuxtools.internal.docker.core.DockerContainerRefreshManager;
+import org.eclipse.linuxtools.internal.docker.core.TCPConnectionSettings;
+import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
+
+import com.spotify.docker.client.DockerCertificateException;
 
 public interface IDockerConnection {
 
-	public void addContainerListener(IDockerContainerListener listener);
+	void addContainerListener(IDockerContainerListener listener);
 
-	public void removeContainerListener(IDockerContainerListener listener);
+	void removeContainerListener(IDockerContainerListener listener);
 
 	/**
 	 * Get the list of {@link IDockerContainer} of the remote Docker daemon.
@@ -30,7 +36,7 @@ public interface IDockerConnection {
 	 *         {@link Collections#emptyList()} if no container exists yet. see
 	 *         {@link IDockerConnection#getContainers(boolean)}
 	 */
-	public List<IDockerContainer> getContainers();
+	List<IDockerContainer> getContainers();
 
 	/**
 	 * Get the list of {@link IDockerContainer} of the remote Docker daemon.
@@ -42,38 +48,43 @@ public interface IDockerConnection {
 	 * @return an unmodifiable list of {@link IDockerContainer} or
 	 *         {@link Collections#emptyList()} if no container exists yet.
 	 */
-	public List<IDockerContainer> getContainers(final boolean force);
-	
+	List<IDockerContainer> getContainers(final boolean force);
+
 	/**
 	 * @return Boolean flag to indicate if the list of {@link IDockerContainer}
 	 *         has already been loaded ({@code true}) or not ({@code false}).
 	 */
-	public boolean isContainersLoaded();
+	boolean isContainersLoaded();
 
 	/**
-	 * @return the {@link IDockerContainer} identified by the given {@code id} or <code>null</code> if none was found.
-	 * @param id the {@link IDockerContainer} id
+	 * @return the {@link IDockerContainer} identified by the given {@code id}
+	 *         or <code>null</code> if none was found.
+	 * @param id
+	 *            the {@link IDockerContainer} id
 	 */
-	public IDockerContainer getContainer(final String id);
+	IDockerContainer getContainer(final String id);
 
 	/**
-	 * @return the {@link IDockerContainerInfo} for the {@link IDockerContainer} identified by the given {@code id} or <code>null</code> if none was found.
-	 * @param id the {@link IDockerContainer} id
+	 * @return the {@link IDockerContainerInfo} for the {@link IDockerContainer}
+	 *         identified by the given {@code id} or <code>null</code> if none
+	 *         was found.
+	 * @param id
+	 *            the {@link IDockerContainer} id
 	 */
-	public IDockerContainerInfo getContainerInfo(final String id);
+	IDockerContainerInfo getContainerInfo(final String id);
 
 	/**
 	 * @return the {@link IDockerImageInfo} for the {@link IDockerImage}
 	 *         identified by the given {@code id} or <code>null</code> if none
-	 *         was found.
+	 *         was found or if the underlying client was not initialized
 	 * @param id
 	 *            the {@link IDockerImage} id
 	 */
-	public IDockerImageInfo getImageInfo(final String id);
+	IDockerImageInfo getImageInfo(final String id);
 
-	public void addImageListener(IDockerImageListener listener);
+	void addImageListener(IDockerImageListener listener);
 
-	public void removeImageListener(IDockerImageListener listener);
+	void removeImageListener(IDockerImageListener listener);
 
 	/**
 	 * Get the list of {@link IDockerImage} of the remote Docker daemon.
@@ -82,7 +93,7 @@ public interface IDockerConnection {
 	 *         {@link Collections#emptyList()} if no container exists yet.
 	 * @see IDockerConnection#getImages(boolean)
 	 */
-	public List<IDockerImage> getImages();
+	List<IDockerImage> getImages();
 
 	/**
 	 * Checks if an entry in the current list of {@link IDockerImage} exists
@@ -95,13 +106,13 @@ public interface IDockerConnection {
 	 * @return <code>true</code> if an {@link IDockerImage} was found,
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean hasImage(String repository, String tag);
+	boolean hasImage(String repository, String tag);
 
 	/**
 	 * @return Boolean flag to indicate if the list of {@link IDockerImage} has
 	 *         already been loaded ({@code true}) or not ({@code false}).
 	 */
-	public boolean isImagesLoaded();
+	boolean isImagesLoaded();
 
 	/**
 	 * Get the list of {@link IDockerImage} of the remote Docker daemon.
@@ -112,21 +123,51 @@ public interface IDockerConnection {
 	 * @return an unmodifiable list of {@link IDockerImage} or
 	 *         {@link Collections#emptyList()} if no container exists yet.
 	 */
-	public List<IDockerImage> getImages(final boolean force);
+	List<IDockerImage> getImages(final boolean force);
 
-	public String getName();
+	/**
+	 * Get the Docker daemon version info
+	 * 
+	 * @return an {@link IDockerVersion} instance containing the info
+	 * @throws DockerException
+	 *             generic exception
+	 */
+	IDockerVersion getVersion() throws DockerException;
 
-	public String getUri();
+	/**
+	 * @return the connection name
+	 */
+	String getName();
 
-	public String getUsername();
+	/**
+	 * Updates the connection name
+	 * 
+	 * @param name
+	 *            the new name
+	 * @return <code>true</code> if the name changed, <code>false</code>
+	 *         otherwise.
+	 */
+	boolean setName(String name);
 
-	public String getTcpCertPath();
+	/**
+	 * @return The connection URI. Can be the path to the Unix socket or the TCP
+	 *         host.
+	 * @see UnixSocketConnectionSettings#getPath()
+	 * @see TCPConnectionSettings#getHost()
+	 */
+	String getUri();
+
+	String getUsername();
+
+	@Deprecated
+	String getTcpCertPath();
 
 	/**
 	 * Checks if the connection is open
+	 * 
 	 * @return {@code true} if connection is open, {@code false} otherwise.
 	 */
-	public boolean isOpen();
+	boolean isOpen();
 
 	/**
 	 * Opens the connection to the Docker daemon.
@@ -140,7 +181,7 @@ public interface IDockerConnection {
 	 * @throws DockerException
 	 *             generic exception
 	 */
-	public void open(boolean registerContainerRefreshManager) throws DockerException;
+	void open(boolean registerContainerRefreshManager) throws DockerException;
 
 	/**
 	 * Send a ping message to the Docker daemon to check if the connection
@@ -149,18 +190,21 @@ public interface IDockerConnection {
 	 * @throws DockerException
 	 *             generic exception
 	 */
-	public void ping() throws DockerException;
+	void ping() throws DockerException;
 
 	/**
 	 * Closes the connection.
 	 */
-	public void close();
+	void close();
 
 	/**
-	 * @return the {@link IDockerConnectionInfo} associated with this {@link IDockerConnection}
-	 * @throws DockerException if info retrieval failed
+	 * @return the {@link IDockerConnectionInfo} associated with this
+	 *         {@link IDockerConnection} or <code>null</code> if the underlying
+	 *         client was not initialized.
+	 * @throws DockerException
+	 *             if info retrieval failed
 	 */
-	public IDockerConnectionInfo getInfo() throws DockerException;
+	IDockerConnectionInfo getInfo() throws DockerException;
 
 	/**
 	 * Retrieves/refreshes the {@link IDockerImage} on the Docker daemon and
@@ -171,13 +215,30 @@ public interface IDockerConnection {
 	 * @throws DockerException
 	 *             If listing images failed.
 	 */
-	public List<IDockerImage> listImages() throws DockerException;
+	List<IDockerImage> listImages() throws DockerException;
 
-	void pullImage(String id, IDockerProgressHandler handler) throws DockerException, InterruptedException;
+	void pullImage(String id, IDockerProgressHandler handler)
+			throws DockerException, InterruptedException;
 
-	public List<IDockerImageSearchResult> searchImages(final String term) throws DockerException;
-	
-	void pushImage(String name, IDockerProgressHandler handler) throws DockerException, InterruptedException;
+	/**
+	 * @since 2.0
+	 */
+	void pullImage(String id, IRegistryAccount info,
+			IDockerProgressHandler handler) throws DockerException,
+			InterruptedException, DockerCertificateException;
+
+	List<IDockerImageSearchResult> searchImages(final String term)
+			throws DockerException;
+
+	void pushImage(String name, IDockerProgressHandler handler)
+			throws DockerException, InterruptedException;
+
+	/**
+	 * @since 2.0
+	 */
+	void pushImage(String name, IRegistryAccount info,
+			IDockerProgressHandler handler) throws DockerException,
+			InterruptedException;
 
 	/**
 	 * Adds a tag to an existing image
@@ -191,7 +252,57 @@ public interface IDockerConnection {
 	 * @throws InterruptedException
 	 *             if the thread was interrupted
 	 */
-	void tagImage(String name, String newTag) throws DockerException, InterruptedException;
+	void tagImage(String name, String newTag)
+			throws DockerException, InterruptedException;
+
+	/**
+	 * Copy a file or directory from a Container into a tar InputStream.
+	 * 
+	 * @param id
+	 *            the Container id
+	 * @param path
+	 *            the path to the file or directory in the Container
+	 * @return InputStream containing tar'd file or directory
+	 * @throws DockerException
+	 *             in case of underlying problem
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 */
+	InputStream copyContainer(String id, String path)
+			throws DockerException, InterruptedException;
+
+	/**
+	 * Copy a directory from the Host into a Container's file system.
+	 * 
+	 * @param directory
+	 *            the Host directory to copy to the Container
+	 * @param id
+	 *            the Container id
+	 * @param path
+	 *            the directory to place the Host files in the Container
+	 *
+	 * @throws DockerException
+	 *             in case of underlying problem
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 */
+	void copyToContainer(final String directory, String id, String path)
+			throws DockerException, InterruptedException, IOException;
+
+	/**
+	 * Determine if authorization is valid.
+	 * 
+	 * @param config
+	 *            authorization credentials
+	 * @return 0 if ok, non-zero otherwise
+	 * @throws DockerException
+	 *             if an error occurs
+	 * @throws InterruptedException
+	 *             if the thread was interrupted
+	 * @since 2.0
+	 */
+	int auth(final IRegistryAccount config)
+			throws DockerException, InterruptedException;
 
 	String buildImage(IPath path, IDockerProgressHandler handler)
 			throws DockerException, InterruptedException;
@@ -200,20 +311,20 @@ public interface IDockerConnection {
 			throws DockerException, InterruptedException;
 
 	@Deprecated
-	String createContainer(IDockerContainerConfig c) throws DockerException,
-			InterruptedException;
+	String createContainer(IDockerContainerConfig c)
+			throws DockerException, InterruptedException;
 
 	@Deprecated
 	String createContainer(final IDockerContainerConfig c,
-			final String containerName) throws DockerException,
-			InterruptedException;
+			final String containerName)
+			throws DockerException, InterruptedException;
 
 	String createContainer(IDockerContainerConfig c, IDockerHostConfig hc)
 			throws DockerException, InterruptedException;
 
-	public String createContainer(final IDockerContainerConfig config,
+	String createContainer(final IDockerContainerConfig config,
 			final IDockerHostConfig hc, final String containerName)
-					throws DockerException, InterruptedException;
+			throws DockerException, InterruptedException;
 
 	void stopContainer(String id) throws DockerException, InterruptedException;
 
@@ -228,18 +339,20 @@ public interface IDockerConnection {
 			throws DockerException, InterruptedException;
 
 	@Deprecated
-	void startContainer(String id, IDockerHostConfig config, OutputStream stream)
-			throws DockerException, InterruptedException;
+	void startContainer(String id, IDockerHostConfig config,
+			OutputStream stream) throws DockerException, InterruptedException;
 
 	@Deprecated
 	void startContainer(String id, String loggingId, IDockerHostConfig config,
-			OutputStream stream)
-			throws DockerException, InterruptedException;
+			OutputStream stream) throws DockerException, InterruptedException;
 
 	void startContainer(String id, OutputStream stream)
 			throws DockerException, InterruptedException;
 
 	void startContainer(String id, String loggingId, OutputStream stream)
+			throws DockerException, InterruptedException;
+
+	void restartContainer(String id, int secondsToWait)
 			throws DockerException, InterruptedException;
 
 	void commitContainer(String id, String repo, String tag, String comment,
@@ -248,6 +361,24 @@ public interface IDockerConnection {
 	void stopLoggingThread(String id);
 
 	void logContainer(String id, OutputStream stream)
+			throws DockerException, InterruptedException;
+
+	IDockerNetworkCreation createNetwork(IDockerNetworkConfig config)
+			throws DockerException, InterruptedException;
+
+	IDockerNetwork inspectNetwork(String networkId)
+			throws DockerException, InterruptedException;
+
+	List<IDockerNetwork> listNetworks()
+			throws DockerException, InterruptedException;
+
+	void removeNetwork(String networkId)
+			throws DockerException, InterruptedException;
+
+	void connectNetwork(String id, String networkId)
+			throws DockerException, InterruptedException;
+
+	void disconnectNetwork(String id, String networkId)
 			throws DockerException, InterruptedException;
 
 	void removeImage(String name) throws DockerException, InterruptedException;
@@ -266,5 +397,26 @@ public interface IDockerConnection {
 	 */
 	void removeTag(String tag) throws DockerException, InterruptedException;
 
+	/**
+	 * @return the state of the connection
+	 * @since 2.0.0
+	 */
+	EnumDockerConnectionState getState();
+
+	/**
+	 * @return the {@link IDockerConnectionSettings} associated with this
+	 *         {@link IDockerConnection}
+	 */
+	IDockerConnectionSettings getSettings();
+
+	/**
+	 * Updates the connection settings
+	 * 
+	 * @param settings
+	 *            the new {@link IDockerConnectionSettings}
+	 * @return <code>true</code> if the connection settings changed,
+	 *         <code>false</code> otherwise.
+	 */
+	boolean setSettings(IDockerConnectionSettings settings);
 
 }

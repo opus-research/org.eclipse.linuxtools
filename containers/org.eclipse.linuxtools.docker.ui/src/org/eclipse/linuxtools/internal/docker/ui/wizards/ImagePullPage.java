@@ -11,7 +11,10 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
+import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
@@ -21,19 +24,25 @@ import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IRegistry;
+import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
 import org.eclipse.linuxtools.internal.docker.core.DockerImage;
+import org.eclipse.linuxtools.internal.docker.core.RegistryAccountManager;
+import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
-import org.eclipse.linuxtools.internal.docker.ui.validators.ImageNameValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -46,6 +55,7 @@ public class ImagePullPage extends WizardPage {
 	private final ImagePullPageModel model;
 	private final DataBindingContext dbc;
 	private final IDockerConnection connection;
+	private final String DOCKER_DAEMON_DEFAULT = "Docker Daemon Registry (Default)"; //$NON-NLS-1$
 
 	public ImagePullPage(final IDockerConnection connection) {
 		super("ImagePullPage", //$NON-NLS-1$
@@ -75,6 +85,21 @@ public class ImagePullPage extends WizardPage {
 		return this.model.getImageName();
 	}
 
+	public IRegistry getRegistry() {
+		String registry = model.getRegistry();
+		final String pattern = "(.*)@(.*)"; //$NON-NLS-1$
+		Matcher m = Pattern.compile(pattern).matcher(registry);
+		IRegistry info;
+		if (m.matches()) {
+			info = RegistryAccountManager.getInstance().getAccount(m.group(2), m.group(1));
+		} else if (registry.equals(DOCKER_DAEMON_DEFAULT)) {
+			info = null;
+		} else {
+			info = new RegistryInfo(registry);
+		}
+		return info;
+	}
+
 	@Override
 	public void createControl(Composite parent) {
 		parent.setLayout(new GridLayout());
@@ -83,6 +108,26 @@ public class ImagePullPage extends WizardPage {
 				.applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).span(1, 1)
 				.grab(true, false).applyTo(container);
+
+		// Registry
+		final Label accountLabel = new Label(container, SWT.NULL);
+		accountLabel.setText(WizardMessages.getString("ImagePullPage.registry.account.label")); //$NON-NLS-1$
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.grab(false, false).applyTo(accountLabel);
+
+		final Combo accountCombo = new Combo(container, SWT.DROP_DOWN);
+		accountCombo.setToolTipText(WizardMessages.getString("ImagePullPage.registry.account.desc")); //$NON-NLS-1$
+		accountCombo.setItems(getAccountComboItems());
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.grab(true, false).applyTo(accountCombo);
+
+		// Add
+		final Button addButton = new Button(container, SWT.NONE);
+		addButton.setText(
+				WizardMessages.getString("ImagePullPushPage.add.label")); //$NON-NLS-1$
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.grab(false, false).applyTo(addButton);
+		addButton.addSelectionListener(onAdd(accountCombo));
 
 		// Image name
 		final Label imageNameLabel = new Label(container, SWT.NONE);
@@ -96,14 +141,7 @@ public class ImagePullPage extends WizardPage {
 				.grab(true, false).applyTo(imageNameText);
 		imageNameText.setToolTipText(
 				WizardMessages.getString("ImagePull.name.tooltip")); //$NON-NLS-1$
-		// binding
-		final IObservableValue imgeNameObservable = BeanProperties
-				.value(ImagePullPageModel.class, ImagePullPageModel.IMAGE_NAME)
-				.observe(model);
-		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(imageNameText),
-				imgeNameObservable, new UpdateValueStrategy()
-						.setAfterConvertValidator(new ImageNameValidator()),
-				null);
+
 		// search
 		final Button searchButton = new Button(container, SWT.NONE);
 		searchButton
@@ -112,9 +150,49 @@ public class ImagePullPage extends WizardPage {
 				.grab(false, false).applyTo(searchButton);
 		searchButton.addSelectionListener(onSearchImage());
 
+		// binding
+		final IObservableValue imgeNameObservable = BeanProperties
+				.value(ImagePullPageModel.class, ImagePullPageModel.IMAGE_NAME)
+				.observe(model);
+		dbc.bindValue(WidgetProperties.text(SWT.Modify).observe(imageNameText),
+				imgeNameObservable, new UpdateValueStrategy()
+						.setAfterConvertValidator(new ImageNameValidator()),
+				null);
+		final IObservableValue registryObservable = BeanProperties
+				.value(ImagePullPageModel.class, ImagePullPageModel.REGISTRY)
+				.observe(model);
+		dbc.bindValue(WidgetProperties.selection().observe(accountCombo),
+				registryObservable);
+
+		// Set the Default registry and ensure it is observed
+		accountCombo.select(0);
+
 		// setup validation support
 		WizardPageSupport.create(this, dbc);
 		setControl(container);
+	}
+
+	private SelectionListener onAdd(Combo combo) {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				String selected = combo.getText();
+				RegistryAccountDialog dialog = new RegistryAccountDialog(
+						getShell(),
+						WizardMessages
+								.getString("ImagePullPushPage.login.title"), //$NON-NLS-1$
+						AbstractRegistry.DOCKERHUB_REGISTRY,
+						WizardMessages.getString(
+								"RegistryAccountDialog.add.explanation")); ///$NON-NLS-1$
+				if (dialog.open() == Window.OK) {
+					IRegistryAccount acc = dialog.getSignonInformation();
+					RegistryAccountManager.getInstance().add(acc);
+					selected = acc.getUsername() + "@" + acc.getServerAddress(); //$NON-NLS-1$
+				}
+				combo.setItems(getAccountComboItems());
+				combo.setText(selected);
+			}
+		};
 	}
 
 	/**
@@ -127,9 +205,21 @@ public class ImagePullPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
+				IRegistry reg;
+				String [] tokens = model.getRegistry().split("@");
+				if (tokens.length > 1) {
+					reg = new RegistryInfo(tokens[1]);
+				} else {
+					if (DOCKER_DAEMON_DEFAULT.equals(model.getRegistry())) {
+						reg = new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY);
+					} else {
+						reg = new RegistryInfo(model.getRegistry());
+					}
+				}
 				final ImageSearch imageSearchWizard = new ImageSearch(
 						ImagePullPage.this.connection,
-						ImagePullPage.this.model.getImageName());
+						ImagePullPage.this.model.getImageName(),
+						reg);
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
@@ -137,6 +227,15 @@ public class ImagePullPage extends WizardPage {
 				}
 			}
 		};
+	}
+
+	private String[] getAccountComboItems() {
+		List<String> items = RegistryAccountManager.getInstance().getAccounts()
+				.stream()
+				.map(e -> e.getUsername() + "@" + e.getServerAddress()) //$NON-NLS-1$
+				.collect(Collectors.toList());
+		items.add(0, DOCKER_DAEMON_DEFAULT);
+		return items.toArray(new String[0]);
 	}
 
 }

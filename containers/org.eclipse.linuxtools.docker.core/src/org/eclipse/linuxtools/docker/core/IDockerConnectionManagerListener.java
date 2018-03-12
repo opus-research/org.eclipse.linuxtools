@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ public interface IDockerConnectionManagerListener {
 	int ADD_EVENT = 0;
 	int REMOVE_EVENT = 1;
 	int RENAME_EVENT = 2;
+	int UPDATE_SETTINGS_EVENT = 3;
 
 	/**
 	 * Notifies the listener that a {@link IDockerConnection} changed.
@@ -26,6 +27,6 @@ public interface IDockerConnectionManagerListener {
 	 *             instead.
 	 */
 	@Deprecated
-	public void changeEvent(int type);
+	void changeEvent(int type);
 
 }

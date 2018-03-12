@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,8 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	public static final String REMOVE_WHEN_EXITS = "removeWhenExits"; //$NON-NLS-1$
 
+	public static final String PRIVILEGED = "privileged"; //$NON-NLS-1$
+
 	private String selectedConnectionName;
 
 	private List<String> connectionNames;
@@ -88,17 +91,19 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 
 	private boolean publishAllPorts = true;
 
-	private final WritableList exposedPorts = new WritableList();
+	private final WritableList<ExposedPortModel> exposedPorts = new WritableList<>();
 
 	private Set<ExposedPortModel> selectedPorts;
 
-	private final WritableList links = new WritableList();
+	private final WritableList<ContainerLinkModel> links = new WritableList<>();
 
 	private boolean interactiveMode = false;
 
 	private boolean allocatePseudoTTY = false;
 
 	private boolean removeWhenExits = false;
+
+	private boolean privileged = false;
 
 	public ImageRunSelectionModel(
 			final IDockerConnection selectedConnection) {
@@ -124,22 +129,21 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		if (getSelectedConnection() != null) {
 			for (IDockerImage image : getSelectedConnection().getImages()) {
 				if (!image.isIntermediateImage() && !image.isDangling()) {
-					for (String tag : image.tags()) {
-						final String imageName = ImageRunSelectionModel
-								.getImageName(image.repo(), tag);
-						images.put(imageName, image);
-						imageNames.add(imageName);
+					for (String tag : image.repoTags()) {
+						images.put(tag, image);
+						imageNames.add(tag);
 					}
 				}
 			}
+			Collections.sort(imageNames);
 		}
 	}
 
 	public ImageRunSelectionModel(final IDockerImage selectedImage) {
 		this(selectedImage.getConnection());
-		if (selectedImage.tags().contains("latest")) { //$NON-NLS-1$
-			setSelectedImageName(ImageRunSelectionModel
-					.getImageName(selectedImage.repo(), "latest")); //$NON-NLS-1$
+		if (selectedImage.tags().contains(IDockerImage.TAG_LATEST)) {
+			setSelectedImageName(ImageRunSelectionModel.getImageName(
+					selectedImage.repo(), IDockerImage.TAG_LATEST));
 		} else {
 			final String lastTag = selectedImage.tags()
 					.get(selectedImage.tags().size() - 1);
@@ -231,7 +235,14 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		return command;
 	}
 
-	public void setCommand(final String command) {
+	public void setCommand(String command) {
+		// Make sure to quote commands with null/empty entrypoint
+		if ((getEntrypoint() == null || getEntrypoint().isEmpty())
+				&& !command.contains("'") //$NON-NLS-1$
+				&& command.matches("^/bin/sh\\s+-c.*")) { //$NON-NLS-1$
+			command = command + "\'"; //$NON-NLS-1$
+			command = command.replaceFirst("-c ", "-c \'"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 		firePropertyChange(COMMAND, this.command, this.command = command);
 	}
 
@@ -264,7 +275,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		setEntrypoint(entrypointBuilder.toString());
 	}
 
-	public WritableList getExposedPorts() {
+	public WritableList<ExposedPortModel> getExposedPorts() {
 		return exposedPorts;
 	}
 
@@ -305,7 +316,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 				this.selectedPorts = ports);
 	}
 
-	public WritableList getLinks() {
+	public WritableList<ContainerLinkModel> getLinks() {
 		return links;
 	}
 
@@ -331,7 +342,7 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 		this.links.clear();
 	}
 
-	public void setLinks(final WritableList links) {
+	public void setLinks(final WritableList<ContainerLinkModel> links) {
 		this.links.clear();
 		this.links.addAll(links);
 	}
@@ -381,6 +392,15 @@ public class ImageRunSelectionModel extends BaseDatabindingModel {
 	public void setRemoveWhenExits(boolean removeWhenExits) {
 		firePropertyChange(REMOVE_WHEN_EXITS, this.removeWhenExits,
 				this.removeWhenExits = removeWhenExits);
+	}
+
+	public boolean isPrivileged() {
+		return privileged;
+	}
+
+	public void setPrivileged(boolean privileged) {
+		firePropertyChange(PRIVILEGED, this.privileged,
+				this.privileged = privileged);
 	}
 
 	public static class ExposedPortModel extends BaseDatabindingModel

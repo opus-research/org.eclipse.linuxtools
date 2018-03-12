@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ENTRYPOINT;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.INTERACTIVE;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.LINKS;
+import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PRIVILEGED;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PUBLISHED_PORTS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.PUBLISH_ALL_PORTS;
 
@@ -34,11 +35,9 @@ import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
@@ -57,15 +56,14 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
@@ -73,6 +71,7 @@ import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IDockerImageInfo;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.docker.ui.wizards.ImageSearch;
+import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.commands.CommandUtils;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.FindImageInfoRunnable;
@@ -81,6 +80,7 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImagePullProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ContainerLinkModel;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunSelectionModel.ExposedPortModel;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -95,6 +95,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * A {@link WizardPage} to let the user select the {@link IDockerImage} to run
@@ -169,7 +170,11 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	@Override
 	public void createControl(final Composite parent) {
-		final Composite container = new Composite(parent, SWT.NONE);
+		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
+				SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop.setExpandVertical(true);
+		scrollTop.setExpandHorizontal(true);
+		final Composite container = new Composite(scrollTop, SWT.NONE);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).span(1, 1)
 				.grab(true, false).applyTo(container);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
@@ -212,7 +217,12 @@ public class ImageRunSelectionPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.dbc);
 		setStatusMessage(containerstatus);
-		setControl(container);
+
+		scrollTop.setContent(container);
+		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		scrollTop.setSize(point);
+		scrollTop.setMinSize(point);
+		setControl(scrollTop);
 	}
 
 	private void setStatusMessage(final Object containerstatus) {
@@ -456,25 +466,20 @@ public class ImageRunSelectionPage extends WizardPage {
 				removeButton);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void checkAllElements(
 			final CheckboxTableViewer exposedPortsTableViewer) {
 		exposedPortsTableViewer.setAllChecked(true);
 		model.setSelectedPorts(
-				new HashSet<ExposedPortModel>(model.getExposedPorts()));
+				new HashSet<>(model.getExposedPorts()));
 	}
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
-					setControlsEnabled(targetButtons, true);
-				}
+		return e -> {
+			if (e.getSelection().isEmpty()) {
+				setControlsEnabled(targetButtons, false);
+			} else {
+				setControlsEnabled(targetButtons, true);
 			}
 		};
 	}
@@ -678,6 +683,18 @@ public class ImageRunSelectionPage extends WizardPage {
 						.value(ImageRunSelectionModel.class,
 								ImageRunSelectionModel.REMOVE_WHEN_EXITS)
 						.observe(model));
+
+		// privileged
+		final Button privilegedButton = new Button(container, SWT.CHECK);
+		privilegedButton.setText(
+				WizardMessages.getString("ImageRunSelectionPage.privileged")); //$NON-NLS-1$
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.span(COLUMNS, 1).grab(true, false).applyTo(privilegedButton);
+		dbc.bindValue(WidgetProperties.selection().observe(privilegedButton),
+				BeanProperties
+						.value(ImageRunSelectionModel.class,
+								ImageRunSelectionModel.PRIVILEGED)
+						.observe(model));
 	}
 
 	/**
@@ -689,41 +706,31 @@ public class ImageRunSelectionPage extends WizardPage {
 	 */
 	private IContentProposalProvider getImageNameContentProposalProvider(
 			final Combo imageSelectionCombo) {
-		return new IContentProposalProvider() {
-
-			@Override
-			public IContentProposal[] getProposals(final String contents,
-					final int position) {
-				final List<IContentProposal> proposals = new ArrayList<>();
-				for (String imageName : imageSelectionCombo.getItems()) {
-					if (imageName.contains(contents)) {
-						proposals.add(new ContentProposal(imageName, imageName,
-								imageName, position));
-					}
+		return (contents, position) -> {
+			final List<IContentProposal> proposals = new ArrayList<>();
+			for (String imageName : imageSelectionCombo.getItems()) {
+				if (imageName.contains(contents)) {
+					proposals.add(new ContentProposal(imageName, imageName,
+							imageName, position));
 				}
-				return proposals.toArray(new IContentProposal[0]);
 			}
+			return proposals.toArray(new IContentProposal[0]);
 		};
 	}
 
 	private IValueChangeListener onImageSelectionChange() {
-		return new IValueChangeListener() {
-
-			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				final IDockerImage selectedImage = model.getSelectedImage();
-				// skip if the selected image does not exist in the local Docker
-				// host
-				if (selectedImage == null) {
-					model.setExposedPorts(
-							Collections.<ExposedPortModel> emptyList());
-					return;
-				}
-				final IDockerImageInfo selectedImageInfo = getImageInfo(
-						selectedImage);
-
-				applyImageInfo(selectedImageInfo);
+		return event -> {
+			final IDockerImage selectedImage = model.getSelectedImage();
+			// skip if the selected image does not exist in the local Docker
+			// host
+			if (selectedImage == null) {
+				model.setExposedPorts(
+						Collections.<ExposedPortModel> emptyList());
+				return;
 			}
+			final IDockerImageInfo selectedImageInfo = getImageInfo(
+					selectedImage);
+			applyImageInfo(selectedImageInfo);
 		};
 	}
 
@@ -739,13 +746,7 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private IValueChangeListener onPublishAllPortsChange(
 			final Control... controls) {
-		return new IValueChangeListener() {
-
-			@Override
-			public void handleValueChange(final ValueChangeEvent event) {
-				togglePortMappingControls(controls);
-			}
-		};
+		return event -> togglePortMappingControls(controls);
 	}
 
 	private SelectionListener onSearchImage() {
@@ -757,7 +758,8 @@ public class ImageRunSelectionPage extends WizardPage {
 						ImageRunSelectionPage.this.model
 								.getSelectedConnection(),
 						ImageRunSelectionPage.this.model
-								.getSelectedImageName());
+								.getSelectedImageName(),
+						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY));
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {
@@ -848,10 +850,10 @@ public class ImageRunSelectionPage extends WizardPage {
 			try {
 				this.model.setContainerName(lastLaunchConfiguration
 						.getAttribute(CONTAINER_NAME, ""));
-				this.model.setCommand(
-						lastLaunchConfiguration.getAttribute(COMMAND, ""));
 				this.model.setEntrypoint(
 						lastLaunchConfiguration.getAttribute(ENTRYPOINT, ""));
+				this.model.setCommand(
+						lastLaunchConfiguration.getAttribute(COMMAND, ""));
 				this.model.setPublishAllPorts(lastLaunchConfiguration
 						.getAttribute(PUBLISH_ALL_PORTS, false));
 				final List<String> exposedPortInfos = lastLaunchConfiguration
@@ -859,13 +861,16 @@ public class ImageRunSelectionPage extends WizardPage {
 								Collections.<String> emptyList());
 				// FIXME: handle the case where ports where added (and selected)
 				// by the user.
-				final List<ExposedPortModel> exposedPorts = ExposedPortModel
-						.fromStrings(selectedImageInfo.config().exposedPorts());
-				model.setExposedPorts(exposedPorts);
-				final List<ExposedPortModel> selectedExposedPorts = ExposedPortModel
-						.fromStrings(exposedPortInfos);
-				this.model
-						.setSelectedPorts(new HashSet<>(selectedExposedPorts));
+				if (selectedImageInfo != null) {
+					final List<ExposedPortModel> exposedPorts = ExposedPortModel
+							.fromStrings(
+									selectedImageInfo.config().exposedPorts());
+					model.setExposedPorts(exposedPorts);
+					final List<ExposedPortModel> selectedExposedPorts = ExposedPortModel
+							.fromStrings(exposedPortInfos);
+					this.model.setSelectedPorts(
+							new HashSet<>(selectedExposedPorts));
+				}
 
 				// links
 				this.model.setLinks(lastLaunchConfiguration.getAttribute(LINKS,
@@ -877,6 +882,8 @@ public class ImageRunSelectionPage extends WizardPage {
 						.getAttribute(INTERACTIVE, false));
 				this.model.setAllocatePseudoTTY(lastLaunchConfiguration
 						.getAttribute(ALLOCATE_PSEUDO_CONSOLE, false));
+				this.model.setPrivileged(lastLaunchConfiguration
+						.getAttribute(PRIVILEGED, false));
 			} catch (CoreException e) {
 				Activator.log(e);
 			}
@@ -909,8 +916,8 @@ public class ImageRunSelectionPage extends WizardPage {
 			final List<ExposedPortModel> exposedPorts = ExposedPortModel
 					.fromStrings(selectedImageInfo.config().exposedPorts());
 			model.setExposedPorts(exposedPorts);
-			model.setCommand(selectedImageInfo.config().cmd());
 			model.setEntrypoint(selectedImageInfo.config().entrypoint());
+			model.setCommand(selectedImageInfo.config().cmd());
 		}
 	}
 
@@ -926,38 +933,31 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private void pullSelectedImage() {
 		try {
-			getContainer().run(true, true, new IRunnableWithProgress() {
-
-				@Override
-				public void run(final IProgressMonitor monitor)
-						throws InterruptedException {
-					final IDockerConnection connection = model
-							.getSelectedConnection();
-					final String imageName = model.getSelectedImageName();
-					monitor.beginTask(WizardMessages.getFormattedString(
-							"ImageRunSelectionPage.pullingTask", imageName), 1); //$NON-NLS-1$
-					try {
-						connection.pullImage(imageName,
-								new ImagePullProgressHandler(connection,
-										imageName));
-					} catch (final DockerException e) {
-						Display.getDefault().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								MessageDialog.openError(
-										Display.getCurrent().getActiveShell(),
-										DVMessages.getFormattedString(
-												ERROR_PULLING_IMAGE, imageName),
-										e.getMessage());
-							}
-						});
-					} finally {
-						monitor.done();
-						// refresh the widgets
-						model.refreshImageNames();
-						if (model.getImageNames().contains(imageName)) {
-							model.setSelectedImageName(imageName);
-						}
+			getContainer().run(true, true, monitor -> {
+				final IDockerConnection connection = model
+						.getSelectedConnection();
+				final String imageName = model.getSelectedImageName();
+				monitor.beginTask(
+						WizardMessages.getFormattedString(
+								"ImageRunSelectionPage.pullingTask", imageName), //$NON-NLS-1$
+						1);
+				try {
+					connection.pullImage(imageName,
+							new ImagePullProgressHandler(connection,
+									imageName));
+				} catch (final DockerException e) {
+					Display.getDefault().syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(ERROR_PULLING_IMAGE,
+									imageName),
+							e.getMessage()));
+				} finally {
+					monitor.done();
+					// refresh the widgets
+					model.refreshImageNames();
+					if (model.getImageNames().contains(imageName)) {
+						model.setSelectedImageName(imageName);
 					}
 				}
 			});
@@ -975,16 +975,16 @@ public class ImageRunSelectionPage extends WizardPage {
 
 	private class ImageSelectionValidator extends MultiValidator {
 
-		private final IObservableValue imageSelectionObservable;
+		private final IObservableValue<String> imageSelectionObservable;
 
 		ImageSelectionValidator(
-				final IObservableValue imageSelectionObservable) {
+				final IObservableValue<String> imageSelectionObservable) {
 			this.imageSelectionObservable = imageSelectionObservable;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String selectedImageName = (String) imageSelectionObservable
+			final String selectedImageName = imageSelectionObservable
 					.getValue();
 			if (selectedImageName.isEmpty()) {
 				model.setSelectedImageNeedsPulling(false);
@@ -1002,8 +1002,8 @@ public class ImageRunSelectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
+		public IObservableList<IObservableValue<String>> getTargets() {
+			WritableList<IObservableValue<String>> targets = new WritableList<>();
 			targets.add(imageSelectionObservable);
 			return targets;
 		}
@@ -1014,18 +1014,17 @@ public class ImageRunSelectionPage extends WizardPage {
 
 		private final IDockerConnection connection;
 
-		private final IObservableValue containerNameObservable;
+		private final IObservableValue<String> containerNameObservable;
 
 		ContainerNameValidator(final IDockerConnection connection,
-				final IObservableValue containerNameObservable) {
+				final IObservableValue<String> containerNameObservable) {
 			this.connection = connection;
 			this.containerNameObservable = containerNameObservable;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String containerName = (String) containerNameObservable
-					.getValue();
+			final String containerName = containerNameObservable.getValue();
 
 			for (IDockerContainer container : connection.getContainers()) {
 				if (container.name().equals(containerName)) {
@@ -1037,8 +1036,8 @@ public class ImageRunSelectionPage extends WizardPage {
 		}
 
 		@Override
-		public IObservableList getTargets() {
-			WritableList targets = new WritableList();
+		public IObservableList<IObservableValue<String>> getTargets() {
+			WritableList<IObservableValue<String>> targets = new WritableList<>();
 			targets.add(containerNameObservable);
 			return targets;
 		}

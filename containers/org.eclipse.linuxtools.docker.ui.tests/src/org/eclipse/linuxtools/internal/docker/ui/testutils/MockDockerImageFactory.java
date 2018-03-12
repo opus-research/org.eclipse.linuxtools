@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,13 +19,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
+import org.eclipse.linuxtools.internal.docker.core.DockerImage;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
-import com.spotify.docker.client.messages.Image;
 
 /**
- * 
+ * A factory for mock {@link DockerImage}s.
  */
 public class MockDockerImageFactory {
 
@@ -39,12 +41,10 @@ public class MockDockerImageFactory {
 
 	public static class Builder {
 
-		private static char[] hexa = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-		private final Image image;
+		private final IDockerImage image;
 
 		private Builder() {
-			this.image = Mockito.mock(Image.class);
+			this.image = Mockito.mock(IDockerImage.class);
 		}
 
 		private Builder id(final String id) {
@@ -55,7 +55,7 @@ public class MockDockerImageFactory {
 		private Builder randomId() {
 			// generate a random id for the image
 			final String id = IntStream.range(0, 12)
-					.mapToObj(i -> Character.valueOf(hexa[new Random().nextInt(16)]).toString())
+					.mapToObj(i -> Character.valueOf(MockImageFactory.HEXA[new Random().nextInt(16)]).toString())
 					.collect(Collectors.joining());
 			Mockito.when(this.image.id()).thenReturn(id);
 			return this;
@@ -70,9 +70,15 @@ public class MockDockerImageFactory {
 			return this;
 		}
 
-		public Image build() {
+		public Builder connection(IDockerConnection connection) {
+			Mockito.when(this.image.getConnection()).thenReturn(connection);
+			return this;
+		}
+		
+		public IDockerImage build() {
 			return image;
 		}
+
 	}
 
 }

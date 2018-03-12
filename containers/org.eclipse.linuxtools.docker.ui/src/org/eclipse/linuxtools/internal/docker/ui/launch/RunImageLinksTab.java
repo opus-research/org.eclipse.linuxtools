@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,7 +28,6 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
@@ -142,17 +141,13 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
-					setControlsEnabled(targetButtons, true);
-				}
-				updateLaunchConfigurationDialog();
+		return e -> {
+			if (e.getSelection().isEmpty()) {
+				setControlsEnabled(targetButtons, false);
+			} else {
+				setControlsEnabled(targetButtons, true);
 			}
+			updateLaunchConfigurationDialog();
 		};
 	}
 
@@ -253,6 +248,8 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(final ILaunchConfiguration configuration) {
+		if (model == null)
+			return;
 		try {
 			// model needs to be recycled
 			model.removeLinks();
@@ -274,6 +271,8 @@ public class RunImageLinksTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+		if (model == null)
+			return;
 		ArrayList<String> linksList = new ArrayList<>();
 		for (Object o : model.getLinks()) {
 			ImageRunSelectionModel.ContainerLinkModel m = (ImageRunSelectionModel.ContainerLinkModel) o;

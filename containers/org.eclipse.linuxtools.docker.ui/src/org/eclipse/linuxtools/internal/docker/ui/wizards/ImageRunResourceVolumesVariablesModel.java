@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -62,6 +63,8 @@ public class ImageRunResourceVolumesVariablesModel
 
 	public static final String ENVIRONMENT_VARIABLES = "environmentVariables"; //$NON-NLS-1$
 
+	public static final String LABEL_VARIABLES = "labelVariables"; //$NON-NLS-1$
+
 	private boolean enableResourceLimitations = false;
 
 	private final IDockerConnection connection;
@@ -76,9 +79,11 @@ public class ImageRunResourceVolumesVariablesModel
 
 	private Set<DataVolumeModel> selectedDataVolumes = new HashSet<>();
 
-	private WritableList dataVolumes = new WritableList();
+	private WritableList<DataVolumeModel> dataVolumes = new WritableList<>();
 
-	private WritableList environmentVariables = new WritableList();
+	private WritableList<EnvironmentVariableModel> environmentVariables = new WritableList<>();
+
+	private WritableList<LabelVariableModel> labelVariables = new WritableList<>();
 
 	private IDockerImage selectedImage;
 
@@ -133,7 +138,7 @@ public class ImageRunResourceVolumesVariablesModel
 		return imageInfo;
 	}
 
-	public WritableList getDataVolumes() {
+	public WritableList<DataVolumeModel> getDataVolumes() {
 		return dataVolumes;
 	}
 
@@ -158,7 +163,7 @@ public class ImageRunResourceVolumesVariablesModel
 				this.selectedDataVolumes = selectedDataVolumes);
 	}
 
-	public WritableList getEnvironmentVariables() {
+	public WritableList<EnvironmentVariableModel> getEnvironmentVariables() {
 		return environmentVariables;
 	}
 
@@ -178,7 +183,7 @@ public class ImageRunResourceVolumesVariablesModel
 	}
 
 	public void setEnvironmentVariables(
-			final WritableList environmentVariables) {
+			final WritableList<EnvironmentVariableModel> environmentVariables) {
 		firePropertyChange(ENVIRONMENT_VARIABLES, this.environmentVariables,
 				this.environmentVariables = environmentVariables);
 	}
@@ -196,12 +201,47 @@ public class ImageRunResourceVolumesVariablesModel
 		this.environmentVariables.remove(variable);
 	}
 
+	public WritableList<LabelVariableModel> getLabelVariables() {
+		return labelVariables;
+	}
+
+	public void setLabelVariables(final Map<String, String> labelVariables) {
+		this.labelVariables.clear();
+		if (labelVariables != null) {
+			for (Map.Entry<String, String> entry : labelVariables.entrySet()) {
+				this.labelVariables.add(new LabelVariableModel(entry.getKey(),
+						entry.getValue()));
+			}
+		}
+	}
+
+	public void setLabelVariables(
+			final WritableList<LabelVariableModel> labelVariables) {
+		firePropertyChange(LABEL_VARIABLES, this.labelVariables,
+				this.labelVariables = labelVariables);
+	}
+
+	public void addLabelVariable(final LabelVariableModel variable) {
+		this.labelVariables.add(variable);
+	}
+
+	public void removeLabelVariables() {
+		this.labelVariables.clear();
+	}
+
+	public void removeLabelVariable(final LabelVariableModel variable) {
+		this.labelVariables.remove(variable);
+	}
+
 	/**
-	 * @return the total memory of the Docker daemon, in MB
-	 * @throws DockerException
+	 * @return the total memory of the Docker daemon, in MB, or <code>-1</code>
+	 *         if the data is not available.
 	 */
 	public int getTotalMemory() {
-		return (int) (this.info.getTotalMemory() / MB);
+		if (this.info != null) {
+			return (int) (this.info.getTotalMemory() / MB);
+		}
+		return -1;
 	}
 
 	public boolean isEnableResourceLimitations() {

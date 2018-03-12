@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.linuxtools.vagrant.feature"
       label="%featureName"
-      version="1.0.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="%featureProvider"
       license-feature="org.eclipse.license"
       license-feature-version="0.0.0">
@@ -32,6 +32,13 @@
 
    <plugin
          id="org.eclipse.linuxtools.vagrant.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.linuxtools.vagrant.docs"
          download-size="0"
          install-size="0"
          version="0.0.0"

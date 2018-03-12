@@ -9,7 +9,7 @@
         <parent>
           <groupId>org.eclipse.linuxtools</groupId>
           <artifactId>linuxtools-parent</artifactId>
-          <version>5.0.0-SNAPSHOT</version>
+          <version>5.1.0-SNAPSHOT</version>
         </parent>
 
 	<properties>
@@ -25,6 +25,7 @@
   <modules>
     <module>org.eclipse.linuxtools.vagrant.core</module>
     <module>org.eclipse.linuxtools.vagrant.ui</module>
+    <module>org.eclipse.linuxtools.vagrant.docs</module>
     <module>org.eclipse.linuxtools.vagrant-feature</module>
   </modules>
 

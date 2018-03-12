@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,8 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -31,23 +29,19 @@ import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
 import org.eclipse.jface.databinding.viewers.ObservableMapLabelProvider;
-import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -187,26 +181,22 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 	}
 
 	private ICheckStateListener onCheckStateChanged() {
-		return new ICheckStateListener() {
-
-			@Override
-			public void checkStateChanged(final CheckStateChangedEvent e) {
-				DataVolumeModel element = (DataVolumeModel) e.getElement();
-				if (e.getChecked()) {
-					model.getSelectedDataVolumes().add(element);
-					element.setSelected(true);
-				} else {
-					model.getSelectedDataVolumes().remove(element);
-					element.setSelected(false);
-				}
-				updateLaunchConfigurationDialog();
+		return e -> {
+			DataVolumeModel element = (DataVolumeModel) e.getElement();
+			if (e.getChecked()) {
+				model.getSelectedDataVolumes().add(element);
+				element.setSelected(true);
+			} else {
+				model.getSelectedDataVolumes().remove(element);
+				element.setSelected(false);
 			}
+			updateLaunchConfigurationDialog();
 		};
 	}
 
 	/**
 	 * Same as
-	 * {@link ViewerSupport#bind(StructuredViewer, IObservableList, org.eclipse.core.databinding.property.value.IValueProperty[])
+	 * {@link org.eclipse.jface.databinding.viewers.ViewerSupport#bind(StructuredViewer, IObservableList, org.eclipse.core.databinding.property.value.IValueProperty[])
 	 * but with a custom LabelProvider, DataVolumesLabelProvider
 	 *
 	 * @param viewer
@@ -232,19 +222,14 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-					updateLaunchConfigurationDialog();
-				} else {
-					setControlsEnabled(targetButtons, true);
-					updateLaunchConfigurationDialog();
-				}
+		return e -> {
+			if (e.getSelection().isEmpty()) {
+				setControlsEnabled(targetButtons, false);
+				updateLaunchConfigurationDialog();
+			} else {
+				setControlsEnabled(targetButtons, true);
+				updateLaunchConfigurationDialog();
 			}
-
 		};
 	}
 
@@ -370,8 +355,22 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 	private static final class DataVolumesLabelProvider
 			extends ObservableMapLabelProvider {
 
+		private Image CONTAINER_IMAGE = SWTImagesFactory.DESC_CONTAINER
+				.createImage();
+		private Image FOLDER_CLOSED_IMAGE = SWTImagesFactory.DESC_FOLDER_CLOSED
+				.createImage();
+		private Image FILE_IMAGE = SWTImagesFactory.DESC_FILE.createImage();
+
 		public DataVolumesLabelProvider(final IObservableMap[] attributeMaps) {
 			super(attributeMaps);
+		}
+
+		@Override
+		public void dispose() {
+			CONTAINER_IMAGE.dispose();
+			FOLDER_CLOSED_IMAGE.dispose();
+			FILE_IMAGE.dispose();
+			super.dispose();
 		}
 
 		@Override
@@ -380,14 +379,13 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 			if (dataVolume.getMountType() != null && columnIndex == 1) {
 				switch (dataVolume.getMountType()) {
 				case CONTAINER:
-					return SWTImagesFactory.DESC_CONTAINER.createImage();
+					return CONTAINER_IMAGE;
 				case HOST_FILE_SYSTEM:
 					final File hostFile = new File(dataVolume.getMount());
 					if (!hostFile.exists() || hostFile.isDirectory()) {
-						return SWTImagesFactory.DESC_FOLDER_CLOSED
-								.createImage();
+						return FOLDER_CLOSED_IMAGE;
 					} else {
-						return SWTImagesFactory.DESC_FILE.createImage();
+						return FILE_IMAGE;
 					}
 				default:
 					return null;
@@ -430,6 +428,8 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
+		if (model == null)
+			return;
 		final List<DataVolumeModel> volumes = new ArrayList<>();
 		try {
 			final List<String> volumesList = configuration.getAttribute(
@@ -446,7 +446,6 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 			}
 			model.setDataVolumes(volumes);
 			model.setSelectedDataVolumes(selectedVolumes);
-
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
 					LaunchMessages.getString(
@@ -461,7 +460,9 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		WritableList volumes = model.getDataVolumes();
+		if (model == null)
+			return;
+		WritableList<DataVolumeModel> volumes = model.getDataVolumes();
 		Set<DataVolumeModel> selectedVolumes = model.getSelectedDataVolumes();
 
 		ArrayList<String> binds = new ArrayList<>();
@@ -469,8 +470,7 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		ArrayList<String> volumesList = new ArrayList<>();
 		Set<String> selectedVolumesSet = new TreeSet<>();
 
-		for (@SuppressWarnings("unchecked")
-		Iterator<DataVolumeModel> iterator = volumes.iterator(); iterator
+		for (Iterator<DataVolumeModel> iterator = volumes.iterator(); iterator
 				.hasNext();) {
 			DataVolumeModel volume = iterator.next();
 			StringBuffer buffer = new StringBuffer();
@@ -482,7 +482,8 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 						+ volume.isReadOnly());
 				if (selectedVolumes.contains(volume)) {
 					selectedVolumesSet.add(volume.toString());
-					String bind = convertToUnixPath(volume.getHostPathMount())
+					String bind = LaunchConfigurationUtils
+							.convertToUnixPath(volume.getHostPathMount())
 							+ ':' + volume.getContainerPath() + ':' + 'Z';
 					if (volume.isReadOnly()) {
 						bind += ",ro"; //$NON-NLS-1$
@@ -508,28 +509,6 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.DATA_VOLUMES,
 				volumesList);
-	}
-
-	private String convertToUnixPath(String path) {
-		String unixPath = path;
-
-		if (Platform.OS_WIN32.equals(Platform.getOS())) {
-			// replace backslashes with slashes
-			unixPath = unixPath.replaceAll("\\\\", "/");
-
-			// replace "C:/" with "/c/"
-			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath);
-			if (m.find()) {
-				StringBuffer b = new StringBuffer();
-				b.append('/');
-				m.appendReplacement(b, m.group(1).toLowerCase());
-				b.append('/');
-				m.appendTail(b);
-				unixPath = b.toString();
-			}
-		}
-
-		return unixPath;
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,14 +16,13 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -123,7 +122,6 @@ public class ImageRun extends Wizard {
 		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
 	}
 
-	@SuppressWarnings("unchecked")
 	public IDockerHostConfig getDockerHostConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -175,7 +173,8 @@ public class ImageRun extends Wizard {
 
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
-				String bind = convertToUnixPath(dataVolume.getHostPathMount())
+				String bind = LaunchConfigurationUtils
+						.convertToUnixPath(dataVolume.getHostPathMount())
 						+ ':' + dataVolume.getContainerPath() + ":Z"; //$NON-NLS-1$ //$NON-NLS-2$
 				if (dataVolume.isReadOnly()) {
 					bind += ",ro"; //$NON-NLS-1$
@@ -192,6 +191,7 @@ public class ImageRun extends Wizard {
 		}
 		hostConfigBuilder.binds(binds);
 		hostConfigBuilder.volumesFrom(volumesFrom);
+		hostConfigBuilder.privileged(selectionModel.isPrivileged());
 		// memory constraints (in bytes)
 		if (resourcesModel.isEnableResourceLimitations()) {
 			hostConfigBuilder.memory(resourcesModel.getMemoryLimit() * MB);
@@ -200,29 +200,6 @@ public class ImageRun extends Wizard {
 		return hostConfigBuilder.build();
 	}
 
-	private String convertToUnixPath(String path) {
-		String unixPath = path;
-
-		if (Platform.OS_WIN32.equals(Platform.getOS())) {
-			// replace backslashes with slashes
-			unixPath = unixPath.replaceAll("\\\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
-
-			// replace "C:/" with "/c/"
-			Matcher m = Pattern.compile("([a-zA-Z]):/").matcher(unixPath); //$NON-NLS-1$
-			if (m.find()) {
-				StringBuffer b = new StringBuffer();
-				b.append('/');
-				m.appendReplacement(b, m.group(1).toLowerCase());
-				b.append('/');
-				m.appendTail(b);
-				unixPath = b.toString();
-			}
-		}
-
-		return unixPath;
-	}
-
-	@SuppressWarnings("unchecked")
 	public DockerContainerConfig getDockerContainerConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
 				.getModel();
@@ -230,7 +207,7 @@ public class ImageRun extends Wizard {
 				.getModel();
 
 		final Builder config = new DockerContainerConfig.Builder()
-				.cmd(getCmdList(selectionModel.getCommand()))
+				.cmd(selectionModel.getCommand())
 				.entryPoint(selectionModel.getEntrypoint())
 				.image(selectionModel.getSelectedImageName())
 				.tty(selectionModel.isAllocatePseudoTTY())
@@ -248,75 +225,32 @@ public class ImageRun extends Wizard {
 			environmentVariables.add(var.getName() + "=" + var.getValue()); //$NON-NLS-1$
 		}
 		config.env(environmentVariables);
+
+		// container labels
+		final Map<String, String> labelVariables = new HashMap<>();
+		for (Iterator<LabelVariableModel> iterator = resourcesModel
+				.getLabelVariables().iterator(); iterator.hasNext();) {
+			final LabelVariableModel var = iterator.next();
+			labelVariables.put(var.getName(), var.getValue()); // $NON-NLS-1$
+		}
+		config.labels(labelVariables);
+
+		if (!selectionModel.isPublishAllPorts()) {
+			final Set<String> exposedPorts = new HashSet<>();
+			for (Iterator<ExposedPortModel> iterator = selectionModel
+					.getExposedPorts().iterator(); iterator.hasNext();) {
+				final ExposedPortModel exposedPort = iterator.next();
+				// only selected Ports in the CheckboxTableViewer are exposed.
+				if (!selectionModel.getSelectedPorts().contains(exposedPort)) {
+					continue;
+				}
+				exposedPorts.add(exposedPort.getContainerPort()
+						+ exposedPort.getPortType());
+			}
+			config.exposedPorts(exposedPorts);
+		}
 		return config.build();
 	}
 
-	/**
-	 * Create a proper command list after handling quotation.
-	 * 
-	 * @param command
-	 *            the command as a single {@link String}
-	 * @return the command splitted in a list of ars or <code>null</code> if the
-	 *         input <code>command</code> was <code>null</code>.
-	 */
-	private List<String> getCmdList(final String command) {
-		if (command == null) {
-			return null;
-		}
-		final List<String> list = new ArrayList<>();
-		int length = command.length();
-		boolean insideQuote1 = false; // single-quote
-		boolean insideQuote2 = false; // double-quote
-		boolean escaped = false;
-		StringBuffer buffer = new StringBuffer();
-		// Parse the string and break it up into chunks that are
-		// separated by white-space or are quoted. Ignore characters
-		// that have been escaped, including the escape character.
-		for (int i = 0; i < length; ++i) {
-			char c = command.charAt(i);
-			if (escaped) {
-				buffer.append(c);
-				escaped = false;
-			}
-			switch (c) {
-			case '\'':
-				if (!insideQuote2)
-					insideQuote1 = insideQuote1 ^ true;
-				else
-					buffer.append(c);
-				break;
-			case '\"':
-				if (!insideQuote1)
-					insideQuote2 = insideQuote2 ^ true;
-				else
-					buffer.append(c);
-				break;
-			case '\\':
-				escaped = true;
-				break;
-			case ' ':
-			case '\t':
-			case '\r':
-			case '\n':
-				if (insideQuote1 || insideQuote2)
-					buffer.append(c);
-				else {
-					String item = buffer.toString();
-					buffer.setLength(0);
-					if (item.length() > 0)
-						list.add(item);
-				}
-				break;
-			default:
-				buffer.append(c);
-				break;
-			}
-		}
-		// add last item of string that will be in the buffer
-		String item = buffer.toString();
-		if (item.length() > 0)
-			list.add(item);
-		return list;
-	}
 
 }

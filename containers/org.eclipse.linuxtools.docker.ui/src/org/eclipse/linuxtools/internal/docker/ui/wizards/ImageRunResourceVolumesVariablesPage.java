@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLa
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.DATA_VOLUMES;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.ENV_VARIABLES;
+import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.LABELS;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IRunDockerImageLaunchConfigurationConstants.MEMORY_LIMIT;
 
 import java.io.File;
@@ -31,7 +32,6 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.IBeanValueProperty;
-import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
@@ -50,7 +50,6 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -64,10 +63,12 @@ import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.jobs.FindImageInfoRunnable;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRunResourceVolumesVariablesModel.MountType;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -147,7 +148,11 @@ image);
 
 	@Override
 	public void createControl(Composite parent) {
-		final Composite container = new Composite(parent, SWT.NONE);
+		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
+				SWT.H_SCROLL | SWT.V_SCROLL);
+		scrollTop.setExpandVertical(true);
+		scrollTop.setExpandHorizontal(true);
+		final Composite container = new Composite(scrollTop, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
 				.applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
@@ -155,9 +160,16 @@ image);
 		createVolumeSettingsContainer(container);
 		// createSectionSeparator(container, true);
 		createEnvironmentVariablesContainer(container);
+		createLabelVariablesContainer(container);
 		createSectionSeparator(container, true);
 		createResourceSettingsContainer(container);
 		setDefaultValues();
+
+		scrollTop.setContent(container);
+		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		scrollTop.setSize(point);
+		scrollTop.setMinSize(point);
+		// TODO: Workaround https://bugs.eclipse.org/bugs/show_bug.cgi?id=487160
 		setControl(container);
 	}
 
@@ -307,14 +319,7 @@ image);
 
 	private IChangeListener onEnableResourceLimitation(
 			final Composite container) {
-		return new IChangeListener() {
-
-			@Override
-			public void handleChange(ChangeEvent event) {
-				toggleResourceLimitationControls(container);
-
-			}
-		};
+		return event -> toggleResourceLimitationControls(container);
 	}
 
 	private void toggleResourceLimitationControls(Composite container) {
@@ -409,7 +414,6 @@ image);
 				final List<String> launchConfigVolumes = lastLaunchConfiguration
 						.getAttribute(DATA_VOLUMES,
 								Collections.<String> emptyList());
-				// FIXME: convert host_path back to WinOS32 if necessary
 				for (String containerVolume : launchConfigVolumes) {
 					final DataVolumeModel volume = DataVolumeModel
 							.parseString(containerVolume);
@@ -423,6 +427,14 @@ image);
 				model.setEnvironmentVariables(
 						lastLaunchConfiguration.getAttribute(ENV_VARIABLES,
 								Collections.<String> emptyList()));
+				
+				// labels
+				Map<String, String> labels = lastLaunchConfiguration
+						.getAttribute(LABELS, (Map<String, String>) null);
+				if (labels != null) {
+					model.setLabelVariables(labels);
+				}
+
 				// resource limitations
 				model.setEnableResourceLimitations(lastLaunchConfiguration
 						.getAttribute(ENABLE_LIMITS, false));
@@ -484,17 +496,12 @@ image);
 
 	private ISelectionChangedListener onSelectionChanged(
 			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
-					setControlsEnabled(targetButtons, true);
-				}
+		return e -> {
+			if (e.getSelection().isEmpty()) {
+				setControlsEnabled(targetButtons, false);
+			} else {
+				setControlsEnabled(targetButtons, true);
 			}
-
 		};
 	}
 
@@ -612,6 +619,126 @@ image);
 		}
 		column.setWidth(width);
 		return viewerColumn;
+	}
+
+	private void createLabelVariablesContainer(final Composite container) {
+		final Label labelVarLabel = new Label(container, SWT.NONE);
+		labelVarLabel.setText(WizardMessages
+				.getString("ImageRunResourceVolVarPage.labelVarLabel")); //$NON-NLS-1$
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+				.grab(true, false).span(COLUMNS, 1).applyTo(labelVarLabel);
+		final TableViewer labelVariablesTableViewer = createEnvironmentVariablesTable(
+				container);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
+				.grab(true, false).hint(200, 100)
+				.applyTo(labelVariablesTableViewer.getTable());
+		// buttons
+		final Composite buttonsContainers = new Composite(container, SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
+				.grab(false, false).applyTo(buttonsContainers);
+		GridLayoutFactory.fillDefaults().numColumns(1).margins(0, 0)
+				.spacing(SWT.DEFAULT, 0).applyTo(buttonsContainers);
+
+		final Button addButton = new Button(buttonsContainers, SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
+				.grab(true, false).applyTo(addButton);
+		addButton.setText(WizardMessages
+				.getString("ImageRunResourceVolVarPage.addButton")); //$NON-NLS-1$
+		addButton.setEnabled(true);
+		addButton.addSelectionListener(onAddLabelVariable());
+		final Button editButton = new Button(buttonsContainers, SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
+				.grab(true, false).applyTo(editButton);
+		editButton.setText(WizardMessages
+				.getString("ImageRunResourceVolVarPage.editButton")); //$NON-NLS-1$
+		editButton.setEnabled(true);
+		editButton.addSelectionListener(
+				onEditLabelVariable(labelVariablesTableViewer));
+		editButton.setEnabled(false);
+		final Button removeButton = new Button(buttonsContainers, SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP)
+				.grab(true, false).applyTo(removeButton);
+		removeButton.setText(WizardMessages
+				.getString("ImageRunResourceVolVarPage.removeButton")); //$NON-NLS-1$
+		removeButton.addSelectionListener(
+				onRemoveLabelVariables(labelVariablesTableViewer));
+		removeButton.setEnabled(false);
+		// update table content when selected image changes
+		ViewerSupport.bind(labelVariablesTableViewer, model.getLabelVariables(),
+				BeanProperties.values(LabelVariableModel.class, new String[] {
+						LabelVariableModel.NAME, LabelVariableModel.VALUE }));
+		// disable the edit and removeButton if the table is empty
+		labelVariablesTableViewer.addSelectionChangedListener(
+				onSelectionChanged(editButton, removeButton));
+	}
+
+	private TableViewer createLabelVariablesTable(Composite container) {
+		final Table table = new Table(container,
+				SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
+		final TableViewer tableViewer = new TableViewer(table);
+		table.setHeaderVisible(true);
+		table.setLinesVisible(true);
+		addTableViewerColum(tableViewer,
+				WizardMessages
+						.getString("ImageRunResourceVolVarPage.nameColumn"), //$NON-NLS-1$
+				200);
+		addTableViewerColum(tableViewer,
+				WizardMessages
+						.getString("ImageRunResourceVolVarPage.valueColumn"), //$NON-NLS-1$
+				200);
+		return tableViewer;
+	}
+
+	private SelectionListener onAddLabelVariable() {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
+						getShell());
+				dialog.create();
+				if (dialog.open() == IDialogConstants.OK_ID) {
+					model.getLabelVariables().add(dialog.getLabelVariable());
+				}
+			}
+		};
+	}
+
+	private SelectionListener onEditLabelVariable(
+			final TableViewer LabelVariablesTableViewer) {
+		return new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final LabelVariableModel selectedVariable = (LabelVariableModel) LabelVariablesTableViewer
+						.getStructuredSelection().getFirstElement();
+				final ContainerLabelVariableDialog dialog = new ContainerLabelVariableDialog(
+						getShell(), selectedVariable);
+				dialog.create();
+				if (dialog.open() == IDialogConstants.OK_ID) {
+					selectedVariable
+							.setName(dialog.getLabelVariable().getName());
+					selectedVariable
+							.setValue(dialog.getLabelVariable().getValue());
+					LabelVariablesTableViewer.refresh();
+				}
+			}
+		};
+	}
+
+	private SelectionListener onRemoveLabelVariables(
+			final TableViewer linksTableViewer) {
+		return new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				final IStructuredSelection selection = linksTableViewer
+						.getStructuredSelection();
+				for (@SuppressWarnings("unchecked")
+				Iterator<LabelVariableModel> iterator = selection
+						.iterator(); iterator.hasNext();) {
+					model.removeLabelVariable(iterator.next());
+				}
+			}
+		};
 	}
 
 	private void createEnvironmentVariablesContainer(
@@ -748,8 +875,22 @@ image);
 	private static final class DataVolumesLabelProvider
 			extends ObservableMapLabelProvider {
 
+		private Image CONTAINER_IMAGE = SWTImagesFactory.DESC_CONTAINER
+				.createImage();
+		private Image FOLDER_CLOSED_IMAGE = SWTImagesFactory.DESC_FOLDER_CLOSED
+				.createImage();
+		private Image FILE_IMAGE = SWTImagesFactory.DESC_FILE.createImage();
+
 		public DataVolumesLabelProvider(final IObservableMap[] attributeMaps) {
 			super(attributeMaps);
+		}
+
+		@Override
+		public void dispose() {
+			CONTAINER_IMAGE.dispose();
+			FOLDER_CLOSED_IMAGE.dispose();
+			FILE_IMAGE.dispose();
+			super.dispose();
 		}
 
 		@Override
@@ -758,14 +899,13 @@ image);
 			if (dataVolume.getMountType() != null && columnIndex == 1) {
 				switch (dataVolume.getMountType()) {
 				case CONTAINER:
-					return SWTImagesFactory.DESC_CONTAINER.createImage();
+					return CONTAINER_IMAGE;
 				case HOST_FILE_SYSTEM:
 					final File hostFile = new File(dataVolume.getMount());
 					if (!hostFile.exists() || hostFile.isDirectory()) {
-						return SWTImagesFactory.DESC_FOLDER_CLOSED
-								.createImage();
+						return FOLDER_CLOSED_IMAGE;
 					} else {
-						return SWTImagesFactory.DESC_FILE.createImage();
+						return FILE_IMAGE;
 					}
 				default:
 					return null;

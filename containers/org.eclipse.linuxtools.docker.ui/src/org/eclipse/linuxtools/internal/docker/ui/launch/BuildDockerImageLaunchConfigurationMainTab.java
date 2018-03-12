@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,10 +20,7 @@ import static org.eclipse.linuxtools.docker.core.IDockerImageBuildOptions.RM_INT
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_LOCATION;
 import static org.eclipse.linuxtools.internal.docker.ui.launch.IBuildDockerImageLaunchConfigurationConstants.SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -52,12 +49,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
-import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
@@ -68,9 +63,10 @@ public class BuildDockerImageLaunchConfigurationMainTab
 	private final String TAB_NAME = "BuildDockerImageLaunchConfigurationMainTab.name"; //$NON-NLS-1$
 	private final String CONNECTION_LABEL = "BuildDockerImageLaunchConfigurationMainTab.connection.group.label"; //$NON-NLS-1$
 	private final String CONNECTION_TOOLTIP = "BuildDockerImageLaunchConfigurationMainTab.connection.group.tooltip"; //$NON-NLS-1$
+	private final String CONNECTION_MISSING = "BuildDockerImageLaunchConfigurationMainTab.connection.missing"; //$NON-NLS-1$
 	private final String BUILD_CONTEXT_PATH_LABEL = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.group.label"; //$NON-NLS-1$
 	private final String BUILD_CONTEXT_PATH_MISSING = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.missing"; //$NON-NLS-1$
-	private final String DOCKERFILE_PATH_LABEL = "BuildDockerImageLaunchConfigurationMainTab.dockerfilePath.group.label"; //$NON-NLS-1$
+	private final String BUILD_CONTEXT_PATH_MISSING_DOCKERFILE = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.missingDockerfile"; //$NON-NLS-1$
 	private final String BROWSE_WORKSPACE = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.browseworkspace.button.label"; //$NON-NLS-1$
 	private final String BROWSE_WORKSPACE_DIALOG_TITLE = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.browseworkspace.dialog.title"; //$NON-NLS-1$
 	private final String BROWSE_FILESYSTEM = "BuildDockerImageLaunchConfigurationMainTab.buildContextPath.browsefilesystem.button.label"; //$NON-NLS-1$
@@ -86,10 +82,8 @@ public class BuildDockerImageLaunchConfigurationMainTab
 	private ComboViewer connectionSelectionComboViewer;
 	/** the path to the build context . */
 	private Text buildContextPathText;
-	private AtomicBoolean buildContextPathWorkspaceRelative;
-	/** the path to the Dockerfile. */
-	private Text dockerFilePathText;
-	private AtomicBoolean dockerFilePathWorkspaceRelative;
+	/** whether buildContextPath is relative */
+	private boolean buildContextPathWorkspaceRelative;
 	/** build option: name and optional tag. */
 	private Text repoNameText;
 	/** build option: do not use cache. */
@@ -166,8 +160,7 @@ public class BuildDockerImageLaunchConfigurationMainTab
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(browseWorkspaceButton);
 		browseWorkspaceButton
-				.addSelectionListener(onBrowseWorkspace(buildContextPathText,
-						buildContextPathWorkspaceRelative, IContainer.class));
+				.addSelectionListener(onBrowseWorkspace(buildContextPathText, IContainer.class));
 		final Button browseFileSystemButton = new Button(
 				buildContextPathLocationGroup, SWT.NONE);
 		browseFileSystemButton
@@ -175,46 +168,7 @@ public class BuildDockerImageLaunchConfigurationMainTab
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(browseFileSystemButton);
 		browseFileSystemButton.addSelectionListener(
-				onBrowseFileSystemForDirectory(this.buildContextPathText,
-						this.buildContextPathWorkspaceRelative));
-	}
-
-	@SuppressWarnings("unused")
-	private void createDockerfilePathGroup(final Composite container) {
-		final Group dockerFilePathLocationGroup = new Group(container,
-				SWT.BORDER);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
-				.grab(true, false).applyTo(dockerFilePathLocationGroup);
-		GridLayoutFactory.fillDefaults().margins(6, 6).numColumns(3)
-				.applyTo(dockerFilePathLocationGroup);
-		dockerFilePathLocationGroup
-				.setText(LaunchMessages.getString(DOCKERFILE_PATH_LABEL));
-		this.dockerFilePathText = new Text(
-				dockerFilePathLocationGroup, SWT.BORDER);
-		this.dockerFilePathText
-				.addModifyListener(new LaunchConfigurationChangeListener());
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false).span(3, 1).applyTo(this.dockerFilePathText);
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(true, false)
-				.applyTo(new Label(dockerFilePathLocationGroup, SWT.NONE));
-		final Button browseWorkspaceButton = new Button(
-				dockerFilePathLocationGroup, SWT.NONE);
-		browseWorkspaceButton
-				.setText(LaunchMessages.getString(BROWSE_WORKSPACE));
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(browseWorkspaceButton);
-		browseWorkspaceButton
-				.addSelectionListener(onBrowseWorkspace(dockerFilePathText,
-						dockerFilePathWorkspaceRelative, IFile.class));
-		final Button browseFileSystemButton = new Button(
-				dockerFilePathLocationGroup, SWT.NONE);
-		browseFileSystemButton
-				.setText(LaunchMessages.getString(BROWSE_FILESYSTEM));
-		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-				.grab(false, false).applyTo(browseFileSystemButton);
-		browseFileSystemButton.addSelectionListener(onBrowseFileSystemForFile(
-				this.dockerFilePathText, this.dockerFilePathWorkspaceRelative));
+				onBrowseFileSystemForDirectory(this.buildContextPathText));
 	}
 
 	private void createRepoNameGroup(final Composite container) {
@@ -296,7 +250,6 @@ public class BuildDockerImageLaunchConfigurationMainTab
 	 * @return
 	 */
 	private SelectionListener onBrowseWorkspace(final Text pathText,
-			final AtomicBoolean workspaceRelativePath,
 			final Class<?> expectedType) {
 		return new SelectionAdapter() {
 
@@ -311,24 +264,19 @@ public class BuildDockerImageLaunchConfigurationMainTab
 				dialog.setComparator(
 						new ResourceComparator(ResourceComparator.NAME));
 				dialog.setAllowMultiple(false);
-				dialog.setValidator(new ISelectionStatusValidator() {
-					// only accept a single file as the valid selection
-					@Override
-					public IStatus validate(Object[] selection) {
-						if (selection.length == 1 && expectedType
-								.isAssignableFrom(selection[0].getClass())) {
-							return new Status(IStatus.OK, Activator.PLUGIN_ID,
-									null);
-						}
-						return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+				dialog.setValidator(selection -> {
+					if (selection.length == 1 && expectedType
+							.isAssignableFrom(selection[0].getClass())) {
+						return new Status(IStatus.OK, Activator.PLUGIN_ID,
 								null);
 					}
+					return new Status(IStatus.ERROR, Activator.PLUGIN_ID, null);
 				});
 				if (dialog.open() == IDialogConstants.OK_ID) {
 					final IResource selection = (IResource) dialog
 							.getFirstResult();
 					pathText.setText(selection.getFullPath().toOSString());
-					workspaceRelativePath.set(true);
+					buildContextPathWorkspaceRelative = true;
 				}
 			}
 		};
@@ -339,8 +287,7 @@ public class BuildDockerImageLaunchConfigurationMainTab
 	 * 
 	 * @return
 	 */
-	private SelectionListener onBrowseFileSystemForDirectory(final Text pathText,
-			final AtomicBoolean workspaceRelativePath) {
+	private SelectionListener onBrowseFileSystemForDirectory(final Text pathText) {
 		return new SelectionAdapter() {
 
 			@Override
@@ -349,32 +296,10 @@ public class BuildDockerImageLaunchConfigurationMainTab
 				final String selection = dialog.open();
 				if (selection != null) {
 					pathText.setText(selection);
-					workspaceRelativePath.set(false);
+					buildContextPathWorkspaceRelative = false;
 				}
 			}
 		};
-	}
-
-	/**
-	 * Opens a dialog to browse the file system and select a file
-	 * 
-	 * @return
-	 */
-	private SelectionListener onBrowseFileSystemForFile(final Text pathText,
-			final AtomicBoolean workspaceRelativePath) {
-		return new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				final FileDialog dialog = new FileDialog(getShell());
-				final String selection = dialog.open();
-				if (selection != null) {
-					pathText.setText(selection);
-					workspaceRelativePath.set(false);
-				}
-			}
-		};
-
 	}
 
 	@Override
@@ -390,15 +315,8 @@ public class BuildDockerImageLaunchConfigurationMainTab
 							configuration.getAttribute(DOCKER_CONNECTION, "")));
 			this.buildContextPathText.setText(
 					configuration.getAttribute(SOURCE_PATH_LOCATION, ""));
-			this.buildContextPathWorkspaceRelative = new AtomicBoolean(
-					configuration.getAttribute(
-							SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION, false));
-			// this.dockerFilePathText.setText(
-			// configuration.getAttribute(DOCKERFILE_PATH, "Dockerfile"));
-			// this.dockerFilePathWorkspaceRelative = new AtomicBoolean(
-			// configuration.getAttribute(
-			// DOCKERFILE_PATH_WORKSPACE_RELATIVE_LOCATION,
-			// false));
+			this.buildContextPathWorkspaceRelative = configuration.getAttribute(
+					SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION, false);
 			this.repoNameText
 					.setText(configuration.getAttribute(REPO_NAME, ""));
 			this.quietBuildButton.setSelection(
@@ -419,22 +337,33 @@ public class BuildDockerImageLaunchConfigurationMainTab
 	@Override
 	public boolean isValid(final ILaunchConfiguration launchConfig) {
 		try {
+			// verify the connection
+			final String dockerConnection = launchConfig
+					.getAttribute(DOCKER_CONNECTION, ""); // $NON-NLS-1$
+			// verify the source path
 			final String sourcePathLocation = launchConfig
 					.getAttribute(SOURCE_PATH_LOCATION, ""); // $NON-NLS-1$
 			final boolean sourcePathWorkspaceRelativeLocation = launchConfig.getAttribute(SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION, false);
 			final IPath sourcePath = BuildDockerImageUtils.getPath(
 					sourcePathLocation, sourcePathWorkspaceRelativeLocation);
-			if (sourcePathLocation.isEmpty() || sourcePath == null) {
+			if (dockerConnection.isEmpty() || dockerConnection == null
+					|| DockerConnectionManager.getInstance()
+							.findConnection(dockerConnection) == null) {
+				setErrorMessage(LaunchMessages.getString(CONNECTION_MISSING));
+				return false;
+			} else if (sourcePathLocation.isEmpty() || sourcePath == null) {
 				setErrorMessage(
 						LaunchMessages.getString(BUILD_CONTEXT_PATH_MISSING));
+				return false;
+			} else if (!sourcePath.append("Dockerfile").toFile().exists()) {
+				setErrorMessage(LaunchMessages.getString(BUILD_CONTEXT_PATH_MISSING_DOCKERFILE));
 				return false;
 			} else {
 				setErrorMessage(null);
 			}
 			final String repoName = launchConfig.getAttribute(REPO_NAME, ""); // $NON-NLS-1$
 			if (repoName.isEmpty()) {
-				setWarningMessage(
-LaunchMessages.getString(REPO_NAME_MISSING));
+				setWarningMessage(LaunchMessages.getString(REPO_NAME_MISSING));
 			} else {
 				setWarningMessage(null);
 			}
@@ -456,11 +385,7 @@ LaunchMessages.getString(REPO_NAME_MISSING));
 		configuration.setAttribute(SOURCE_PATH_LOCATION,
 				this.buildContextPathText.getText());
 		configuration.setAttribute(SOURCE_PATH_WORKSPACE_RELATIVE_LOCATION,
-				this.buildContextPathWorkspaceRelative.get());
-		// configuration.setAttribute(DOCKERFILE_PATH,
-		// this.dockerFilePathText.getText());
-		// configuration.setAttribute(DOCKERFILE_PATH_WORKSPACE_RELATIVE_LOCATION,
-		// this.dockerFilePathWorkspaceRelative.get());
+				this.buildContextPathWorkspaceRelative);
 		if (!this.repoNameText.getText().isEmpty()) {
 			configuration.setAttribute(REPO_NAME, this.repoNameText.getText());
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -28,7 +29,6 @@ import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
@@ -38,15 +38,16 @@ import org.eclipse.jface.databinding.viewers.ViewerProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerImageSearchResult;
+import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.swt.SWT;
@@ -56,7 +57,6 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -78,17 +78,25 @@ public class ImageSearchPage extends WizardPage {
 
 	private final ImageSearchModel model;
 	private final DataBindingContext ctx = new DataBindingContext();
+	private IRegistry registry;
 
 	/**
 	 * Default constructor.
+	 * 
+	 * @param model
+	 *            the model for this page
 	 */
-	public ImageSearchPage(final ImageSearchModel model) {
+	public ImageSearchPage(final ImageSearchModel model, final IRegistry reg) {
 		super("ImageSearchPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageSearchPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		this.model = model;
+		this.registry = reg;
 	}
 
+	/**
+	 * @return the selected Docker Image in the result table
+	 */
 	public IDockerImageSearchResult getSelectedImage() {
 		return model.getSelectedImage();
 	}
@@ -156,7 +164,7 @@ public class ImageSearchPage extends WizardPage {
 				SWT.CENTER,
 				70, new ImageAutomatedColumnLabelProvider());
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
-				.grab(true, false).span(COLUMNS, 1).hint(200, 100)
+				.grab(true, true).span(COLUMNS, 1).hint(200, 100)
 				.applyTo(table);
 		// description text area
 		final Group selectedImageDescriptionGroup = new Group(container,
@@ -209,6 +217,10 @@ public class ImageSearchPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.ctx);
 		setControl(container);
+		// trigger a search if an image name was provided
+		if (model.getTerm() != null && !model.getTerm().isEmpty()) {
+			searchImages();
+		}
 	}
 
 	private TableViewerColumn addTableViewerColum(final TableViewer tableViewer,
@@ -227,13 +239,9 @@ public class ImageSearchPage extends WizardPage {
 	}
 
 	private TraverseListener onSearchImageTextTraverse() {
-		return new TraverseListener() {
-
-			@Override
-			public void keyTraversed(final TraverseEvent e) {
-				if (e.keyCode == SWT.CR) {
-					e.doit = false;
-				}
+		return e -> {
+			if (e.keyCode == SWT.CR) {
+				e.doit = false;
 			}
 		};
 	}
@@ -275,37 +283,41 @@ public class ImageSearchPage extends WizardPage {
 			final BlockingQueue<List<IDockerImageSearchResult>> searchResultQueue = new ArrayBlockingQueue<>(
 					1);
 			ImageSearchPage.this.getContainer().run(true, true,
-					new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) {
-							monitor.beginTask(WizardMessages.getString(
-									"ImageSearchPage.searchTask"), 1); //$NON-NLS-1$
-							try {
-								final List<IDockerImageSearchResult> searchResults = ImageSearchPage.this.model
-										.getSelectedConnection()
-										.searchImages(term);
-								searchResultQueue.offer(searchResults);
-							} catch (DockerException e) {
-								Activator.log(e);
-								searchResultQueue.offer(
-										new ArrayList<IDockerImageSearchResult>());
+					monitor -> {
+						monitor.beginTask(WizardMessages
+								.getString("ImageSearchPage.searchTask"), 1); //$NON-NLS-1$
+						final List<IDockerImageSearchResult> searchResults;
+						try {
+							/*
+							 * The searchImages API that goes through the Docker
+							 * Daemon is faster than querying for the JSON
+							 * results over HTTP so if we're dealing with
+							 * DockerHub, we use the API.
+							 */
+							List<String> dockerHubAliases = Arrays.asList(AbstractRegistry.DOCKERHUB_REGISTRY_ALIASES);
+							if (dockerHubAliases.stream().anyMatch(a -> registry.getServerAddress().contains(a))) {
+								searchResults = ImageSearchPage.this.model
+										.getSelectedConnection().searchImages(term);
+							} else {
+								searchResults = registry.getImages(term);
 							}
-							monitor.done();
+							searchResultQueue.offer(searchResults);
+						} catch (DockerException e) {
+							Activator.log(e);
+							searchResultQueue.offer(
+									new ArrayList<IDockerImageSearchResult>());
 						}
+						monitor.done();
 					});
 			List<IDockerImageSearchResult> res = searchResultQueue
 					.poll(10, TimeUnit.SECONDS);
 			final List<IDockerImageSearchResult> searchResult = (res == null)
-					? new ArrayList<IDockerImageSearchResult>() : res;
+					? new ArrayList<>() : res;
 
-			Display.getCurrent().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					ImageSearchPage.this.model
-							.setImageSearchResult(searchResult);
-					// refresh the wizard buttons
-					getWizard().getContainer().updateButtons();
-				}
+			Display.getCurrent().asyncExec(() -> {
+				ImageSearchPage.this.model.setImageSearchResult(searchResult);
+				// refresh the wizard buttons
+				getWizard().getContainer().updateButtons();
 			});
 			// display a warning in the title area if the search result is empty
 			if (searchResult.isEmpty()) {
@@ -438,6 +450,11 @@ public class ImageSearchPage extends WizardPage {
 						bounds.x + (columnWidth - ICON.getBounds().width) / 2,
 						bounds.y + 1);
 			}
+		}
+
+		@Override
+		public void dispose() {
+			super.dispose();
 		}
 
 		abstract boolean doPaint(final Object element);

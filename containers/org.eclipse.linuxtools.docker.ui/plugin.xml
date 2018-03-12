@@ -21,6 +21,12 @@
             id="org.eclipse.linuxtools.docker.ui.preferences.DockerMachinePreferencePage"
             name="%DockerMachinePreferencePage.name">
       </page>
+      <page
+            category="org.eclipse.linuxtools.docker.ui.preferences.DockerPreferencePage"
+            class="org.eclipse.linuxtools.internal.docker.ui.preferences.DockerRegistryAccountPreferencePage"
+            id="org.eclipse.linuxtools.docker.ui.preferences.DockerRegistryAccountPreferencePage"
+            name="%DockerRegistryAccountPreferencePage.name">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -69,10 +75,10 @@
 					id="org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 			<insertionPoint name="group.run" separator="true"/>
 			<insertionPoint name="group.refresh" separator="true"/>
+			<insertionPoint name="group.navigate" separator="true"/>
 			<insertionPoint name="group.edit" separator="true"/>
 			<insertionPoint name="group.logs" separator="true"/>
 			<insertionPoint name="group.tags" separator="true"/>
-			<insertionPoint name="group.showIn" separator="true"/>
 			</popupMenu>
             <options>
 				<property
@@ -132,7 +138,7 @@
             name="%DanglingImagesViewFilter.name">
       </commonFilter>
       <commonFilter
-            activeByDefault="true"
+            activeByDefault="false"
             class="org.eclipse.linuxtools.internal.docker.ui.views.HideStoppedContainersViewerFilter"
             id="org.eclipse.linuxtools.docker.ui.stoppedContainersViewerFilter"
             name="%StoppedContainerViewFilter.name">
@@ -151,8 +157,16 @@
               name="%command.addconnection.label">
         </command>
 		<command
+			id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+			name="%command.enableconnection.label">
+		</command>
+		<command
               id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
               name="%command.removeconnection.label">
+        </command>
+		<command
+              id="org.eclipse.linuxtools.docker.ui.commands.editConnection"
+              name="%command.editconnection.label">
         </command>
 		<command
 	        description="%command.startcontainers.description"
@@ -255,6 +269,11 @@
 	        name="%command.runimage.name">
         </command>
         <command
+            name="%command.showInPropertiesView.menu.name"
+            description="%command.showInPropertiesView.menu.description"
+            id="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView">
+      	</command>
+        <command
             name="%command.showInWebBrowser.menu.name"
             description="%command.showInWebBrowser.menu.description"
             id="org.eclipse.linuxtools.docker.ui.commands.showInWebBrowser">
@@ -264,17 +283,36 @@
             description="%command.showInSystemExplorer.menu.description"
             id="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer">
       	</command>
+        <command
+              description="%command.execcontainer.description"
+              id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+              name="%command.execcontainer.name">
+        </command>
 		      
 	</extension>
     <extension
 		point="org.eclipse.ui.handlers">
      	<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.addConnection"
-              class="org.eclipse.linuxtools.internal.docker.ui.commands.AddConnectionCommandHandler">
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.NewDockerConnectionCommandHandler">
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.RemoveConnectionCommandHandler">
+     		<enabledWhen>
+	     		<with
+	                variable="selection">
+	            <iterate ifEmpty="false">
+	               <instanceof
+	                     value="org.eclipse.linuxtools.docker.core.IDockerConnection">
+	               </instanceof>
+	            </iterate>
+	          </with>
+     		</enabledWhen>
+     	</handler>
+		<handler
+              commandId="org.eclipse.linuxtools.docker.ui.commands.editConnection"
+              class="org.eclipse.linuxtools.internal.docker.ui.commands.EditDockerConnectionCommandHandler">
      		<enabledWhen>
 	     		<with
 	                variable="selection">
@@ -339,7 +377,9 @@
               class="org.eclipse.linuxtools.internal.docker.ui.commands.StopContainersCommandHandler">
      		<enabledWhen>
 	     		<with variable="selection">
-	              <iterate ifEmpty="false">
+	              <iterate
+                     ifEmpty="false"
+                     operator="or">
 				    <and>
 	                  <instanceof value="org.eclipse.linuxtools.docker.core.IDockerContainer"></instanceof>
 	                  <or>
@@ -360,7 +400,9 @@
               class="org.eclipse.linuxtools.internal.docker.ui.commands.KillContainersCommandHandler">
      		<enabledWhen>
 	     		<with variable="selection">
-	              <iterate ifEmpty="false">
+	              <iterate
+                     ifEmpty="false"
+                     operator="or">
 				    <and>
 	                  <instanceof value="org.eclipse.linuxtools.docker.core.IDockerContainer"></instanceof>
 	                  <or>
@@ -443,6 +485,20 @@
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.pushImage"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.PushImageCommandHandler">
+              <enabledWhen>
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
+	                </iterate>
+	               </with>
+	            </enabledWhen>
      	</handler>
 		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.tagImage"
@@ -510,6 +566,10 @@
      		</enabledWhen>
      	</handler>
 		<handler
+              commandId="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView"
+              class="org.eclipse.ui.views.properties.NewPropertySheetHandler">
+     	</handler>
+		<handler
               commandId="org.eclipse.linuxtools.docker.ui.commands.showInWebBrowser"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowInWebBrowserCommandHandler">
      	</handler>
@@ -517,6 +577,53 @@
               commandId="org.eclipse.linuxtools.docker.ui.commands.showInSystemExplorer"
               class="org.eclipse.linuxtools.internal.docker.ui.commands.ShowInSystemExplorerCommandHandler">
      	</handler>
+  <handler
+        class="org.eclipse.linuxtools.internal.docker.ui.commands.ExecContainerCommandHandler"
+        commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer">
+     <enabledWhen>
+        <with
+              variable="selection">
+           <count
+                 value="1">
+           </count>
+           <iterate
+                 ifEmpty="false">
+              <and>
+                 <instanceof
+                       value="org.eclipse.linuxtools.docker.core.IDockerContainer">
+                 </instanceof>
+                 <or>
+                    <test
+                          forcePluginActivation="true"
+                          property="org.eclipse.linuxtools.docker.propertytesters.container.isStopped"
+                          value="false">
+                    </test>
+                    <test
+                          forcePluginActivation="true"
+                          property="org.eclipse.linuxtools.docker.propertytesters.container.isUnknown"
+                          value="true">
+                    </test>
+                 </or>
+              </and>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+  <handler
+        class="org.eclipse.linuxtools.internal.docker.ui.commands.EnableConnectionCommandHandler"
+        commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection">
+     <enabledWhen>
+        <with
+              variable="selection">
+           <iterate
+                 ifEmpty="false">
+              <instanceof
+                    value="org.eclipse.linuxtools.docker.core.IDockerConnection">
+              </instanceof>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
      	
 	</extension>
 	<!-- property testers -->
@@ -556,12 +663,98 @@
 			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          tooltip="%command.removeconnection.tooltip"
 		          disabledIcon="icons/delete_d.gif"
 		          icon="icons/delete.gif"
 		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
 		          mnemonic="D"
 		          style="push">
 				</command>
+		</menuContribution>
+		<!-- explorer view context menu: remove connection -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=?after=group.edit">
+				<command
+		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          disabledIcon="icons/delete_d.gif"
+		          icon="icons/delete.gif"
+		          id="org.eclipse.linuxtools.docker.ui.commands.removeConnection"
+		          mnemonic="D"
+		          style="push">
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="or">
+	                      <or>
+			                 <instanceof
+			                       value="org.eclipse.linuxtools.docker.core.IDockerConnection" />
+	                      </or>
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+				</command>
+		</menuContribution>
+		
+	    <menuContribution
+	        locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerExplorerView">
+	       <command
+	           commandId="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+	           icon="icons/repository-synchronize-attributes.png"
+	           id="org.eclipse.linuxtools.docker.ui.commands.enableConnection"
+	           mnemonic="R"
+	           style="push">
+	       </command>
+	    </menuContribution>
+		<!-- explorer view context menu: Show In -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.navigate">
+			<menu
+	           id="org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn"
+	           label="%menu.showIn">
+			</menu>
+		</menuContribution>		
+		<!-- explorer view context menu: Show In>Properties (on Connection)-->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
+		     <command
+		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView"
+		           label="%command.showInPropertiesView.menu.name"
+		           id="org.eclipse.linuxtools.docker.ui.showConnectionInPropertiesView"
+             	style="push">
+			     <visibleWhen>
+		     		<with variable="selection">
+		     		   <count value="1"/>
+		                  <iterate ifEmpty="false">
+		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerConnection"></instanceof>
+		                  </iterate>
+		            </with>
+	     		</visibleWhen>
+		     </command>
+		</menuContribution>
+		<!-- explorer view context menu: Edit (on Connection)-->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
+		     <command
+		           commandId="org.eclipse.linuxtools.docker.ui.commands.editConnection"
+		           label="%command.editconnection.label"
+		           id="org.eclipse.linuxtools.docker.ui.commands.editConnection"
+		           icon="icons/text_edit.gif"
+             	style="push">
+			     <visibleWhen>
+		     		<with variable="selection">
+		     		   <count value="1"/>
+		                  <iterate ifEmpty="false">
+		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerConnection"></instanceof>
+		                  </iterate>
+		            </with>
+	     		</visibleWhen>
+		     </command>
 		</menuContribution>
 		<!-- explorer view context menu: start containers -->
 		<menuContribution
@@ -575,9 +768,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -600,9 +790,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -625,9 +812,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -650,9 +834,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -675,9 +856,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -700,9 +878,6 @@
 	               checkEnabled="false">
 	               <with
 	                   variable="selection">
-	               <count
-	                      value="1">
-	                </count>
 	                <iterate
 	                      ifEmpty="false"
 	                      operator="and">
@@ -712,6 +887,24 @@
 	               </with>
 	            </visibleWhen>
 				</command>
+		</menuContribution>
+		<!-- explorer view context menu: Show In>Properties (on container)-->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
+		     <command
+		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView"
+		           label="%command.showInPropertiesView.menu.name"
+		           id="org.eclipse.linuxtools.docker.ui.showContainerInPropertiesView"
+             	style="push">
+			     <visibleWhen>
+		     		<with variable="selection">
+		     		   <count value="1"/>
+		                  <iterate ifEmpty="false">
+		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerContainer"></instanceof>
+		                  </iterate>
+		            </with>
+	     		</visibleWhen>
+		     </command>
 		</menuContribution>
 		<!-- explorer view context menu: commit container -->
 		<menuContribution
@@ -815,7 +1008,7 @@
 		</menuContribution>
 		<!-- explorer view context menu: pull image -->
 		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.edit">
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu">
 				<command
 		          commandId="org.eclipse.linuxtools.docker.ui.commands.pullImage"
 		          icon="icons/pull.gif"
@@ -893,6 +1086,24 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
+		<!-- explorer view context menu: Show In>Properties (on Image)-->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
+		     <command
+		           commandId="org.eclipse.linuxtools.docker.ui.commands.showInPropertiesView"
+		           label="%command.showInPropertiesView.menu.name"
+		           id="org.eclipse.linuxtools.docker.ui.showImageInPropertiesView"
+             	style="push">
+			     <visibleWhen>
+		     		<with variable="selection">
+		     		   <count value="1"/>
+		                  <iterate ifEmpty="false">
+		                     <instanceof value="org.eclipse.linuxtools.docker.core.IDockerImage"></instanceof>
+		                  </iterate>
+		            </with>
+	     		</visibleWhen>
+		     </command>
+		</menuContribution>
 		<!-- explorer view context menu: push image -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
@@ -913,6 +1124,31 @@
 	                      operator="and">
 	                 <instanceof
 	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
+	                </iterate>
+	               </with>
+	            </visibleWhen>
+				</command>
+		</menuContribution>
+		<!-- explorer view context menu: exec in shell -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=org.eclipse.linuxtools.docker.ui.commands.removeImages">
+	       <command
+		          commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+		          id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+		          icon="icons/console_view.gif"
+		          style="push">
+		          <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerContainer" />
 	                </iterate>
 	               </with>
 	            </visibleWhen>
@@ -967,14 +1203,7 @@
 	            </visibleWhen>
 				</command>
 		</menuContribution>
-		<!-- explorer view context menu: Show In -->
-		<menuContribution
-			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu?after=group.showIn">
-			<menu
-	           id="org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn"
-	           label="%menu.showIn">
-			</menu>
-		</menuContribution>		
+		
 		<!-- explorer view context menu: Show In>Web Browser (on container ports)-->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerExplorerView#PopupMenu.showIn">
@@ -1007,78 +1236,6 @@
 		            </with>
 	     		</visibleWhen>
 		     </command>
-		</menuContribution>
-		<!-- containers view toolbar: start containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.startContainers"
-		          disabledIcon="icons/runningd.gif"
-		          icon="icons/running.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.startContainers"
-		          mnemonic="R"
-		          style="push">
-				</command>
-		</menuContribution>
-		<!-- containers view toolbar: pause containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.pauseContainers"
-		          disabledIcon="icons/suspendd.gif"
-		          icon="icons/suspend.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.pauseContainers"
-		          mnemonic="P"
-		          style="push">
-				</command>
-		</menuContribution>
-		<!-- containers view toolbar: unpause containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.unpauseContainers"
-		          disabledIcon="icons/resumed.gif"
-		          icon="icons/resume.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.unpauseContainers"
-		          mnemonic="U"
-		          style="push">
-				</command>
-		</menuContribution>
-		<!-- containers view toolbar: stop containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.stopContainers"
-		          disabledIcon="icons/stoppedd.gif"
-		          icon="icons/stopped.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.stopContainers"
-		          mnemonic="S"
-		          style="push">
-				</command>
-		</menuContribution>
-		<!-- containers view toolbar: kill containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.killContainers"
-		          disabledIcon="icons/killd.gif"
-		          icon="icons/kill.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.killContainers"
-		          mnemonic="S"
-		          style="push">
-				</command>
-		</menuContribution>
-		<!-- containers view toolbar: remove containers -->
-		<menuContribution
-			locationURI="toolbar:org.eclipse.linuxtools.docker.ui.dockerContainersView">
-				<command
-		          commandId="org.eclipse.linuxtools.docker.ui.commands.removeContainers"
-		          disabledIcon="icons/delete_d.gif"
-		          icon="icons/delete.gif"
-		          id="org.eclipse.linuxtools.docker.ui.commands.removeContainers"
-		          mnemonic="S"
-		          style="push">
-				</command>
 		</menuContribution>
 		<!-- containers view context menu: commit container -->
 		<menuContribution
@@ -1186,6 +1343,32 @@
 		          style="push">
 				</command>
 		</menuContribution>
+		<!-- images view context menu: run image -->
+		<menuContribution
+			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerImagesView">
+	  		<command
+           commandId="org.eclipse.linuxtools.docker.ui.commands.runImage"
+           icon="icons/createcontainer.gif"
+           label="%command.runimage.label"
+           mnemonic="R"
+           style="push">
+	            <visibleWhen
+	               checkEnabled="false">
+	               <with
+	                   variable="selection">
+	               <count
+	                      value="1">
+	                </count>
+	                <iterate
+	                      ifEmpty="false"
+	                      operator="and">
+	                 <instanceof
+	                       value="org.eclipse.linuxtools.docker.core.IDockerImage" />
+	                </iterate>
+	               </with>
+	         </visibleWhen>
+	      </command>
+		</menuContribution>
 		<!-- images view context menu: add tag -->
 		<menuContribution
 			locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerImagesView">
@@ -1238,7 +1421,14 @@
 					mnemonic="A">
 				</command>
 		</menuContribution>
-		
+		<menuContribution
+	    	locationURI="popup:org.eclipse.linuxtools.docker.ui.dockerContainersView">
+				<command
+					commandId="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+					id="org.eclipse.linuxtools.docker.ui.commands.execContainer"
+					style="push">
+			</command>
+	    </menuContribution>
 	</extension>
 	
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
@@ -1373,6 +1563,9 @@
              relationship="left"
              relative="org.eclipse.ui.editorss">
        </view>
+       <actionSet
+             id="org.eclipse.linuxtools.docker.launchActionSet">
+       </actionSet>
     </perspectiveExtension>
  </extension>
  <extension
@@ -1439,13 +1632,16 @@
           <enablement>
              <with variable="selection">
                 <count value="1"/>
-                <iterate>
+                <iterate
+                      ifEmpty="false"
+                      operator="or">
                    <adapt
                          type="org.eclipse.core.resources.IResource">
                       <and>
                          <test
-                            property="org.eclipse.core.resources.name"
-                            value="Dockerfile">
+                               forcePluginActivation="true"
+                               property="org.eclipse.core.resources.name"
+                               value="Dockerfile">
                          </test>
                       </and>
                    </adapt>
@@ -1462,5 +1658,73 @@
           id="org.eclipse.linuxtools.docker.ui.runLaunchConfigurationTabGroup"
           type="org.eclipse.linuxtools.docker.ui.runDockerImageLaunchConfigurationType">
     </launchConfigurationTabGroup>
+ </extension>
+ <extension
+       point="org.eclipse.ui.actionSets">
+       <actionSet
+            label="%LaunchActionSet.label"
+            visible="false"
+            id="org.eclipse.linuxtools.docker.launchActionSet">
+         <menu
+               label="%RunMenu.label"
+               path="additions"
+               id="org.eclipse.ui.run">
+            <separator
+                  name="relaunchGroup">
+            </separator>
+            <separator
+                  name="runGroup">
+            </separator>
+            <separator
+                  name="emptyLaunchGroup">
+            </separator>
+         </menu>
+         <action
+               class="org.eclipse.debug.internal.ui.actions.OpenRunConfigurations"
+               definitionId="org.eclipse.debug.ui.commands.OpenRunConfigurations"
+               helpContextId="open_run_configurations_action_context"
+               id="org.eclipse.debug.ui.actions.OpenRunConfigurations"
+               label="%OpenRunConfigurations.label"
+               menubarPath="org.eclipse.ui.run/runGroup">
+         </action>
+         <action
+               class="org.eclipse.debug.internal.ui.actions.RunAsAction"
+               helpContextId="run_with_configuration_action_context"
+               id="org.eclipse.debug.internal.ui.actions.RunWithConfigurationAction"
+               label="%RunWithConfigurationAction.label"
+               menubarPath="org.eclipse.ui.run/runGroup"
+               style="pulldown">
+         </action>
+         <action
+               label="%RunHistoryMenuAction.label"
+               style="pulldown"
+               helpContextId="run_history_menu_action_context"
+               class="org.eclipse.debug.internal.ui.actions.RunHistoryMenuAction"
+               menubarPath="org.eclipse.ui.run/runGroup"
+               id="org.eclipse.debug.internal.ui.actions.RunHistoryMenuAction">
+         </action>
+         <action
+               id="org.eclipse.debug.ui.actions.RunLast"
+               hoverIcon="icons/runlast_co.png"
+               class="org.eclipse.debug.internal.ui.actions.RunLastAction"
+               definitionId="org.eclipse.debug.ui.commands.RunLast"
+               disabledIcon="icons/runlast_co_d.png"
+               icon="icons/runlast_co.png"
+               helpContextId="run_last_action_context"
+               label="%ContextLaunchingRunMenu.name"
+               menubarPath="org.eclipse.ui.run/relaunchGroup">
+         </action>
+         <action
+               id="org.eclipse.debug.internal.ui.actions.RunDropDownAction"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"
+               hoverIcon="icons/run_exc.png"
+               class="org.eclipse.debug.internal.ui.actions.RunToolbarAction"
+               disabledIcon="icons/run_exc_d.png"
+               icon="icons/run_exc.png"
+               helpContextId="run_action_context"
+               label="%RunDropDownAction.label"
+               style="pulldown">
+         </action>
+      </actionSet>
  </extension>
 </plugin>

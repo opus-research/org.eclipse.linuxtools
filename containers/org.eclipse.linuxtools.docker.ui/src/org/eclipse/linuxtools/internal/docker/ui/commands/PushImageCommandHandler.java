@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,40 +19,56 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
-import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
+import org.eclipse.linuxtools.docker.core.IDockerImage;
+import org.eclipse.linuxtools.docker.core.IRegistry;
+import org.eclipse.linuxtools.docker.core.IRegistryAccount;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
-import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.views.ImagePushProgressHandler;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImagePush;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+/**
+ * Command handler to push a given image to the registry
+ */
 public class PushImageCommandHandler extends AbstractHandler {
 
 	private final static String PUSH_IMAGE_JOB_TITLE = "ImagePush.title"; //$NON-NLS-1$
 	private final static String PUSH_IMAGE_JOB_TASK = "ImagePush.msg"; //$NON-NLS-1$
 	private static final String ERROR_PUSHING_IMAGE = "ImagePushError.msg"; //$NON-NLS-1$
+	private static final String NO_CONNECTION = "NoConnection.error"; //$NON-NLS-1$
 	
-	private IDockerConnection connection;
-
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final ImagePush wizard = new ImagePush();
+		final IDockerImage selectedImage = RunImageCommandHandler
+				.getSelectedImage(activePart);
+		final ImagePush wizard = new ImagePush(selectedImage);
 		final boolean pushImage = CommandUtils.openWizard(wizard,
 				HandlerUtil.getActiveShell(event));
 		if (pushImage) {
-			if (activePart instanceof DockerImagesView) {
-				connection = ((DockerImagesView) activePart)
-						.getConnection();
-			}
-			performPushImage(wizard);
+			final IDockerConnection connection = CommandUtils
+					.getCurrentConnection(activePart);
+			IRegistry info = wizard.getRegistry();
+			performPushImage(wizard, connection, info);
 		}
 		return null;
 	}
 	
-	private void performPushImage(final ImagePush wizard) {
+	private void performPushImage(final ImagePush wizard,
+			final IDockerConnection connection, final IRegistry info) {
+		if (connection == null) {
+			Display.getDefault()
+					.syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
+									wizard.getImageTag()),
+							DVMessages.getFormattedString(NO_CONNECTION)));
+			return;
+		}
 		final Job pushImageJob = new Job(DVMessages.getFormattedString(
 				PUSH_IMAGE_JOB_TITLE, wizard.getImageTag())) {
 
@@ -61,37 +77,55 @@ public class PushImageCommandHandler extends AbstractHandler {
 				final String tag = wizard.getImageTag();
 				monitor.beginTask(DVMessages.getString(PUSH_IMAGE_JOB_TASK),
 						IProgressMonitor.UNKNOWN);
-				// pull the image and let the progress
+				// push the image and let the progress
 				// handler refresh the images when done
+				String tmpRegistryTag = null;
+				boolean createdTag = false;
 				try {
-					((DockerConnection) connection).pushImage(tag,
-							new ImagePushProgressHandler(connection, tag));
+					String repo = info.getServerAddress();
+					tmpRegistryTag = repo + '/' + tag;
+					if (!connection.hasImage(repo, tag)) {
+						connection.tagImage(tag, tmpRegistryTag);
+						createdTag = true;
+					}
+
+					if (info instanceof IRegistryAccount) {
+						IRegistryAccount acc = (IRegistryAccount) info;
+						connection.pushImage(tmpRegistryTag, acc,
+								new ImagePushProgressHandler(connection,
+										tmpRegistryTag));
+					} else {
+						connection.pushImage(tmpRegistryTag,
+								new ImagePushProgressHandler(connection,
+										tmpRegistryTag));
+					}
 				} catch (final DockerException e) {
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog.openError(Display.getCurrent()
-									.getActiveShell(), DVMessages
-									.getFormattedString(ERROR_PUSHING_IMAGE,
-											tag), e.getMessage());
-
-						}
-
-					});
+					Display.getDefault().syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(ERROR_PUSHING_IMAGE,
+									tag),
+							e.getMessage()));
 					// for now
 				} catch (InterruptedException e) {
 					// do nothing
 				} finally {
+					if (tmpRegistryTag != null && createdTag) {
+						try {
+							connection.removeTag(tmpRegistryTag);
+							connection.getImages(true);
+						} catch (Exception e) {
+							// do nothing
+						}
+					}
 					monitor.done();
 				}
 				return Status.OK_STATUS;
 			}
 
 		};
-
 		pushImageJob.schedule();
-
 	}
+
 
 }

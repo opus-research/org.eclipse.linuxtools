@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,18 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.IObservableList;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
 import org.eclipse.jface.databinding.viewers.ViewerProperties;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -35,9 +32,9 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.core.IRepositoryTag;
 import org.eclipse.linuxtools.docker.ui.Activator;
-import org.eclipse.linuxtools.internal.docker.core.DockerHubRegistry;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchPage.IconColumnLabelProvider;
 import org.eclipse.swt.SWT;
@@ -55,16 +52,21 @@ public class ImageTagSelectionPage extends WizardPage {
 
 	private final ImageSearchModel model;
 	private final DataBindingContext ctx = new DataBindingContext();
+	private IRegistry registry;
 
 	/**
 	 * Default constructor.
+	 * 
+	 * @param model
+	 *            the model associated to this page
 	 */
-	public ImageTagSelectionPage(final ImageSearchModel model) {
+	public ImageTagSelectionPage(final ImageSearchModel model, final IRegistry registry) {
 		super("ImageTagSelectionPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageTagSelectionPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setMessage(WizardMessages.getString("ImageTagSelectionPage.title")); //$NON-NLS-1$
 		this.model = model;
+		this.registry = registry;
 	}
 
 	@Override
@@ -80,45 +82,37 @@ public class ImageTagSelectionPage extends WizardPage {
 			final BlockingQueue<List<DockerImageTagSearchResult>> searchResultQueue = new ArrayBlockingQueue<>(
 					1);
 			ImageTagSelectionPage.this.getContainer().run(true, true,
-					new IRunnableWithProgress() {
-						@Override
-						public void run(IProgressMonitor monitor) {
-							try {
-								monitor.beginTask(WizardMessages.getString(
+					monitor -> {
+						monitor.beginTask(
+								WizardMessages.getString(
 										"ImageTagSelectionPage.searchTask"), //$NON-NLS-1$
-										2);
-								final String selectedImageName = ImageTagSelectionPage.this.model
-										.getSelectedImage()
-										.getName();
-								final List<IRepositoryTag> repositoryTags = new DockerHubRegistry()
-										.getTags(
-												selectedImageName);
-								monitor.worked(1);
-								final List<DockerImageTagSearchResult> searchResults = new ArrayList<>();
-								final IDockerConnection connection = model.getSelectedConnection();
-								for (IRepositoryTag repositoryTag : repositoryTags) {
-									searchResults
-											.add(new DockerImageTagSearchResult(
-													selectedImageName,
-													repositoryTag,
-													connection.hasImage(
-															selectedImageName,
-															repositoryTag
-																	.getName())));
-								}
-								monitor.worked(1);
-								searchResultQueue.offer(searchResults);
-							} catch (DockerException | InterruptedException
-									| ExecutionException e) {
-								Activator.log(e);
+								2);
+						final String selectedImageName = ImageTagSelectionPage.this.model
+								.getSelectedImage().getName();
+						List<IRepositoryTag> repositoryTags;
+						try {
+							repositoryTags = registry
+									.getTags(selectedImageName);
+							monitor.worked(1);
+							final List<DockerImageTagSearchResult> searchResults = new ArrayList<>();
+							final IDockerConnection connection = model
+									.getSelectedConnection();
+							for (IRepositoryTag repositoryTag : repositoryTags) {
+								searchResults.add(new DockerImageTagSearchResult(
+										selectedImageName, repositoryTag,
+										connection.hasImage(selectedImageName, repositoryTag.getName())));
 							}
+							monitor.worked(1);
+							searchResultQueue.offer(searchResults);
+						} catch (DockerException e) {
+						} finally {
 							monitor.done();
 						}
 					});
 			List<DockerImageTagSearchResult> res = searchResultQueue.poll(10,
 					TimeUnit.SECONDS);
 			final List<DockerImageTagSearchResult> searchResult = (res == null)
-					? new ArrayList<DockerImageTagSearchResult>() : res;
+					? new ArrayList<>() : res;
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
@@ -151,6 +145,9 @@ public class ImageTagSelectionPage extends WizardPage {
 		}
 	}
 
+	/**
+	 * @return the selected tag in the search result table
+	 */
 	public DockerImageTagSearchResult getSelectedImageTag() {
 		return model.getSelectedImageTag();
 	}

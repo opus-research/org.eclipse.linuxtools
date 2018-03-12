@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Command handler to kill all the selected {@link IDockerContainer}
@@ -103,17 +104,14 @@ public class RemoveImagesCommandHandler extends BaseImagesCommandHandler {
 		}
 		final List<String> names = imagesToRemove;
 		final DialogResponse response = new DialogResponse();
-		Display.getDefault().syncExec(new Runnable() {
-
-			@Override
-			public void run() {
-				boolean result = MessageDialog.openConfirm(
-						Display.getDefault().getActiveShell(),
-						DVMessages.getString(IMAGE_DELETE_CONFIRM),
-						DVMessages.getFormattedString(IMAGE_DELETE_LIST,
-								names.toString()));
-				response.setResponse(result);
-			}
+		Display.getDefault().syncExec(() -> {
+			boolean result = MessageDialog.openConfirm(
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getShell(),
+					DVMessages.getString(IMAGE_DELETE_CONFIRM),
+					DVMessages.getFormattedString(IMAGE_DELETE_LIST,
+							names.toString()));
+			response.setResponse(result);
 		});
 		return response.getResponse();
 	}

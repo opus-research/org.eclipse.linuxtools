@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
+ * Copyright (c) 2015, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@ import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class DisplayContainerLogCommandHandler extends AbstractHandler {
@@ -57,15 +58,8 @@ public class DisplayContainerLogCommandHandler extends AbstractHandler {
 				if (!rc.isAttached()) {
 					rc.attachToConsole(connection);
 				}
-				Display.getDefault().syncExec(new Runnable() {
-
-					@Override
-					public void run() {
-						rc.setTitle(DVMessages.getFormattedString(
-								CONTAINER_LOG_TITLE, name));
-					}
-
-				});
+				Display.getDefault().syncExec(() -> rc.setTitle(DVMessages
+						.getFormattedString(CONTAINER_LOG_TITLE, name)));
 				OutputStream stream = rc
 						.getOutputStream();
 				// Only bother to ask for a log if
@@ -83,21 +77,12 @@ public class DisplayContainerLogCommandHandler extends AbstractHandler {
 		} catch (DockerException
 				| InterruptedException e) {
 			Display.getDefault().syncExec(
-					new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog
-							.openError(
-									Display.getCurrent()
-									.getActiveShell(),
-									DVMessages
-									.getFormattedString(
-											ERROR_LOGGING_CONTAINER,
-											id),
-											e.getMessage());
-				}
-			});
+					() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(
+									ERROR_LOGGING_CONTAINER, id),
+							e.getMessage()));
 		}
 		return null;
 	}

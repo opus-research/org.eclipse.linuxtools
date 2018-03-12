@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Red Hat.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -41,7 +41,6 @@ import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRun;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -90,13 +89,15 @@ public class RunImageCommandHandler extends AbstractHandler {
 		final IDockerConnection connection = image.getConnection();
 		if (containerConfig.tty()) {
 			// show the console view
-			try {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-						.getActivePage()
-						.showView(IConsoleConstants.ID_CONSOLE_VIEW);
-			} catch (PartInitException e) {
-				Activator.log(e);
-			}
+			Display.getDefault().asyncExec(() -> {
+				try {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage()
+							.showView(IConsoleConstants.ID_CONSOLE_VIEW);
+				} catch (Exception e) {
+					Activator.log(e);
+				}
+			});
 		}
 
 		// Create the container in a non-UI thread.
@@ -109,8 +110,8 @@ public class RunImageCommandHandler extends AbstractHandler {
 						DVMessages.getString("RunImageRunningTask.msg"), 2); //$NON-NLS-1$
 				String containerId = null;
 				try {
-					final SubProgressMonitor createContainerMonitor = new SubProgressMonitor(
-							monitor, 1);
+					final SubMonitor createContainerMonitor = SubMonitor
+							.convert(monitor, 1);
 					// create the container
 					createContainerMonitor.beginTask(
 							DVMessages.getString(
@@ -126,8 +127,8 @@ public class RunImageCommandHandler extends AbstractHandler {
 						return Status.CANCEL_STATUS;
 					}
 					// start the container
-					final SubProgressMonitor startContainerMonitor = new SubProgressMonitor(
-							monitor, 1);
+					final SubMonitor startContainerMonitor = SubMonitor
+							.convert(monitor, 1);
 					startContainerMonitor.beginTask(DVMessages
 							.getString("RunImageStartingContainerTask.msg"), 1); //$NON-NLS-1$
 					final RunConsole console = getRunConsole(connection,
@@ -143,68 +144,68 @@ public class RunImageCommandHandler extends AbstractHandler {
 					}
 					startContainerMonitor.done();
 					// create a launch configuration from the container
-					LaunchConfigurationUtils.createLaunchConfiguration(image,
-							containerConfig, hostConfig, container.name(),
+					LaunchConfigurationUtils.createRunImageLaunchConfiguration(image,
+							containerConfig,
+							hostConfig, containerName,
 							removeWhenExits);
 				} catch (final DockerException | InterruptedException e) {
-					Display.getDefault().syncExec(new Runnable() {
-
-						@Override
-						public void run() {
-							MessageDialog.openError(
-									Display.getCurrent().getActiveShell(),
-									DVMessages.getFormattedString(
-											ERROR_CREATING_CONTAINER,
-											containerConfig.image()),
-									e.getMessage());
-
-						}
-
-					});
+					Display.getDefault().syncExec(() -> MessageDialog.openError(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell(),
+							DVMessages.getFormattedString(
+									ERROR_CREATING_CONTAINER,
+									containerConfig.image()),
+							e.getMessage()));
 				} finally {
+					final String tmpContainerId = containerId;
 					if (removeWhenExits) {
-						try {
-							if (containerId != null) {
-								// Wait for the container to finish
-								((DockerConnection) connection)
-										.waitForContainer(containerId);
-								// Drain the logging thread before we remove the
-								// container
-								((DockerConnection) connection)
-										.stopLoggingThread(containerId);
-								while (((DockerConnection) connection)
-										.loggingStatus(
-												containerId) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
-									Thread.sleep(1000);
+						final Job waitContainerJob = new Job(
+								CommandMessages.getString(
+										"RunImageCommandHandler.waitContainer.label")) { //$NON-NLS-1$
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								try {
+									if (tmpContainerId != null) {
+										// Wait for the container to finish
+										((DockerConnection) connection)
+												.waitForContainer(tmpContainerId);
+										// Drain the logging thread before we remove the
+										// container
+										((DockerConnection) connection)
+												.stopLoggingThread(tmpContainerId);
+										while (((DockerConnection) connection)
+												.loggingStatus(
+														tmpContainerId) == EnumDockerLoggingStatus.LOGGING_ACTIVE) {
+											Thread.sleep(1000);
+										}
+									}
+								} catch (DockerException | InterruptedException e) {
+									// ignore any errors in waiting for container or
+									// draining log
 								}
+								try {
+									// try and remove the container if it was created
+									if (tmpContainerId != null)
+										((DockerConnection) connection)
+												.removeContainer(tmpContainerId);
+								} catch (DockerException | InterruptedException e) {
+									final String id = tmpContainerId;
+									Display.getDefault()
+											.syncExec(() -> MessageDialog.openError(
+													PlatformUI.getWorkbench()
+															.getActiveWorkbenchWindow()
+															.getShell(),
+													DVMessages.getFormattedString(
+															ERROR_REMOVING_CONTAINER,
+															id),
+													e.getMessage()));
+								}
+								return Status.OK_STATUS;
 							}
-						} catch (DockerException | InterruptedException e) {
-							// ignore any errors in waiting for container or
-							// draining log
-						}
-						try {
-							// try and remove the container if it was created
-							if (containerId != null)
-								((DockerConnection) connection)
-										.removeContainer(containerId);
-						} catch (DockerException | InterruptedException e) {
-							final String id = containerId;
-							Display.getDefault().syncExec(new Runnable() {
-
-								@Override
-								public void run() {
-									MessageDialog.openError(
-											Display.getCurrent()
-													.getActiveShell(),
-											DVMessages.getFormattedString(
-													ERROR_REMOVING_CONTAINER,
-													id),
-											e.getMessage());
-
-								}
-
-							});
-						}
+						};
+						// Do not display this job in the UI
+						waitContainerJob.setSystem(true);
+						waitContainerJob.schedule();
 					}
 
 					monitor.done();

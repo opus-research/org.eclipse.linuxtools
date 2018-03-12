@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.docker.ui.preferences;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.linuxtools.docker.ui.Activator;
+import org.eclipse.linuxtools.internal.docker.core.DockerMachine;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -50,7 +53,27 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		this.dockerMachineInstallDir = new CustomDirectoryFieldEditor(
 				PreferenceConstants.DOCKER_MACHINE_INSTALLATION_DIRECTORY,
 				Messages.getString("DockerMachinePath.label"), //$NON-NLS-1$
-				getFieldEditorParent());
+				getFieldEditorParent()) {
+			@Override
+			protected boolean checkState() {
+				if (isEmptyStringAllowed()
+						&& !this.getStringValue().isEmpty()) {
+					final boolean validPath = super.checkState();
+					if (!validPath) {
+						return false;
+					}
+					if (!DockerMachine
+							.checkPathToDockerMachine(this.getStringValue())) {
+						setWarningMessage(NLS.bind(
+								org.eclipse.linuxtools.docker.core.Messages.Docker_Machine_Command_Not_Found,
+								this.getStringValue()));
+						return true;
+					}
+				}
+				setMessage("");
+				return true;
+			}
+		};
 		addField(this.dockerMachineInstallDir);
 		this.dockerMachineInstallDir.setPreferenceStore(getPreferenceStore());
 		// allow empty value if docker-machine is not installed
@@ -80,6 +103,10 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 		this.vmDriverInstallDir.load();
 	}
 
+	private void setWarningMessage(final String message) {
+		super.setMessage(message, IMessageProvider.WARNING);
+	}
+
 	/**
 	 * Subclass of the {@link DirectoryFieldEditor} but with the
 	 * {@link StringFieldEditor#VALIDATE_ON_KEY_STROKE} validation strategy.
@@ -96,6 +123,8 @@ public class DockerMachinePreferencePage extends FieldEditorPreferencePage
 			setValidateStrategy(StringFieldEditor.VALIDATE_ON_KEY_STROKE);
 			createControl(parent);
 		}
+		
+		
 
 	}
 }
