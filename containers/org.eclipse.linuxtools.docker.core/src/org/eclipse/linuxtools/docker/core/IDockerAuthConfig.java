@@ -25,27 +25,27 @@ public interface IDockerAuthConfig {
 	 * 
 	 * @return user name
 	 */
-	char[] username();
+	public char[] username();
 
 	/**
 	 * Get password
 	 * 
 	 * @return password
 	 */
-	char[] password();
+	public char[] password();
 
 	/**
 	 * Get email
 	 * 
 	 * @return email
 	 */
-	char[] email();
+	public char[] email();
 
 	/**
 	 * Get server address
 	 * 
 	 * @return server address
 	 */
-	char[] serverAddress();
+	public char[] serverAddress();
 
 }

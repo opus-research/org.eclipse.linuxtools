@@ -28,13 +28,13 @@ public interface IDockerIpam {
 	 * 
 	 * @return String containing driver
 	 */
-	String driver();
+	public String driver();
 
 	/**
 	 * Get IPAM configurations
 	 * 
 	 * @return List of IPAM configurations
 	 */
-	List<IDockerIpamConfig> config();
+	public List<IDockerIpamConfig> config();
 
 }

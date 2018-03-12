@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,26 +15,26 @@ import java.util.Map;
 
 public interface IDockerHostConfig {
 
-	List<String> binds();
+	public List<String> binds();
 
-	String containerIDFile();
+	public String containerIDFile();
 
-	List<IDockerConfParameter> lxcConf();
+	public List<IDockerConfParameter> lxcConf();
 
-	boolean privileged();
+	public boolean privileged();
 
-	Map<String, List<IDockerPortBinding>> portBindings();
+	public Map<String, List<IDockerPortBinding>> portBindings();
 
-	List<String> links();
+	public List<String> links();
 
-	boolean publishAllPorts();
+	public boolean publishAllPorts();
 
-	List<String> dns();
+	public List<String> dns();
 
-	List<String> dnsSearch();
+	public List<String> dnsSearch();
 
-	List<String> volumesFrom();
+	public List<String> volumesFrom();
 
-	String networkMode();
+	public String networkMode();
 
 }

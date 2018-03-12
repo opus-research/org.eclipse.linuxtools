@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat.
+ * Copyright (c) 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,8 +14,8 @@ import org.eclipse.linuxtools.docker.core.IDockerContainerInfo;
 
 public interface IContainerLaunchListener extends IRunConsoleListener {
 
-	void done(); // called when container finishes
+	public void done(); // called when container finishes
 
-	void containerInfo(IDockerContainerInfo info);
+	public void containerInfo(IDockerContainerInfo info);
 
 }
