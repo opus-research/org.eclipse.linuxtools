@@ -44,7 +44,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.linuxtools.docker.core.AbstractRegistry;
 import org.eclipse.linuxtools.docker.core.DockerConnectionManager;
-import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
@@ -108,6 +107,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		GridLayoutFactory.fillDefaults().numColumns(COLUMNS).margins(6, 6)
 				.applyTo(container);
 		if (model == null) {
+			setErrorMessage(LaunchMessages.getString("NoConnectionError.msg"));
 			return;
 		} else {
 			setErrorMessage(null);
@@ -579,29 +579,9 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
 		try {
-			String connectionName = launchConfig.getAttribute(
+			if (launchConfig.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
-					"");
-			if (connectionName.isEmpty()) {
-				setErrorMessage(
-						LaunchMessages.getString("NoConnectionError.msg"));
-				return false;
-			}
-			/*
-			 * Check there is connectivity with docker daemon.
-			 */
-			DockerConnectionManager manager = DockerConnectionManager
-					.getInstance();
-			IDockerConnection connection = manager
-					.findConnection(connectionName);
-			try {
-				connection.open(false);
-				connection.ping();
-				connection.close();
-			} catch (DockerException e) {
-				setErrorMessage(LaunchMessages
-						.getFormattedString("ConnectionFailureError.msg",
-								connection.getName()));
+					"").isEmpty()) {
 				return false;
 			}
 			final IStatus imageSelectionValidationStatus = new ImageSelectionValidator()

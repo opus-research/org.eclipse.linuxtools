@@ -429,10 +429,8 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 					selectedVolumes.add(volumeModel);
 				}
 			}
-			if (model != null) {
-				model.setDataVolumes(volumes);
-				model.setSelectedDataVolumes(selectedVolumes);
-			}
+			model.setDataVolumes(volumes);
+			model.setSelectedDataVolumes(selectedVolumes);
 
 		} catch (CoreException e) {
 			Activator.logErrorMessage(
@@ -442,17 +440,12 @@ public class RunImageVolumesTab extends AbstractLaunchConfigurationTab {
 		}
 		// update the underlying launch config working copy on model
 		// changes.
-		if (model != null) {
-			model.addPropertyChangeListener(
-					new LaunchConfigurationChangeListener());
-		}
+		model.addPropertyChangeListener(
+				new LaunchConfigurationChangeListener());
 	}
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null) {
-			return;
-		}
 		WritableList<DataVolumeModel> volumes = model.getDataVolumes();
 		Set<DataVolumeModel> selectedVolumes = model.getSelectedDataVolumes();
 

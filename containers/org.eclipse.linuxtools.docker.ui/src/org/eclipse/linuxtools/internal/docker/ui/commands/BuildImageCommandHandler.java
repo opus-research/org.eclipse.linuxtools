@@ -97,7 +97,6 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String id = wizard.getImageName();
-				@SuppressWarnings("unused")
 				final int lines = wizard.getNumberOfLines();
 				final IPath path = wizard.getDirectory();
 

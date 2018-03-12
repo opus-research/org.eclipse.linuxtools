@@ -259,9 +259,6 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
-		if (model == null) {
-			return;
-		}
 		try {
 			boolean enableLimits = configuration.getAttribute(
 					IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS,
@@ -275,8 +272,9 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 
 			int maxMemory = this.model.getTotalMemory();
 			// retrieve memory limit stored in MB
-			final long memoryLimit = Long.parseLong(
-					configuration.getAttribute(MEMORY_LIMIT, Long.toString(
+			final long memoryLimit = Long
+					.parseLong(configuration.getAttribute(MEMORY_LIMIT,
+							Long.toString(
 							ImageRunResourceVolumesVariablesModel.DEFAULT_MEMORY)));
 			// make sure memory limit is not higher than maxMemory
 			model.setMemoryLimit(Math.min(maxMemory, memoryLimit));
@@ -293,9 +291,6 @@ public class RunImageResourcesTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		if (model == null) {
-			return;
-		}
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.ENABLE_LIMITS,
 				model.isEnableResourceLimitations());
