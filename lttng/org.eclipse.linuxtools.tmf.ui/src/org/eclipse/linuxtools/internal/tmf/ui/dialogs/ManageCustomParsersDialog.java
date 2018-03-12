@@ -212,7 +212,7 @@ public class ManageCustomParsersDialog extends Dialog {
                 boolean confirm = MessageDialog.openQuestion(
                         getShell(),
                         Messages.ManageCustomParsersDialog_DeleteParserDialogHeader,
-                        NLS.bind(Messages.ManageCustomParsersDialog_DeleteConfirmation, parserList.getSelection()[0]));
+                        Messages.ManageCustomParsersDialog_DeleteConfirmation + parserList.getSelection()[0] + "?"); //$NON-NLS-1$
                 if (confirm) {
                     String selection = parserList.getSelection()[0];
                     String category = selection.substring(0, selection.indexOf(SEP));
@@ -273,7 +273,7 @@ public class ManageCustomParsersDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(Display.getCurrent().getActiveShell(), SWT.SAVE);
-                dialog.setText(NLS.bind(Messages.ManageCustomParsersDialog_ExportParserSelection, parserList.getSelection()[0]));
+                dialog.setText(Messages.ManageCustomParsersDialog_ExportParserSelection + parserList.getSelection()[0]);
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 String path = dialog.open();
                 if (path != null) {
