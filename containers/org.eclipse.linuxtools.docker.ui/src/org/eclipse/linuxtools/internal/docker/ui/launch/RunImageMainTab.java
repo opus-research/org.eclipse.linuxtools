@@ -366,7 +366,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 				// skip if the selected image does not exist in the local Docker
 				// host
 				if (selectedImage == null) {
-					model.setExposedPorts(new ArrayList<ExposedPortModel>());
+					model.setExposedPorts(new WritableList());
 					return;
 				}
 				findImageInfo(selectedImage);
@@ -389,8 +389,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 						model.setSelectedImageName(imageNames.get(0));
 						selectedImage = model.getSelectedImage();
 					} else {
-						model.setExposedPorts(
-								new ArrayList<ExposedPortModel>());
+						model.setExposedPorts(new WritableList());
 						return;
 					}
 				}
@@ -432,7 +431,7 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 					.getResult();
 			final Set<String> exposedPortInfos = selectedImageInfo.config()
 					.exposedPorts();
-			final List<ExposedPortModel> availablePorts = new ArrayList<>();
+			final WritableList availablePorts = new WritableList();
 			if (exposedPortInfos != null) {
 				for (String exposedPortInfo : exposedPortInfos) {
 					final String privatePort = exposedPortInfo.substring(0,
@@ -573,9 +572,6 @@ public class RunImageMainTab extends AbstractLaunchConfigurationTab {
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.CONNECTION_NAME,
 				model.getSelectedConnectionName());
-		configuration.setAttribute(
-				IRunDockerImageLaunchConfigurationConstants.IMAGE_ID,
-				model.getSelectedImage().id());
 		configuration.setAttribute(
 				IRunDockerImageLaunchConfigurationConstants.IMAGE_NAME,
 				model.getSelectedImageName());
