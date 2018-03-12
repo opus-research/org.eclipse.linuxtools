@@ -63,6 +63,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
+import org.junit.Assume;
 import org.osgi.framework.Bundle;
 
 @SuppressWarnings("restriction")
@@ -249,6 +250,17 @@ public abstract class AbstractTest {
         };
 
         wsp.run(runnable, wsp.getRoot(), IWorkspace.AVOID_UPDATE, null);
+    }
+
+    /**
+     * Some tests build an C++ application with g++, use this assumption
+     *   to ensure it is installed in the system because otherwise the
+     *   failure will not be obvious.
+     * If it is used in @Before annotated methods, it will count as a test error.
+     */
+    protected void assumeCpp() {
+        boolean gxxExist = new File("/bin/g++").isFile() || new File("/usrc/bin/g++").isFile();
+        Assume.assumeTrue("This test requires g++ installed in the system", gxxExist);
     }
 
     protected ICProject createProject(Bundle bundle, String projname)

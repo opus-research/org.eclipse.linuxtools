@@ -31,6 +31,7 @@ public class MultiProcessTest extends AbstractCachegrindTest {
 
     @Before
     public void prep() throws Exception {
+        assumeCpp();
         refProj = createProjectAndBuild("cpptest"); //$NON-NLS-1$
         proj = createProjectAndBuild("multiProcTest"); //$NON-NLS-1$
     }
