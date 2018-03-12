@@ -103,6 +103,10 @@ public class ImageRun extends Wizard {
 		return this.imageRunSelectionPage.getModel().getContainerName();
 	}
 
+	public boolean removeWhenExits() {
+		return this.imageRunSelectionPage.getModel().isRemoveWhenExits();
+	}
+
 	@SuppressWarnings("unchecked")
 	public IDockerHostConfig getDockerHostConfig() {
 		final ImageRunSelectionModel selectionModel = this.imageRunSelectionPage
@@ -156,9 +160,9 @@ public class ImageRun extends Wizard {
 			switch (dataVolume.getMountType()) {
 			case HOST_FILE_SYSTEM:
 				String bind = convertToUnixPath(dataVolume.getHostPathMount())
-						+ ':' + dataVolume.getContainerPath();
+						+ ':' + dataVolume.getContainerPath() + ':' + 'Z';
 				if (dataVolume.isReadOnly()) {
-					bind += ':' + "ro";
+					bind += ",ro"; //$NON-NLS-1$
 				}
 				binds.add(bind);
 				break;
