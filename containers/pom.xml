@@ -31,18 +31,6 @@
     <module>org.eclipse.linuxtools.docker-feature</module>
   </modules>
 
-	<repositories>
-		<repository>
-			<id>mars</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/mars</url>
-		</repository>
-		<repository>
-	 		<id>license</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/cbi/updates/license</url>
-		</repository>
-	</repositories>
 	<build>
 		<plugins>
 			<plugin>
