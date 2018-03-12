@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.FloatDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
@@ -76,16 +75,12 @@ public class EventHeaderDeclarationTest {
          */
 
         StructDeclaration base = new StructDeclaration(8);
-        EnumDeclaration enumDec = new EnumDeclaration(IntegerDeclaration.createDeclaration(5, false,
-                10, ByteOrder.BIG_ENDIAN, Encoding.NONE, "", 1));
-        enumDec.add(0, 30, "compact");
-        enumDec.add(31, 31, "extended");
-        base.addField("id", enumDec);
+        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
         VariantDeclaration variantV = new VariantDeclaration();
-        StructDeclaration compact = new StructDeclaration(1);
-        compact.addField("timestamp", IntegerDeclaration.createDeclaration(27, false, 10, ByteOrder.BIG_ENDIAN, Encoding.NONE, "", 1));
+        StructDeclaration compact = new StructDeclaration(8);
+        compact.addField("timestamp", IntegerDeclaration.UINT_27B_DECL);
         variantV.addField("compact", compact);
-        StructDeclaration large = new StructDeclaration(1);
+        StructDeclaration large = new StructDeclaration(8);
         large.addField("id", IntegerDeclaration.UINT_32B_DECL);
         large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
         variantV.addField("extended", large);
@@ -112,11 +107,7 @@ public class EventHeaderDeclarationTest {
          */
 
         base = new StructDeclaration(8);
-        enumDec = new EnumDeclaration(IntegerDeclaration.createDeclaration(16, false,
-                10, ByteOrder.BIG_ENDIAN, Encoding.NONE, "", 1));
-        enumDec.add(0, 30, "compact");
-        enumDec.add(31, 31, "extended");
-        base.addField("id", enumDec);
+        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_16B_DECL));
         variantV = new VariantDeclaration();
         compact = new StructDeclaration(8);
         compact.addField("timestamp", IntegerDeclaration.UINT_32B_DECL);
