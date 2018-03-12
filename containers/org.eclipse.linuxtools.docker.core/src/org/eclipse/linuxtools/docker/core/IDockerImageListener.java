@@ -23,6 +23,6 @@ public interface IDockerImageListener {
 	 * @param images
 	 *            - the new list of {@link IDockerImage}
 	 */
-	void listChanged(IDockerConnection manager, List<IDockerImage> images);
+	void listChanged(IDockerConnection connection, List<IDockerImage> images);
 
 }

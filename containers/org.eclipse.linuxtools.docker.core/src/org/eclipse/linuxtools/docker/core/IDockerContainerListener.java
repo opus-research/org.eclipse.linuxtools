@@ -23,6 +23,7 @@ public interface IDockerContainerListener {
 	 * @param containers
 	 *            - the new list of {@link IDockerContainer}
 	 */
-	void listChanged(IDockerConnection connection, List<IDockerContainer> list);
+	void listChanged(IDockerConnection connection,
+			List<IDockerContainer> containers);
 
 }
