@@ -389,7 +389,6 @@ public class NewDockerConnectionPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				final DirectoryDialog directoryDialog = new DirectoryDialog(
 						getShell());
-				directoryDialog.setFilterPath(model.getTcpCertPath());
 				final String selectedPath = directoryDialog.open();
 				if (selectedPath != null) {
 					model.setTcpCertPath(selectedPath);
