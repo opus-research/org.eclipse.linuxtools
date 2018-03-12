@@ -39,7 +39,7 @@ public class ImageRemoveTagPage extends WizardPage {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
+		setImageDescriptor(SWTImagesFactory.DESC_DOCKER_LARGE);
 		this.image = image;
 	}
 

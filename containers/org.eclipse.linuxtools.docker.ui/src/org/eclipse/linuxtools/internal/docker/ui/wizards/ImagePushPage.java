@@ -50,7 +50,7 @@ public class ImagePushPage extends WizardPage {
 		this.image = image;
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
+		setImageDescriptor(SWTImagesFactory.DESC_DOCKER_LARGE);
 	}
 
 	public String getImageTag() {
