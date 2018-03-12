@@ -156,12 +156,12 @@ public class CoreMessagesViewer {
                 Object element = ((TreeSelection) event.getSelection()).getFirstElement();
                 if (element instanceof ValgrindStackFrame) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) element;
-                    ILaunch launch = frame.getLaunch();
-                    ISourceLocator locator = launch.getSourceLocator();
+                    ISourceLocator locator = frame.getSourceLocator();
                     if (locator instanceof AbstractSourceLookupDirector) {
                         AbstractSourceLookupDirector director = (AbstractSourceLookupDirector) locator;
                         ISourceLookupParticipant[] participants = director.getParticipants();
-                        if (participants.length == 0) {
+                        ILaunch launch = frame.getLaunch();
+						if (participants.length == 0 && launch != null) {
                             // source locator likely disposed, try recreating it
                             IPersistableSourceLocator sourceLocator;
                             ILaunchConfiguration config = launch.getLaunchConfiguration();
@@ -185,7 +185,7 @@ public class CoreMessagesViewer {
                                     locator = sourceLocator;
                                     launch.setSourceLocator(sourceLocator);
                                 } catch (CoreException e) {
-                                    e.printStackTrace();
+                                   ValgrindUIPlugin.log(e);
                                 }
                             }
                         }
@@ -195,7 +195,7 @@ public class CoreMessagesViewer {
                     try {
                         ProfileUIUtils.openEditorAndSelect(result, frame.getLine());
                     } catch (PartInitException|BadLocationException e) {
-                        e.printStackTrace();
+                        ValgrindUIPlugin.log(e);
                     }
                 }
                 else {

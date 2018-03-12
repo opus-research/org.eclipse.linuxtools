@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.valgrind.core;
 
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.ISourceLocator;
 
 public interface IValgrindMessage {
 
@@ -20,7 +21,20 @@ public interface IValgrindMessage {
 
     String getText();
 
-    ILaunch getLaunch();
+    /** @since 1.1 */
+	default ISourceLocator getSourceLocator() {
+		if (getLaunch() != null) {
+			return getLaunch().getSourceLocator();
+		}
+		return null;
+	}
+
+	/**
+	 * @deprecated use getSourceLocation() to resolve locations,
+	 * getLaunch may return null if log error message was imported from the log and not associated with a launch
+	 */
+    @Deprecated
+	ILaunch getLaunch();
 
     void addChild(IValgrindMessage child);
 
