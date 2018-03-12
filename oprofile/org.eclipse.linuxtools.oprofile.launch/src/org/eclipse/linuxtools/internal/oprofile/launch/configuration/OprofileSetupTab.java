@@ -90,16 +90,16 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         }
         controlCombo.setText(options.getOprofileComboText());
 
-        if(controlCombo.getText().equals(OprofileProject.OPCONTROL_BINARY)) {
-			checkSeparateLibrary.setEnabled(true);
-            checkSeparateKernel.setEnabled(true);
-            kernelImageFileText.setEnabled(true);
-            kernelLabel.setEnabled(true);
-        } else {
+        if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
             checkSeparateLibrary.setEnabled(false);
             checkSeparateKernel.setEnabled(false);
             kernelImageFileText.setEnabled(false);
             kernelLabel.setEnabled(false);
+        } else {
+            checkSeparateLibrary.setEnabled(true);
+            checkSeparateKernel.setEnabled(true);
+            kernelImageFileText.setEnabled(true);
+            kernelLabel.setEnabled(true);
         }
         kernelImageFileText.setText(options.getKernelImageFile());
         executionsSpinner.setSelection(options.getExecutionsNumber());
@@ -158,23 +158,23 @@ public class OprofileSetupTab extends AbstractLaunchConfigurationTab {
         l2.setLayoutData(data);
 
         controlCombo = new CCombo(p, SWT.DROP_DOWN|SWT.READ_ONLY|SWT.BORDER);
-        controlCombo.setItems(new String[]{OprofileProject.OPERF_BINARY, OprofileProject.OPCONTROL_BINARY, OprofileProject.OCOUNT_BINARY});
+        controlCombo.setItems(new String[]{OprofileProject.OPERF_BINARY, OprofileProject.OPCONTROL_BINARY});
         controlCombo.select(0);
         controlCombo.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent mev) {
                 OprofileProject.setProfilingBinary(controlCombo.getText());
                 options.setOprofileComboText(controlCombo.getText());
-                if(controlCombo.getText().equals(OprofileProject.OPCONTROL_BINARY)) {
-                    checkSeparateLibrary.setEnabled(true);
-                    checkSeparateKernel.setEnabled(true);
-                    kernelImageFileText.setEnabled(true);
-                    kernelLabel.setEnabled(true);
-                } else {
+                if(controlCombo.getText().equals(OprofileProject.OPERF_BINARY)) {
                     checkSeparateLibrary.setEnabled(false);
                     checkSeparateKernel.setEnabled(false);
                     kernelImageFileText.setEnabled(false);
                     kernelLabel.setEnabled(false);
+                } else {
+                    checkSeparateLibrary.setEnabled(true);
+                    checkSeparateKernel.setEnabled(true);
+                    kernelImageFileText.setEnabled(true);
+                    kernelLabel.setEnabled(true);
                 }
                 updateLaunchConfigurationDialog();
             }
