@@ -9,12 +9,12 @@
  *     Red Hat - initial implementation
  *******************************************************************************/
 
-
 package org.eclipse.linuxtools.systemtap.ui.ide.test.swtbot;
 
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.allOf;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widgetOfType;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withStyle;
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -47,9 +47,8 @@ import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
@@ -59,8 +58,8 @@ import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.results.BoolResult;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
@@ -240,8 +239,28 @@ public class TestCreateSystemtapScript {
         }
     }
 
+    /**
+     * Click an item from the main Eclipse menu, with a guarantee that the main
+     * shell will be in focus.
+     * @param items The names of each item in the path to the target item to click.
+     * For example, to click "File->New->Project...", the items would be "File",
+     * "New", and "Project...".
+     */
+    public static void clickMainMenu(String... items) {
+        if (items.length == 0) {
+            return;
+        }
+        mainShell.setFocus();
+        SWTBotMenu menu = bot.menu(items[0]);
+        for (int i = 1; i < items.length; i++) {
+            menu = menu.menu(items[i]);
+        }
+        menu.click();
+    }
+
     @BeforeClass
     public static void beforeClass() {
+        SWTBotPreferences.TIMEOUT = 20000;
         bot = new SWTWorkbenchBot();
 
         try {
@@ -279,11 +298,7 @@ public class TestCreateSystemtapScript {
         }
 
         // Create a Systemtap project.
-        SWTBotMenu fileMenu = bot.menu("File");
-        SWTBotMenu newMenu = fileMenu.menu("New");
-        SWTBotMenu projectMenu = newMenu.menu("Project...");
-        projectMenu.click();
-
+        clickMainMenu("File", "New", "Project...");
         SWTBotShell shell = bot.shell("New Project");
         shell.setFocus();
         shell.bot().text().setText("Project");
@@ -374,11 +389,7 @@ public class TestCreateSystemtapScript {
     }
 
     public static void createScript(SWTWorkbenchBot bot, String scriptName) {
-        SWTBotMenu fileMenu = bot.menu("File");
-        SWTBotMenu newMenu = fileMenu.menu("New");
-        SWTBotMenu projectMenu = newMenu.menu("Other...");
-        projectMenu.click();
-
+        clickMainMenu("File", "New", "Other...");
         SWTBotShell shell = bot.shell("New");
         shell.setFocus();
         shell.bot().text().setText("SystemTap");
@@ -392,11 +403,10 @@ public class TestCreateSystemtapScript {
 
         bot.button("Finish").click();
         bot.waitUntil(Conditions.shellCloses(shell));
-
         assertEquals(scriptName, bot.activeEditor().getTitle());
     }
 
-    private SWTBotShell prepareScript(String scriptName, String scriptContents) {
+    private static SWTBotShell prepareScript(String scriptName, String scriptContents) {
         createScript(bot, scriptName);
         if (scriptContents != null) {
             SWTBotEclipseEditor editor = bot.editorByTitle(scriptName).toTextEditor();
@@ -450,10 +460,7 @@ public class TestCreateSystemtapScript {
 
         // Open a non-stap file and add a probe. This should bring up a dialog
         // asking if the function should be added to the only open .stp file.
-        SWTBotMenu fileMenu = bot.menu("File");
-        SWTBotMenu newMenu = fileMenu.menu("New");
-        SWTBotMenu projectMenu = newMenu.menu("Other...");
-        projectMenu.click();
+        clickMainMenu("File", "New", "Other...");
         SWTBotShell shell = bot.shell("New");
         shell.setFocus();
         shell.bot().text().setText("Untitled Text File");
@@ -474,6 +481,12 @@ public class TestCreateSystemtapScript {
         bot.waitUntil(new TreeItemPopulated(item));
         item = item.getNode(0);
         item.doubleClick();
+
+        {
+            Matcher<Shell> withText = withText(dialogTitle);
+            bot.waitUntil(Conditions.waitForShell(withText));
+        }
+
         shell = bot.shell(dialogTitle);
         shell.setFocus();
         bot.button("Yes").click();
@@ -509,11 +522,12 @@ public class TestCreateSystemtapScript {
         table.select(scriptName);
         bot.button("OK").click();
         bot.waitUntil(Conditions.shellCloses(shell));
+
         bot.waitUntil(new EditorIsActive(scriptName));
         assertTrue(wasProbeInserted(bot.activeEditor().toTextEditor(), item, false));
     }
 
-    private boolean wasProbeInserted(SWTBotEclipseEditor editor, SWTBotTreeItem probeNode, boolean isGroup) {
+    private static boolean wasProbeInserted(SWTBotEclipseEditor editor, SWTBotTreeItem probeNode, boolean isGroup) {
         String scriptText = editor.getText();
         int entryIndex = scriptText.indexOf("probe " + probeNode.getText() + (isGroup ? ".*\n" : "\n"));
         if (entryIndex == -1) {
@@ -1029,7 +1043,7 @@ public class TestCreateSystemtapScript {
         continuousControlTests(cb, false);
     }
 
-    private void discreteXControlTests(AbstractChartBuilder cb, int numAxisItems) {
+    private static void discreteXControlTests(AbstractChartBuilder cb, int numAxisItems) {
         // Check that default range shows 100% of data.
         IAxis axis = cb.getChart().getAxisSet().getXAxis(0);
         Range range = axis.getRange();
@@ -1152,15 +1166,15 @@ public class TestCreateSystemtapScript {
         assertFalse(lastButton.isEnabled());
     }
 
-    private double getAxisScale(AbstractChartBuilder cb, boolean isXAxis) {
+    private static double getAxisScale(AbstractChartBuilder cb, boolean isXAxis) {
         return isXAxis ? cb.getScale() : cb.getScaleY();
     }
 
-    private double getAxisScroll(AbstractChartBuilder cb, boolean isXAxis) {
+    private static double getAxisScroll(AbstractChartBuilder cb, boolean isXAxis) {
         return isXAxis ? cb.getScroll() : cb.getScrollY();
     }
 
-    private void continuousControlTests(AbstractChartBuilder cb, boolean isXAxis) {
+    private static void continuousControlTests(AbstractChartBuilder cb, boolean isXAxis) {
         // Continuous scaling/scrolling is less strict/predictable than discrete scrolling,
         // so just check that the controls perform their intended actions.
         IAxis axis;
@@ -1258,30 +1272,28 @@ public class TestCreateSystemtapScript {
         final Matcher<AbstractChartBuilder> matcher = widgetOfType(AbstractChartBuilder.class);
         AbstractChartBuilder cb = bot.widget(matcher);
         String tooltipFormat = "{0}: {1}";
-        checkTooltipAtDataPoint(cb, 0, 0, MessageFormat.format(tooltipFormat, "Column 1", "1"), true);
+        checkTooltipAtDataPoint(cb, 0, MessageFormat.format(tooltipFormat, "Column 1", "1"), true);
 
         bot.activeEditor().bot().cTabItem(title.concat(" - Line Graph")).activate();
         cb = bot.widget(matcher);
         tooltipFormat = "Series: {0}\nx: {1}\ny: {2}";
         String lineChartTooltip = MessageFormat.format(tooltipFormat, "Column 1", "2", "2");
-        checkTooltipAtDataPoint(cb, 0, 1, lineChartTooltip, true);
+        checkTooltipAtDataPoint(cb, 1, lineChartTooltip, true);
 
         // The tooltip should disappear when a point moves away from the mouse, without need for mouse movement.
         cb.setScale(0.2);
-        checkTooltipAtDataPoint(cb, 0, -1, lineChartTooltip, false);
+        checkTooltipAtDataPoint(cb, -1, lineChartTooltip, false);
     }
 
     /**
      * May move the mouse to a desired data point on a chart and test for the tooltip that appears.
      * @param cb The AbstractChartBuilder containing the chart to test.
-     * @param series The index of the data series to hover over.
      * @param dataPoint The data point of the series to move the mouse to. Set this to -1
      * or less if the mouse should stay where it is.
      * @param expectedTooltip The expected contents of the tooltip.
      * @param shellShouldExist Set to <code>false</code> if the tooltip should not be found.
      */
-    private void checkTooltipAtDataPoint(final AbstractChartBuilder cb, final int series,
-            final int dataPoint, final String expectedTooltip,
+    private static void checkTooltipAtDataPoint(final AbstractChartBuilder cb, final int dataPoint, final String expectedTooltip,
             final boolean shellShouldExist) {
 
         for (int retries = 5; retries > 0; retries--) {
@@ -1312,24 +1324,7 @@ public class TestCreateSystemtapScript {
             }
 
             bot.sleep(500); // Give some time for the tooltip to appear/change
-
-            boolean foundTooltip = UIThreadRunnable.syncExec(new BoolResult() {
-                @Override
-                public Boolean run() {
-                    for (SWTBotShell bshell : bot.shells()) {
-                        Control[] children = bshell.widget.getChildren();
-                        if (children.length == 1 && children[0] instanceof Text
-                                && children[0].isVisible()
-                                && expectedTooltip.equals(((Text) children[0]).getText())) {
-
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
-
-            if (foundTooltip == shellShouldExist) {
+            if (expectedTooltip.equals(cb.getMouseMessage()) == shellShouldExist) {
                 return;
             }
         }
@@ -1341,7 +1336,7 @@ public class TestCreateSystemtapScript {
         }
     }
 
-    private void openRunConfigurations(String scriptName) {
+    private static void openRunConfigurations(String scriptName) {
         // Focus on project explorer view.
         projectExplorer.setFocus();
         new SWTBotMenu(ContextMenuHelper.contextMenu(
@@ -1349,7 +1344,7 @@ public class TestCreateSystemtapScript {
                 "Run As", "Run Configurations...")).click();
     }
 
-    private void setupGraphWithTests(String title, boolean isTab) {
+    private static void setupGraphWithTests(String title, boolean isTab) {
         SWTBotShell firstShell = bot.activeShell();
 
         openGraphMenu(isTab);
@@ -1376,7 +1371,7 @@ public class TestCreateSystemtapScript {
         firstShell.setFocus();
     }
 
-    private void setupGraphGeneral(String title, int numItems, String graphID, boolean useRowNum, boolean isTab) {
+    private static void setupGraphGeneral(String title, int numItems, String graphID, boolean useRowNum, boolean isTab) {
         int offset = useRowNum ? 0 : 1;
         SWTBotShell firstShell = bot.activeShell();
 
@@ -1388,6 +1383,7 @@ public class TestCreateSystemtapScript {
         bot.radioWithTooltip(GraphFactory.getGraphName(graphID) + "\n\n" +
                 GraphFactory.getGraphDescription(graphID)).click();
 
+        shell.setFocus();
         SWTBotText text = bot.textWithLabel("Title:");
         text.setText(title);
 
@@ -1404,7 +1400,7 @@ public class TestCreateSystemtapScript {
         firstShell.setFocus();
     }
 
-    private void openGraphMenu(boolean isTab) {
+    private static void openGraphMenu(boolean isTab) {
         if (!isTab) {
             bot.button(Messages.SystemTapScriptGraphOptionsTab_AddGraphButton).click();
         } else {
@@ -1421,7 +1417,7 @@ public class TestCreateSystemtapScript {
         }
     }
 
-    private void createAndViewDummyData(String[] titles, Object[] data) {
+    private static void createAndViewDummyData(String[] titles, Object[] data) {
         if (data.length % titles.length != 0) {
             throw new IllegalArgumentException("data.length must be a multiple of titles.length.");
         }
@@ -1463,7 +1459,7 @@ public class TestCreateSystemtapScript {
      * Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=344484
      * @param currSelection The index of the radiobutton to deselect
      */
-    private void deselectDefaultSelection(final int currSelection) {
+    private static void deselectDefaultSelection(final int currSelection) {
         UIThreadRunnable.syncExec(new VoidResult() {
             @Override
             public void run() {
@@ -1474,4 +1470,5 @@ public class TestCreateSystemtapScript {
             }
         });
     }
+
 }

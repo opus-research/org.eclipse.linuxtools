@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Red Hat Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Andrew Ferrazzutti <aferrazz@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.handlers;
 
 import java.util.ArrayList;
@@ -36,7 +46,7 @@ public class AddStapProbeHandler extends AbstractHandler {
                     Messages.AddStapProbe_editorError, e);
             throw new ExecutionException(Messages.AddStapProbe_editorError, e);
         }
-        IVerticalRulerInfo rulerInfo = (IVerticalRulerInfo) editor.getAdapter(IVerticalRulerInfo.class);
+        IVerticalRulerInfo rulerInfo = editor.getAdapter(IVerticalRulerInfo.class);
 
         Shell shell = editor.getSite().getShell();
         shell.setCursor(shell.getDisplay().getSystemCursor(

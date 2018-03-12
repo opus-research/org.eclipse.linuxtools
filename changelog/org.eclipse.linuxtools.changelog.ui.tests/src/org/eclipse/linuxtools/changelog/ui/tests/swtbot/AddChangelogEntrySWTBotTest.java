@@ -22,58 +22,30 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.linuxtools.changelog.ui.tests.utils.ChangeLogTestProject;
-import org.eclipse.linuxtools.changelog.ui.tests.utils.ProjectExplorer;
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.waits.Conditions;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.keyboard.Keystrokes;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.IEditorReference;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
 
 /**
  * UI tests for "ChangeLog Entry" (CTRL+ALT+C).
  *
  */
-@RunWith(SWTBotJunit4ClassRunner.class)
-public class AddChangelogEntrySWTBotTest {
+public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
 
-    private static SWTWorkbenchBot bot;
-    private static SWTBotTree projectExplorerViewTree;
     private ChangeLogTestProject  project;
     private static final String OFFSET_MARKER = "<-- SELECT -->";
     // The name of the test project, we create
     private final String PROJECT_NAME = "changelog-java-project";
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        // delay click speed; with this turned on things get flaky
-        //System.setProperty("org.eclipse.swtbot.playback.delay", "200");
-        bot = new SWTWorkbenchBot();
-        try {
-            bot.viewByTitle("Welcome").close();
-            // hide Subclipse Usage stats popup if present/installed
-            bot.shell("Subclipse Usage").activate();
-            bot.button("Cancel").click();
-        } catch (WidgetNotFoundException e) {
-            // ignore
-        }
-        // Make sure project explorer is open and tree available
-        ProjectExplorer.openView();
-        projectExplorerViewTree = ProjectExplorer.getTree();
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -94,7 +66,6 @@ public class AddChangelogEntrySWTBotTest {
      *
      * @throws Exception
      */
-    @SuppressWarnings("unchecked")
     @Test
     public void canAddChangeLogEntryUsingShortCutIfSourceIsActive() throws Exception {
         // Add a Java source file
@@ -125,12 +96,12 @@ public class AddChangelogEntrySWTBotTest {
         // Open JavaTest.java in an editor
         projectExplorerViewTree.expandNode(PROJECT_NAME).expandNode("src").expandNode("JavaTest.java").doubleClick();
 
-        Matcher<?> editorMatcher = allOf(
+        Matcher<IEditorReference> editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("JavaTest.java")
                 );
         // Wait for Java editor to open
-        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
         SWTBotEditor swtBoteditor = bot.editorByTitle("JavaTest.java");
         SWTBotEclipseEditor eclipseEditor = swtBoteditor.toTextEditor();
         eclipseEditor.selectLine(getLineOfOffsetMarker(sourceCode));
@@ -142,13 +113,13 @@ public class AddChangelogEntrySWTBotTest {
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("ChangeLog")
                 );
-        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
         swtBoteditor = bot.activeEditor();
         swtBoteditor.save(); // save to avoid "save changes"-pop-up
         assertEquals("ChangeLog", swtBoteditor.getTitle());
         eclipseEditor = swtBoteditor.toTextEditor();
         // make sure expected entry has been added.
-        assertTrue(eclipseEditor.getText().contains("\t* src/JavaTest.java (main):"));
+		assertTrue(eclipseEditor.getText().contains("* src/JavaTest.java"));
     }
 
     /**
@@ -158,7 +129,6 @@ public class AddChangelogEntrySWTBotTest {
      *
      * @throws Exception
      */
-    @SuppressWarnings("unchecked")
     @Test
     public void canAddChangeLogEntryUsingEditMenuIfSourceIsActive() throws Exception {
         // Add a Java source file
@@ -190,30 +160,30 @@ public class AddChangelogEntrySWTBotTest {
         SWTBotTreeItem projectItem = projectExplorerViewTree.expandNode(PROJECT_NAME);
         projectItem.expandNode("src").expandNode("JavaTest.java").doubleClick();
 
-        Matcher<?> editorMatcher = allOf(
+        Matcher<IEditorReference> editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("JavaTest.java")
                 );
         // Wait for editor to open
-        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
         SWTBotEditor swtBoteditor = bot.editorByTitle("JavaTest.java");
         SWTBotEclipseEditor eclipseEditor = swtBoteditor.toTextEditor();
         eclipseEditor.selectLine(getLineOfOffsetMarker(sourceCode));
 
         // Click menu item.
-        bot.menu("Edit").menu("ChangeLog Entry").click();
+        bot.menu("Edit").menu("Insert ChangeLog entry").click();
         // Wait for ChangeLog editor to open
         editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("ChangeLog")
                 );
-        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
         swtBoteditor = bot.activeEditor();
         swtBoteditor.save(); // save to avoid "save changes"-pop-up
         assertEquals("ChangeLog", swtBoteditor.getTitle());
         eclipseEditor = swtBoteditor.toTextEditor();
         // make sure expected entry has been added.
-        assertTrue(eclipseEditor.getText().contains("\t* src/JavaTest.java (main):"));
+		assertTrue(eclipseEditor.getText().contains("* src/JavaTest.java"));
     }
 
     /**

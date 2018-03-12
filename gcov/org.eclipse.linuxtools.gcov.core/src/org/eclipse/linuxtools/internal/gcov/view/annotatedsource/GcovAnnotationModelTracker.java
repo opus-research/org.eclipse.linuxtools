@@ -73,7 +73,9 @@ public final class GcovAnnotationModelTracker {
     private IPartListener2 partListener = new IPartListener2() {
         @Override
         public void partOpened(IWorkbenchPartReference partref) {
-            annotateCEditor(partref);
+            if (partref != null) {
+                annotateCEditor(partref);
+            }
         }
 
         @Override
@@ -127,6 +129,10 @@ public final class GcovAnnotationModelTracker {
 
     public void addProject (IProject project, IPath binary) {
         trackedProjects.put(project, binary);
+    }
+
+    public IProject[] getTrackedProjects() {
+        return trackedProjects.keySet().toArray(new IProject[0]);
     }
 
     public void dispose() {

@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -52,6 +53,13 @@ public final class OpenSourceFileAction {
             URI uri = editorInput.getURI();
             try {
                 return EFS.getStore(uri);
+            } catch (CoreException e) {
+                return null;
+            }
+        } else if (input instanceof IFileEditorInput) {
+            IFile f = ((IFileEditorInput) input).getFile();
+            try {
+                return EFS.getStore(f.getLocationURI());
             } catch (CoreException e) {
                 return null;
             }

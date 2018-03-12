@@ -61,6 +61,7 @@ public abstract class LinuxtoolsProcessFactory {
      * @param envp The list of new environment variables to use.
      * @param project If not <code>null</code>, only the environment of this project
      * will be updated.
+     * @return The new environment.
      */
     protected String[] updateEnvironment(String[] envp, IProject project) {
         String ltPath = LinuxtoolsPathProperty.getInstance().getLinuxtoolsPath(project);
@@ -185,6 +186,7 @@ public abstract class LinuxtoolsProcessFactory {
         }
 
         ChannelExec channel = (ChannelExec) session.openChannel("exec"); //$NON-NLS-1$
+        channel.setPty(true);
         channel.setCommand(command.toString());
         channel.setInputStream(null, true);
         channel.setOutputStream(out, true);
@@ -196,7 +198,8 @@ public abstract class LinuxtoolsProcessFactory {
 
     /**
      * Runs a command on the given host using the given
-     * credentials and waits for the process to finish executing.
+     * credentials and waits for the process to finish executing, or until
+     * the executing thread is interrupted.
      *
      * @param args The command to run, followed by a list of optional arguments.
      * @param out A stream for the command's standard output.
@@ -216,7 +219,8 @@ public abstract class LinuxtoolsProcessFactory {
 
     /**
      * Runs a command on the given host using the given
-     * credentials and waits for the process to finish executing.
+     * credentials and waits for the process to finish executing, or until
+     * the executing thread is interrupted.
      *
      * @param args The command to run, followed by a list of optional arguments.
      * @param out A stream for the command's standard output.
@@ -246,5 +250,25 @@ public abstract class LinuxtoolsProcessFactory {
         }
 
         return channel;
+    }
+
+    /**
+     * Convenience method: asks the channel to attempt termination of the
+     * currently-running process on the channel's session.
+     * @param channel The channel whose session process should be terminated.
+     * @return <code>true</code> on a successul attempt of terminating the process,
+     * <code>false</code> otherwise.
+     * @since 3.2
+     */
+    public static boolean terminateProcess(Channel channel) {
+        try {
+            OutputStream out = channel.getOutputStream();
+            out.write(3);
+            out.flush();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

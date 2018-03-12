@@ -46,8 +46,8 @@ public class STExportToCSVAction extends Action {
      */
     public STExportToCSVAction(AbstractSTViewer stViewer) {
         super(STDataViewersMessages.exportToCSVAction_title,
-        		AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
-        				"icons/export.gif")); //$NON-NLS-1$
+                AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
+                        "icons/export.gif")); //$NON-NLS-1$
 
         this.stViewer = stViewer;
         this.exporter = new STDataViewersCSVExporter(stViewer);
@@ -58,22 +58,30 @@ public class STExportToCSVAction extends Action {
         STDataViewersExportToCSVDialog dialog = new STDataViewersExportToCSVDialog(stViewer.getViewer().getControl()
                 .getShell(), exporter);
         if (dialog.open() == Window.OK) {
-            Job exportToCSVJob = new Job("Export to CSV") {
-                @Override
-                public IStatus run(IProgressMonitor monitor) {
-                    exporter.export(monitor);
-                    return Status.OK_STATUS;
-                }
-
-                @Override
-                public boolean belongsTo(Object family) {
-                    return EXPORT_TO_CSV_JOB_FAMILY.equals(family);
-                }
-
-            };
-            exportToCSVJob.setUser(true);
-            exportToCSVJob.schedule();
+            export();
         }
+    }
+
+    /**
+     * Export the CSV with a user job, without UI prompts.
+     * @since 6.0
+     */
+    public void export() {
+        Job exportToCSVJob = new Job("Export to CSV") {
+            @Override
+            public IStatus run(IProgressMonitor monitor) {
+                exporter.export(monitor);
+                return Status.OK_STATUS;
+            }
+
+            @Override
+            public boolean belongsTo(Object family) {
+                return EXPORT_TO_CSV_JOB_FAMILY.equals(family);
+            }
+
+        };
+        exportToCSVJob.setUser(true);
+        exportToCSVJob.schedule();
     }
 
     /**

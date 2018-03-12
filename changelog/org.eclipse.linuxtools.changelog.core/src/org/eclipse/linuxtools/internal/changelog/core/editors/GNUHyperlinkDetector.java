@@ -57,6 +57,7 @@ public class GNUHyperlinkDetector extends AbstractHyperlinkDetector {
      * /some/project/abc/file.java and /some/project/ghi/file2.java
      *
      * @param textViewer The text viewer in which to detect the hyperlink.
+     * @param editor The editor to fetch document location from.
      */
     public GNUHyperlinkDetector(ITextViewer textViewer, TextEditor editor) {
         Assert.isNotNull(textViewer);
@@ -154,11 +155,12 @@ public class GNUHyperlinkDetector extends AbstractHyperlinkDetector {
             // Replace any escape characters added to name
             line = line.replaceAll("\\\\(.)", "$1");
 
-            IPath filePath = documentLocation.append(line);
+            IFile fileLoc = ResourcesPlugin.getWorkspace().getRoot()
+                    .getFileForLocation(documentLocation.append(line));
+            if (fileLoc.exists()) {
+                return new IHyperlink[] { new FileHyperlink(pathRegion, fileLoc) };
+            }
 
-            return new IHyperlink[] { new FileHyperlink(pathRegion,
-                    ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
-                            filePath)) };
 
         }
 

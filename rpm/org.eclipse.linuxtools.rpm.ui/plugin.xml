@@ -140,20 +140,9 @@
               </parameter>
               <visibleWhen
                     checkEnabled="false">
-                 <or>
-                    <with
-                          variable="activeMenuSelection">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                    <with
-                          variable="activeMenuEditorInput">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                 </or>
+                 <reference
+                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
+                 </reference>
               </visibleWhen>
            </command>
            <command
@@ -168,20 +157,9 @@
               </parameter>
               <visibleWhen
                     checkEnabled="false">
-                 <or>
-                    <with
-                          variable="activeMenuSelection">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                    <with
-                          variable="activeMenuEditorInput">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                 </or>
+                 <reference
+                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
+                 </reference>
               </visibleWhen>
            </command>
            <command
@@ -192,20 +170,9 @@
                  tooltip="%command.name.2">
               <visibleWhen
                     checkEnabled="false">
-                 <or>
-                    <with
-                          variable="activeMenuSelection">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                    <with
-                          variable="activeMenuEditorInput">
-                       <reference
-                             definitionId="org.eclipse.linuxtools.rpm.core.rpmfile">
-                       </reference>
-                    </with>
-                 </or>
+                 <reference
+                       definitionId="org.eclipse.linuxtools.rpm.core.rpmselection">
+                 </reference>
               </visibleWhen>
               <parameter
                     name="buildType"
@@ -223,6 +190,11 @@
               id="buildType"
               name="buildType"
               optional="false">
+        </commandParameter>
+        <commandParameter
+              id="actOnEditor"
+              name="actOnEditor"
+              optional="true">
         </commandParameter>
      </command>
   </extension>
@@ -265,6 +237,10 @@
                     name="buildType"
                     value="ALL">
               </parameter>
+              <parameter
+                    name="actOnEditor"
+                    value="true">
+              </parameter>
            </command>
         </toolbar>
      </menuContribution>
@@ -280,6 +256,10 @@
                  name="buildType"
                  value="SOURCE">
            </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
+           </parameter>
         </command>
         <command
               commandId="rpmEditor.build.command"
@@ -290,6 +270,10 @@
            <parameter
                  name="buildType"
                  value="BINARY">
+           </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
            </parameter>
         </command>
         <command
@@ -302,7 +286,30 @@
                  name="buildType"
                  value="ALL">
            </parameter>
+           <parameter
+                 name="actOnEditor"
+                 value="true">
+           </parameter>
         </command>
      </menuContribution>
   </extension>
+  <extension
+        point="org.eclipse.ui.console.consolePageParticipants">
+     <consolePageParticipant
+           class="org.eclipse.linuxtools.internal.rpm.ui.RpmConsolePageParticipant"
+           id="org.eclipse.linuxtools.rpm.ui.rpmConsolePageParticipant">
+        <enablement>
+           <instanceof
+                 value="org.eclipse.linuxtools.internal.rpm.ui.RpmConsole">
+           </instanceof>
+        </enablement>
+     </consolePageParticipant>
+  </extension>
+  <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.linuxtools.internal.rpm.ui.MainPage"
+            id="org.eclipse.linuxtools.rpm.ui.mainpage"
+            name="%category.name.0"/>
+      </extension>
 </plugin>

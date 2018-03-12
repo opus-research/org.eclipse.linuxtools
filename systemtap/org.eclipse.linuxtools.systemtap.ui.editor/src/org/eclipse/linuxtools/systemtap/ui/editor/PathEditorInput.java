@@ -18,8 +18,6 @@ import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
-
-
 public class PathEditorInput extends FileStoreEditorInput implements IPathEditorInput, ILocationProvider {
     private IPath fPath;
 
@@ -70,12 +68,13 @@ public class PathEditorInput extends FileStoreEditorInput implements IPathEditor
         return null;
     }
 
-    @Override
-    public Object getAdapter(Class adapter) {
+    @SuppressWarnings("unchecked")
+	@Override
+    public <T> T getAdapter(Class<T> adapter) {
         if (PathEditorInput.class.equals(adapter)
                 || IPathEditorInput.class.equals(adapter)
                 || ILocationProvider.class.equals(adapter)) {
-            return this;
+            return (T)this;
         }
         return Platform.getAdapterManager().getAdapter(this, adapter);
     }
