@@ -55,6 +55,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.Version;
 
 public class ModelTest extends AbstractTest {
     private ILaunchConfiguration config;
@@ -323,10 +324,9 @@ public class ModelTest extends AbstractTest {
                 "symbol", "resources/defaultevent-data/perf.data", false);
 
         String[] expectedString = new String[] { PerfPlugin.PERF_COMMAND,
-                "annotate", "--stdio", "-d", "dso", "-s", "symbol", "-l", "-P",
+                "annotate", "-d", "dso", "-s", "symbol", "-l", "-P",
                 "--vmlinux", "/boot/kernel", "-m", "-i",
-                "resources/defaultevent-data/perf.data",
-                "<", "/dev/null" };
+                "resources/defaultevent-data/perf.data" };
 
         assertArrayEquals(expectedString, annotateString);
     }
@@ -347,7 +347,7 @@ public class ModelTest extends AbstractTest {
 
         tempConfig.setAttribute(PerfPlugin.ATTR_DefaultEvent, false);
 
-        String[] recordString = PerfCore.getRecordString(tempConfig);
+        String[] recordString = PerfCore.getRecordString(tempConfig, new Version(0, 0, 0));
         assertNotNull(recordString);
 
         String[] expectedString = { PerfPlugin.PERF_COMMAND, "record",
