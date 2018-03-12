@@ -65,7 +65,7 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			fp = proxyManager.getFileProxy(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(e.getMessage(), true);
+			assertTrue(true);
 		}
 	}
 
@@ -100,7 +100,7 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			cl = proxyManager.getLauncher(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(e.getMessage(),true);
+			assertTrue(true);
 		}
 	}
 
@@ -142,7 +142,7 @@ public class RemoteProxyManagerTest extends AbstractProxyTest {
 			actualOS = proxyManager.getOS(URI.create("remotetools://MyConnection/path/to/file"));
 			fail("remotetools scheme should not be recognized");
 		} catch (CoreException e) {
-			assertTrue(e.getMessage(),true);
+			assertTrue(true);
 		}
 	}
 

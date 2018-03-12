@@ -40,6 +40,9 @@ public class NonRuleBasedDamagerRepairer
         fDefaultTextAttribute = defaultTextAttribute;
     }
 
+    /**
+     * @see IPresentationRepairer#setDocument(IDocument)
+     */
     @Override
     public void setDocument(IDocument document) {
         fDocument = document;
@@ -69,6 +72,9 @@ public class NonRuleBasedDamagerRepairer
         }
     }
 
+    /**
+     * @see IPresentationDamager#getDamageRegion(ITypedRegion, DocumentEvent, boolean)
+     */
     @Override
     public IRegion getDamageRegion(
         ITypedRegion partition,
@@ -108,6 +114,9 @@ public class NonRuleBasedDamagerRepairer
         return partition;
     }
 
+    /**
+     * @see IPresentationRepairer#createPresentation(TextPresentation, ITypedRegion)
+     */
     @Override
     public void createPresentation(
         TextPresentation presentation,
