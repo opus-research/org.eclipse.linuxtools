@@ -11,6 +11,7 @@
 package org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.FunctionParser;
+import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 
 
 /**
@@ -32,7 +33,8 @@ public class FuncparamNodeData implements ISingleTypedNode {
     }
 
     /**
-     * Create a new instance of function parameter information.
+     * Create a new instance of function parameter information. (Note that the name of a function
+     * or parameter is stored in a {@link TreeNode}, not here.)
      * @param type The <code>String</code> representation of the parameter's type.
      * Pass <code>null</code> if the type is unknown.
      */
