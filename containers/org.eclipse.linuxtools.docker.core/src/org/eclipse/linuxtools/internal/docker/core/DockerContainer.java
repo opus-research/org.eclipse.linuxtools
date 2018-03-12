@@ -54,7 +54,7 @@ public class DockerContainer implements IDockerContainer {
 		this.sizeRootFs = container.sizeRootFs();
 		this.ports = new ArrayList<>();
 		for (Container.PortMapping port : container.ports()) {
-			final DockerPortMapping portMapping = new DockerPortMapping(this,
+			final DockerPortMapping portMapping = new DockerPortMapping(
 					port.getPrivatePort(), port.getPublicPort(), port.getType(),
 					port.getIp());
 			ports.add(portMapping);

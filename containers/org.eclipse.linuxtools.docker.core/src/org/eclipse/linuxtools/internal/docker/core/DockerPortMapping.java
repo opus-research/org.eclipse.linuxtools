@@ -14,6 +14,9 @@ package org.eclipse.linuxtools.internal.docker.core;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 import org.eclipse.linuxtools.docker.core.IDockerPortMapping;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Port mapping for {@link IDockerContainer}
  * @author xcoulon
@@ -29,13 +32,8 @@ public class DockerPortMapping implements IDockerPortMapping {
 
 	private final String ip;
 
-	private final IDockerContainer container;
-
 	/**
 	 * Full constructor
-	 * 
-	 * @param container
-	 *            the parent container
 	 * 
 	 * @param privatePort
 	 *            private port
@@ -46,10 +44,8 @@ public class DockerPortMapping implements IDockerPortMapping {
 	 * @param ip
 	 *            of port
 	 */
-	public DockerPortMapping(final IDockerContainer container,
-			final int privatePort, final int publicPort,
-			final String type, final String ip) {
-		this.container = container;
+	@JsonCreator
+	public DockerPortMapping(@JsonProperty("privatePort") int privatePort, @JsonProperty("publicPort") int publicPort, @JsonProperty("type") String type, @JsonProperty("ip") String ip) {
 		this.privatePort = privatePort;
 		this.publicPort = publicPort;
 		this.type = type;
@@ -57,23 +53,18 @@ public class DockerPortMapping implements IDockerPortMapping {
 	}
 
 	@Override
-	public IDockerContainer getContainer() {
-		return this.container;
-	}
-
-	@Override
 	public int getPrivatePort() {
-		return this.privatePort;
+		return privatePort;
 	}
 
 	@Override
 	public int getPublicPort() {
-		return this.publicPort;
+		return publicPort;
 	}
 
 	@Override
 	public String getType() {
-		return this.type;
+		return type;
 	}
 
 	@Override
@@ -118,4 +109,12 @@ public class DockerPortMapping implements IDockerPortMapping {
 		return true;
 	}
 
+	@Override
+	public int compareTo(final IDockerPortMapping other) {
+		return other.getPublicPort() - this.publicPort;
+	}
+	
+	
+	
+	
 }
