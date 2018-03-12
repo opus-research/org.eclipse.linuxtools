@@ -38,7 +38,7 @@ public class ImageRemovePage extends WizardPage {
 
 	private Text nameText;
 
-	private List<String> images = new ArrayList<>();
+	private List<String> images = new ArrayList<String>();
 
 	public ImageRemovePage() {
 		super(WizardMessages.getString(NAME));
@@ -65,7 +65,7 @@ public class ImageRemovePage extends WizardPage {
 		boolean error = false;
 
 		String nameField = nameText.getText().trim();
-		ArrayList<String> validNames = new ArrayList<>();
+		ArrayList<String> validNames = new ArrayList<String>();
 
 		if (nameField.length() == 0) {
 			setErrorMessage(WizardMessages.getString(NAME_EMPTY_RULE));

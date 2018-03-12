@@ -64,8 +64,6 @@ public class HttpHijackWorkaround {
 
 		if (uri.startsWith("unix:")) {
 			list.add(new String[] { "sun.nio.ch.ChannelInputStream", "ch" });
-		} else if (uri.startsWith("https:")) {
-			list.add(new String[] { "sun.security.ssl.AppInputStream", "c" });
 		} else {
 			list.add(new String[] { "java.net.SocketInputStream", "socket" });
 		}
@@ -86,7 +84,7 @@ public class HttpHijackWorkaround {
 	 * access to the underlying InputStream but better wait and see what
 	 * happens with the HTTP Hijacking situation.
 	 */
-	public static InputStream getInputStream(LogStream stream) {
+	public static InputStream getInputStream(LogStream stream) throws Exception {
 		final String[] fields = new String[] { "reader", "stream" };
 		final String[] declared = new String[] { LogStream.class.getName(), LogReader.class.getName()};
 
