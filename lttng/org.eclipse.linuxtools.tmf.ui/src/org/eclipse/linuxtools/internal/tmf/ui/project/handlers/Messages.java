@@ -35,10 +35,6 @@ public class Messages extends NLS {
     public static String DeleteFolderHandler_Message;
     public static String DeleteFolderHandler_Error;
 
-    public static String ClearDialog_Title;
-    public static String DeleteFolderHandlerClear_Message;
-    public static String DeleteFolderHandlerClear_Error;
-
     public static String SelectTraceTypeHandler_ErrorSelectingTrace;
     public static String SelectTraceTypeHandler_Title;
     public static String SelectTraceTypeHandler_TraceFailedValidation;
