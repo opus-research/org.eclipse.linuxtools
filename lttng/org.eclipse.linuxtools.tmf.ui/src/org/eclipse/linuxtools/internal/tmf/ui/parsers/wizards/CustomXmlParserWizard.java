@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -15,7 +15,7 @@ package org.eclipse.linuxtools.internal.tmf.ui.parsers.wizards;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.linuxtools.internal.tmf.ui.parsers.custom.CustomXmlTraceDefinition;
+import org.eclipse.linuxtools.tmf.core.parsers.custom.CustomXmlTraceDefinition;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
@@ -30,6 +30,7 @@ public class CustomXmlParserWizard extends Wizard implements INewWizard {
     CustomXmlParserOutputWizardPage outputPage;
     private ISelection selection;
     CustomXmlTraceDefinition definition;
+    String initialDefinitionName;
 
     /**
      * Default constructor
@@ -47,13 +48,14 @@ public class CustomXmlParserWizard extends Wizard implements INewWizard {
     public CustomXmlParserWizard(CustomXmlTraceDefinition definition) {
         super();
         this.definition = definition;
+        this.initialDefinitionName = definition.definitionName;
     }
 
     @Override
     public boolean performFinish() {
         CustomXmlTraceDefinition def = outputPage.getDefinition();
-        if (definition != null && !definition.definitionName.equals(def.definitionName)) {
-            CustomXmlTraceDefinition.delete(definition.definitionName);
+        if (definition != null && !initialDefinitionName.equals(def.definitionName)) {
+            CustomXmlTraceDefinition.delete(initialDefinitionName);
         }
         def.save();
         return true;

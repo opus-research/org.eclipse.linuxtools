@@ -16,11 +16,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.window.Window;
+import org.eclipse.linuxtools.dataviewers.STDataViewersActivator;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersCSVExporter;
-import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
 import org.eclipse.linuxtools.dataviewers.dialogs.STDataViewersExportToCSVDialog;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * This action export the STViewers data to CSV format file
@@ -44,27 +45,22 @@ public class STExportToCSVAction extends Action {
      *            the stViewer to export
      */
     public STExportToCSVAction(AbstractSTViewer stViewer) {
-		super(STDataViewersMessages.exportToCSVAction_title,
-				STDataViewersImages
-						.getImageDescriptor(STDataViewersImages.IMG_EXPORT));
+        super(STDataViewersMessages.exportToCSVAction_title,
+        		AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
+        				"icons/export.gif")); //$NON-NLS-1$
 
-		this.stViewer = stViewer;
-		this.exporter = new STDataViewersCSVExporter(stViewer);
+        this.stViewer = stViewer;
+        this.exporter = new STDataViewersCSVExporter(stViewer);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.action.Action#run()
-     */
     @Override
-	public void run() {
+    public void run() {
         STDataViewersExportToCSVDialog dialog = new STDataViewersExportToCSVDialog(stViewer.getViewer().getControl()
                 .getShell(), exporter);
         if (dialog.open() == Window.OK) {
             Job exportToCSVJob = new Job("Export to CSV") {
                 @Override
-				public IStatus run(IProgressMonitor monitor) {
+                public IStatus run(IProgressMonitor monitor) {
                     exporter.export(monitor);
                     return Status.OK_STATUS;
                 }

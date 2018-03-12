@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson
+ * Copyright (c) 2011, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,9 @@
  *
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
+ *   Patrick Tasse - Add support for folder elements
+ *   Marc-Andre Laperle - Preserve folder structure on import
+ *   Bernd Hufmann - Extract ImportTraceWizard messages
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.wizards;
@@ -49,8 +52,7 @@ public class Messages extends NLS {
      */
     public static String SelectTracesWizardPage_Description;
     /**
-     * The error message when no name was entered in a dialog box (new trace or
-     * experiment dialog)
+     * The error message when no name was entered in a dialog box (new trace or experiment dialog)
      */
     public static String Dialog_EmptyNameError;
     /**
@@ -113,6 +115,31 @@ public class Messages extends NLS {
      * The label of the field for entering the new trace name.
      */
     public static String CopyTraceDialog_TraceNewName;
+    /**
+     * The title of the new folder dialog.
+     * @since 3.0
+     */
+    public static String NewFolderDialog_DialogTitle;
+    /**
+     * The label of the new folder name field.
+     * @since 3.0
+     */
+    public static String NewFolderDialog_FolderName;
+    /**
+     * The title of the rename folder dialog.
+     * @since 3.0
+     */
+    public static String RenameFolderDialog_DialogTitle;
+    /**
+     * The label of the field of the current folder name.
+     * @since 3.0
+     */
+    public static String RenameFolderDialog_FolderName;
+    /**
+     * The label of the field for entering the new folder name.
+     * @since 3.0
+     */
+    public static String RenameFolderDialog_FolderNewName;
 
     static {
         // initialize resource bundle

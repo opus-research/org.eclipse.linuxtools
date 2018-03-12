@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -16,18 +16,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.ui.project.model.ITmfProjectModelElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfAnalysisElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
+import org.eclipse.linuxtools.tmf.ui.tests.shared.ProjectModelTestData;
 import org.eclipse.linuxtools.tmf.ui.tests.stubs.analysis.TestAnalysisUi;
 import org.junit.After;
 import org.junit.Before;
@@ -49,7 +48,6 @@ public class ProjectModelAnalysisTest {
      */
     @Before
     public void setUp() {
-        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
         try {
             fixture = ProjectModelTestData.getFilledProject();
         } catch (CoreException e) {
@@ -110,10 +108,6 @@ public class ProjectModelAnalysisTest {
     public void testPopulate() {
         TmfTraceElement trace = getTraceElement();
 
-        final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-        // force the model to be populated
-        ncp.getChildren(fixture);
-
         /* Make sure the analysis list is not empty */
         List<ITmfProjectModelElement> analysisList = trace.getChildren();
         assertFalse(analysisList.isEmpty());
@@ -152,17 +146,12 @@ public class ProjectModelAnalysisTest {
         traceElement.closeEditors();
         analysis.activateParent();
 
-        ITmfTrace trace = null;
-        int cnt = 0;
-
-        /* Give some time to the trace to open */
-        while ((trace == null) && (cnt++ < 10)) {
-
-            ProjectModelTestData.delayThread(500);
-
-            /* Get the analysis module associated with the element */
-            trace = traceElement.getTrace();
+        try {
+            ProjectModelTestData.delayUntilTraceOpened(traceElement);
+        } catch (TimeoutException e) {
+            fail("The analysis parent did not open in a reasonable time");
         }
+        ITmfTrace trace = traceElement.getTrace();
 
         assertNotNull(trace);
         TestAnalysisUi module = (TestAnalysisUi) trace.getAnalysisModule(analysis.getAnalysisId());

@@ -16,26 +16,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
-import org.eclipse.linuxtools.ctf.core.event.types.ArrayDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.Definition;
-import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
+import org.eclipse.linuxtools.ctf.core.event.types.AbstractArrayDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.EnumDefinition;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDefinition;
-import org.eclipse.linuxtools.ctf.core.event.types.SequenceDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.SequenceDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.VariantDefinition;
+import org.eclipse.linuxtools.ctf.core.tests.io.Util;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
+import org.eclipse.linuxtools.internal.ctf.core.event.types.SequenceDeclaration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,29 +46,32 @@ import org.junit.Test;
  */
 public class StructDefinitionTest {
 
-    private static final String TEST_STRUCT_ID = "testStruct";
-    private static final String ENUM_2 = "y";
-    private static final String ENUM_1 = "x";
-    private static final String TAG_ID = "Tag";
-    private static final String INT_ID = "_id";
-    private static final String STRING_ID = "_args";
-    private static final String ENUM_ID = "_enumArgs";
-    private static final String SEQUENCE_ID = "_seq";
-    private static final String LENGTH_SEQ = "_len";
+    private static final @NonNull String TEST_STRUCT_ID = "testStruct";
+    private static final @NonNull String ENUM_2 = "y";
+    private static final @NonNull String ENUM_1 = "x";
+    private static final @NonNull String TAG_ID = "Tag";
+    private static final @NonNull String INT_ID = "_id";
+    private static final @NonNull String STRING_ID = "_args";
+    private static final @NonNull String ENUM_ID = "_enumArgs";
+    private static final @NonNull String SEQUENCE_ID = "_seq";
+    private static final @NonNull String LENGTH_SEQ = "_len";
+    private static final @NonNull String VAR_FIELD_NAME = "SomeVariant";
 
     private StructDefinition fixture;
     private StructDefinition emptyStruct;
     private StructDefinition simpleStruct;
-    private static final String VAR_FIELD_NAME = "SomeVariant";
 
     /**
      * Perform pre-test initialization.
+     *
+     * @throws CTFReaderException
+     *             won't happen
      */
     @Before
-    public void setUp() {
+    public void setUp() throws CTFReaderException {
         StructDeclaration sDec = new StructDeclaration(12);
-        IntegerDeclaration id = new IntegerDeclaration(32, false, 32, ByteOrder.BIG_ENDIAN, Encoding.NONE, null, 8);
-        IntegerDeclaration lenDec = new IntegerDeclaration(8, false, 8, ByteOrder.BIG_ENDIAN, Encoding.NONE, null, 8);
+        IntegerDeclaration id = IntegerDeclaration.INT_32B_DECL;
+        IntegerDeclaration lenDec = IntegerDeclaration.UINT_8_DECL;
         StringDeclaration sd = new StringDeclaration();
         EnumDeclaration ed = new EnumDeclaration(id);
         SequenceDeclaration seqDec = new SequenceDeclaration(LENGTH_SEQ, id);
@@ -88,20 +89,25 @@ public class StructDefinitionTest {
         sDec.addField(LENGTH_SEQ, lenDec);
         sDec.addField(SEQUENCE_ID, seqDec);
         sDec.addField(VAR_FIELD_NAME, varDec);
-        fixture = sDec.createDefinition(null, TEST_STRUCT_ID);
-        EnumDefinition eDef = tagDec.createDefinition(fixture, TAG_ID);
-        VariantDefinition vd = varDec.createDefinition(fixture,VAR_FIELD_NAME );
-        vd.setTagDefinition(eDef);
-
+        byte bytes[] = new byte[100];
+        bytes[4] = 1;
+        bytes[8] = 2;
+        bytes[13] = 3;
+        BitBuffer bb = new BitBuffer(Util.testMemory(ByteBuffer.wrap(bytes)));
+        fixture = sDec.createDefinition(null, TEST_STRUCT_ID, bb);
+        EnumDefinition eDef = tagDec.createDefinition(fixture, TAG_ID, bb);
+        assertNotNull(eDef);
+        VariantDefinition vd = varDec.createDefinition(fixture, VAR_FIELD_NAME, bb);
+        assertNotNull(vd);
         // Create an empty struct
         StructDeclaration esDec = new StructDeclaration(32);
-        emptyStruct = esDec.createDefinition(null, TEST_STRUCT_ID);
+        emptyStruct = esDec.createDefinition(null, TEST_STRUCT_ID, bb);
 
         // Create a simple struct with two items
         StructDeclaration ssDec = new StructDeclaration(32);
         ssDec.addField(INT_ID, id);
         ssDec.addField(STRING_ID, sd);
-        simpleStruct = ssDec.createDefinition(null, TEST_STRUCT_ID);
+        simpleStruct = ssDec.createDefinition(null, TEST_STRUCT_ID, bb);
     }
 
     /**
@@ -118,7 +124,7 @@ public class StructDefinitionTest {
      */
     @Test
     public void testGetDefinitions_1() {
-        Map<String, Definition> result = fixture.getDefinitions();
+        IDefinition result = fixture.getDefinition("_id");
         assertNotNull(result);
     }
 
@@ -128,8 +134,7 @@ public class StructDefinitionTest {
     @Test
     public void testLookupArray() {
         String name = INT_ID;
-        ArrayDefinition result = fixture.lookupArray(name);
-
+        AbstractArrayDefinition result = fixture.lookupArrayDefinition(name);
         assertNull(result);
     }
 
@@ -139,7 +144,7 @@ public class StructDefinitionTest {
     @Test
     public void testLookupDefinition() {
         String lookupPath = "args";
-        Definition result = fixture.lookupDefinition(lookupPath);
+        IDefinition result = fixture.lookupDefinition(lookupPath);
 
         assertNotNull(result);
     }
@@ -178,9 +183,9 @@ public class StructDefinitionTest {
      * Run the SequenceDefinition lookupSequence(String) method test.
      */
     @Test
-    public void testLookupSequence() {
+    public void testLookupFixedStringDefinition() {
         String name = SEQUENCE_ID;
-        SequenceDefinition result = fixture.lookupSequence(name);
+        AbstractArrayDefinition result = fixture.lookupArrayDefinition(name);
         assertNotNull(result);
     }
 
@@ -215,19 +220,6 @@ public class StructDefinitionTest {
         VariantDefinition result = fixture.lookupVariant(name);
 
         assertNotNull(result);
-    }
-
-    /**
-     * Run the void read(BitBuffer) method test.
-     * @throws CTFReaderException error
-     */
-    @Test
-    public void testRead_() throws CTFReaderException {
-        ByteBuffer bb = ByteBuffer.allocateDirect(128);
-        bb.put((byte) 20);
-        BitBuffer input = new BitBuffer(bb);
-
-        fixture.read(input);
     }
 
     /**

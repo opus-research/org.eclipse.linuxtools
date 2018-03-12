@@ -21,6 +21,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ActivatorTest.class,
+    org.eclipse.linuxtools.lttng2.ust.core.tests.analysis.memory.AllTests.class,
     org.eclipse.linuxtools.lttng2.ust.core.tests.trace.callstack.AllTests.class
 })
 public class AllTests { }

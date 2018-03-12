@@ -72,7 +72,7 @@ public class TmfEventsCache {
     private ITmfTrace fTrace;
     private final TmfEventsTable fTable;
     private ITmfFilter fFilter;
-    private final List<Integer> fFilterIndex = new ArrayList<Integer>(); // contains the event rank at each 'cache size' filtered events
+    private final List<Integer> fFilterIndex = new ArrayList<>(); // contains the event rank at each 'cache size' filtered events
 
     /**
      * Constructor for the event cache
@@ -349,19 +349,17 @@ public class TmfEventsCache {
                             return;
                         }
                         super.handleData(event);
-                        if (event != null) {
-                            if (((fFilter == null) || fFilter.matches(event)) && (skipCount-- <= 0)) {
-                                synchronized (TmfEventsCache.this) {
-                                    if (monitor.isCanceled()) {
-                                        return;
-                                    }
-                                    fCache[count] = new CachedEvent(event, rank);
-                                    count++;
-                                    fCacheEndIndex++;
+                        if (((fFilter == null) || fFilter.matches(event)) && (skipCount-- <= 0)) {
+                            synchronized (TmfEventsCache.this) {
+                                if (monitor.isCanceled()) {
+                                    return;
                                 }
-                                if (fFilter != null) {
-                                    fTable.cacheUpdated(false);
-                                }
+                                fCache[count] = new CachedEvent(event, rank);
+                                count++;
+                                fCacheEndIndex++;
+                            }
+                            if (fFilter != null) {
+                                fTable.cacheUpdated(false);
                             }
                         }
                         if (count >= fCache.length) {

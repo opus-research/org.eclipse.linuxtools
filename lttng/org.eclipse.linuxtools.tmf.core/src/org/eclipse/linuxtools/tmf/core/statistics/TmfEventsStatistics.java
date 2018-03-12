@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -23,9 +23,6 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfLostEvent;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignal;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalManager;
-import org.eclipse.linuxtools.tmf.core.signal.TmfStatsUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -69,70 +66,6 @@ public class TmfEventsStatistics implements ITmfStatistics {
     }
 
     @Override
-    public void updateStats(final boolean isGlobal, long start, long end) {
-        cancelOngoingRequests();
-
-        /*
-         * Prepare and send the event requests. This needs to be done in the
-         * same thread, since it will be run by TmfStatisticsViewer's signal
-         * handlers, to ensure they get correctly coalesced.
-         */
-        ITmfTimestamp startTS = new TmfTimestamp(start, SCALE);
-        ITmfTimestamp endTS = new TmfTimestamp(end, SCALE);
-        TmfTimeRange range = isGlobal ? TmfTimeRange.ETERNITY : new TmfTimeRange(startTS, endTS);
-        final StatsTotalRequest totalReq = new StatsTotalRequest(trace, range);
-        final StatsPerTypeRequest perTypeReq = new StatsPerTypeRequest(trace, range);
-
-        /*
-         * Only allow one time-range request at a time (there should be only one
-         * global request at the beginning anyway, no need to track those).
-         */
-        if (!isGlobal) {
-            this.totalRequest = totalReq;
-            this.perTypeRequest = perTypeReq;
-        }
-
-        trace.sendRequest(totalReq);
-        trace.sendRequest(perTypeReq);
-
-        /*
-         * This thread can now return. Start a new thread that will wait until
-         * the request are done and will then send the results.
-         */
-        Thread statsThread = new Thread("Statistics update") { //$NON-NLS-1$
-            @Override
-            public void run() {
-                /* Wait for both requests to complete */
-                try {
-                    totalReq.waitForCompletion();
-                    perTypeReq.waitForCompletion();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                /*
-                 * If the request was cancelled, this means a newer one was
-                 * sent, discard the current one and return without sending
-                 * the signal.
-                 */
-                if (totalReq.isCancelled() || perTypeReq.isCancelled()) {
-                    return;
-                }
-
-                /* If it completed successfully, retrieve the results. */
-                long total = totalReq.getResult();
-                Map<String, Long> map = perTypeReq.getResults();
-
-                /* Send the signal to notify the stats viewer to update its display. */
-                TmfSignal sig = new TmfStatsUpdatedSignal(this, trace, isGlobal, total, map);
-                TmfSignalManager.dispatchSignal(sig);
-            }
-        };
-        statsThread.start();
-        return;
-    }
-
-    @Override
     public List<Long> histogramQuery(long start, long end, int nb) {
         final long[] borders = new long[nb];
         final long increment = (end - start) / nb;
@@ -146,7 +79,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         HistogramQueryRequest req = new HistogramQueryRequest(borders, end);
         sendAndWait(req);
 
-        List<Long> results = new LinkedList<Long>(req.getResults());
+        List<Long> results = new LinkedList<>(req.getResults());
         return results;
 
     }
@@ -253,7 +186,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         public StatsPerTypeRequest(ITmfTrace trace, TmfTimeRange range) {
             super(trace.getEventType(), range, 0, ITmfEventRequest.ALL_DATA,
                     ITmfEventRequest.ExecutionType.BACKGROUND);
-            this.stats = new HashMap<String, Long>();
+            this.stats = new HashMap<>();
         }
 
         public Map<String, Long> getResults() {
@@ -263,7 +196,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
+            if (event.getTrace() == trace) {
                 String eventType = event.getType().getName();
                 /*
                  * Special handling for lost events: instead of counting just
@@ -320,7 +253,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
                     ITmfEventRequest.ExecutionType.BACKGROUND);
 
             /* Prepare the results map, with all counts at 0 */
-            results = new TreeMap<Long, Long>();
+            results = new TreeMap<>();
             for (long border : borders) {
                 results.put(border, 0L);
             }
@@ -333,7 +266,7 @@ public class TmfEventsStatistics implements ITmfStatistics {
         @Override
         public void handleData(ITmfEvent event) {
             super.handleData(event);
-            if ((event != null)  && (event.getTrace() == trace)) {
+            if (event.getTrace() == trace) {
                 long ts = event.getTimestamp().normalize(0, SCALE).getValue();
                 Long key = results.floorKey(ts);
                 if (key != null) {

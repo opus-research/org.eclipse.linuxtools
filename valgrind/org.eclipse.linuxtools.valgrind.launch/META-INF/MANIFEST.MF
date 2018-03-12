@@ -2,12 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name.0
 Bundle-SymbolicName: org.eclipse.linuxtools.valgrind.launch;singleton:=true
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 3.0.0.qualifier
 Bundle-Activator: org.eclipse.linuxtools.internal.valgrind.launch.ValgrindLaunchPlugin
 Bundle-Vendor: %Bundle-Vendor.0
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.cdt.debug.core,
@@ -28,6 +28,13 @@ Import-Package: org.eclipse.cdt.core.model,
  org.eclipse.linuxtools.valgrind.ui,
  org.eclipse.ui.model,
  org.eclipse.ui.views.navigator
-Export-Package: org.eclipse.linuxtools.internal.valgrind.launch,
- org.eclipse.linuxtools.valgrind.launch
+Export-Package: org.eclipse.linuxtools.internal.valgrind.launch; x-fri
+ ends:="org.eclipse.linuxtools.valgrind.cachegrind,  org.eclipse.linux
+ tools.valgrind.helgrind,  org.eclipse.linuxtools.valgrind.massif,  or
+ g.eclipse.linuxtools.valgrind.memcheck,  org.eclipse.linuxtools.valgr
+ ind.launch,  org.eclipse.linuxtools.valgrind.tests,  org.eclipse.linu
+ xtools.valgrind.cachegrind.tests,  org.eclipse.linuxtools.valgrind.he
+ lgrind.tests,  org.eclipse.linuxtools.valgrind.massif.tests,  org.ecl
+ ipse.linuxtools.valgrind.memcheck.tests",org.eclipse.linuxtools.valgr
+ ind.launch
 Bundle-Localization: plugin

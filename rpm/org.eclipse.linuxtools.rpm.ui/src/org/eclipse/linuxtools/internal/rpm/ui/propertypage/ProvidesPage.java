@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004-2009 Red Hat, Inc.
+ * Copyright (c) 2004, 2014 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,15 +11,12 @@
 package org.eclipse.linuxtools.internal.rpm.ui.propertypage;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.linuxtools.rpm.core.utils.RPMQuery;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.statushandlers.StatusAdapter;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
  * Property page displaying provides as fetched by RPM headers.
@@ -27,33 +24,27 @@ import org.eclipse.ui.statushandlers.StatusManager;
  */
 public class ProvidesPage extends AbstractRPMPropertyPage {
 
-	private static final int QL_FIELD_WIDTH = 80;
+    private static final int QL_FIELD_WIDTH = 80;
 
-	private static final int QL_FIELD_HEIGHT = 40;
+    private static final int QL_FIELD_HEIGHT = 40;
 
-	@Override
-	protected void addFields(Composite composite) {
-		// RPM labels and text fields setup
+    @Override
+    protected void addFields(Composite composite) {
+        // RPM labels and text fields setup
 
-		Label rpmDescriptionLabel = new Label(composite, SWT.NONE);
-		rpmDescriptionLabel.setText(Messages
-				.getString("ProvidesPage.Provides")); //$NON-NLS-1$
-		Text rpmQlText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY
-				| SWT.V_SCROLL | SWT.WRAP);
-		GridData gdQL = new GridData();
-		gdQL.widthHint = convertWidthInCharsToPixels(QL_FIELD_WIDTH);
-		gdQL.heightHint = convertWidthInCharsToPixels(QL_FIELD_HEIGHT);
-		rpmQlText.setLayoutData(gdQL);
+        Label rpmDescriptionLabel = new Label(composite, SWT.NONE);
+        rpmDescriptionLabel
+                .setText(Messages.getString("ProvidesPage.Provides")); //$NON-NLS-1$
+        Text rpmQlText = new Text(composite, SWT.MULTI | SWT.BORDER
+                | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
+        GridData gdQL = new GridData();
+        gdQL.widthHint = convertWidthInCharsToPixels(QL_FIELD_WIDTH);
+        gdQL.heightHint = convertWidthInCharsToPixels(QL_FIELD_HEIGHT);
+        rpmQlText.setLayoutData(gdQL);
 
-		// Populate RPM text fields
-		try {
-			String rpm_ql = RPMQuery.getProvides((IFile) getElement());
-			rpmQlText.setText(rpm_ql);
-		} catch (CoreException e) {
-			StatusManager.getManager().handle(new StatusAdapter(e.getStatus()),
-					StatusManager.LOG | StatusManager.SHOW);
-		}
-
-	}
+        // Populate RPM text fields
+        String rpm_ql = RPMQuery.getProvides((IFile) getElement());
+        rpmQlText.setText(rpm_ql);
+    }
 
 }

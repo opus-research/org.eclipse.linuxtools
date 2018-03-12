@@ -18,15 +18,15 @@ import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpEventMatching;
 import org.eclipse.linuxtools.lttng2.kernel.core.event.matching.TcpLttngEventMatching;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventMatching;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
 import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.ctf.core.tests.shared.CtfTmfTestTrace;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,14 +52,12 @@ public class ExperimentSyncTest {
     public void setUp() {
         assumeTrue(CtfTmfTestTrace.SYNC_SRC.exists());
         assumeTrue(CtfTmfTestTrace.SYNC_DEST.exists());
-        CtfTmfTrace trace1 = CtfTmfTestTrace.SYNC_SRC.getTrace();
-        CtfTmfTrace trace2 = CtfTmfTestTrace.SYNC_DEST.getTrace();
 
         fTraces = new CtfTmfTrace[2];
-        fTraces[0] = trace1;
-        fTraces[1] = trace2;
+        fTraces[0] = CtfTmfTestTrace.SYNC_SRC.getTrace();
+        fTraces[1] = CtfTmfTestTrace.SYNC_DEST.getTrace();
 
-        fExperiment = new TmfExperiment(trace1.getEventType(), EXPERIMENT, fTraces, BLOCK_SIZE);
+        fExperiment = new TmfExperiment(fTraces[0].getEventType(), EXPERIMENT, fTraces, BLOCK_SIZE);
 
         TmfEventMatching.registerMatchObject(new TcpEventMatching());
         TmfEventMatching.registerMatchObject(new TcpLttngEventMatching());
@@ -72,8 +70,8 @@ public class ExperimentSyncTest {
     public void cleanUp() {
         fTraces[0].setTimestampTransform(TmfTimestampTransform.IDENTITY);
         fTraces[1].setTimestampTransform(TmfTimestampTransform.IDENTITY);
-        CtfTmfTestTrace.SYNC_SRC.dispose();
-        CtfTmfTestTrace.SYNC_DEST.dispose();
+        fTraces[0].dispose();
+        fTraces[1].dispose();
     }
 
     /**
@@ -92,11 +90,11 @@ public class ExperimentSyncTest {
             fTraces[0].setTimestampTransform(tt1);
             fTraces[1].setTimestampTransform(tt2);
 
-            assertEquals("TmfTimestampTransform [ IDENTITY ]", tt2.toString());
+            assertEquals(tt2, TmfTimestampTransform.IDENTITY);
             assertEquals("TmfTimestampLinear [ alpha = 0.9999413783703139011056845831168394, beta = 79796507913179.33347660124688298171 ]", tt1.toString());
 
-            assertEquals(syncAlgo.getTimestampTransform(fTraces[0].getName()),fTraces[0].getTimestampTransform());
-            assertEquals(syncAlgo.getTimestampTransform(fTraces[1].getName()),fTraces[1].getTimestampTransform());
+            assertEquals(syncAlgo.getTimestampTransform(fTraces[0].getHostId()),fTraces[0].getTimestampTransform());
+            assertEquals(syncAlgo.getTimestampTransform(fTraces[1].getHostId()),fTraces[1].getTimestampTransform());
 
         } catch (TmfTraceException e) {
             fail("Exception thrown in experiment synchronization " + e.getMessage());

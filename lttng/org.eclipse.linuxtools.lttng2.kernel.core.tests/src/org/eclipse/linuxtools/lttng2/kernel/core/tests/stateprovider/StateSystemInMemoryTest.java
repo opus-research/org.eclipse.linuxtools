@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,14 +8,23 @@
  *
  * Contributors:
  *   Alexandre Montplaisir - Initial API and implementation
+ *   Bernd Hufmann - Use state system analysis module instead of factory
  ******************************************************************************/
 
 package org.eclipse.linuxtools.lttng2.kernel.core.tests.stateprovider;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import org.eclipse.linuxtools.internal.lttng2.kernel.core.stateprovider.LttngKernelStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
+import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
+import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
+import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemAnalysisModule;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
@@ -25,13 +34,60 @@ import org.junit.BeforeClass;
  */
 public class StateSystemInMemoryTest extends StateSystemTest {
 
+    private static TestLttngKernelAnalysisModule module;
+
     /**
      * Initialization
      */
     @BeforeClass
     public static void initialize() {
         assumeTrue(testTrace.exists());
-        input = new LttngKernelStateProvider(testTrace.getTrace());
-        ssq = TmfStateSystemFactory.newInMemHistory(input, true);
+
+        module = new TestLttngKernelAnalysisModule();
+        try {
+            module.setTrace(testTrace.getTrace());
+        } catch (TmfAnalysisException e) {
+            fail();
+        }
+        module.schedule();
+        assertTrue(module.waitForCompletion());
+        ssq = module.getStateSystem();
+        assertNotNull(ssq);
+    }
+
+    /**
+     * Class cleanup
+     */
+    @AfterClass
+    public static void cleanupClass() {
+        module.close();
+    }
+
+    private static class TestLttngKernelAnalysisModule extends TmfStateSystemAnalysisModule {
+
+        /**
+         * Constructor adding the views to the analysis
+         */
+        public TestLttngKernelAnalysisModule() {
+            super();
+        }
+
+        @Override
+        public void setTrace(ITmfTrace trace) throws TmfAnalysisException {
+            if (!(trace instanceof CtfTmfTrace)) {
+                throw new IllegalStateException("TestLttngKernelAnalysisModule: trace should be of type CtfTmfTrace"); //$NON-NLS-1$
+            }
+            super.setTrace(trace);
+        }
+
+        @Override
+        protected ITmfStateProvider createStateProvider() {
+            return new LttngKernelStateProvider(getTrace());
+        }
+
+        @Override
+        protected StateSystemBackendType getBackendType() {
+            return StateSystemBackendType.INMEM;
+        }
     }
 }

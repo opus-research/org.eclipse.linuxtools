@@ -20,18 +20,23 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    org.eclipse.linuxtools.btf.core.tests.AllTests.class,
     org.eclipse.linuxtools.ctf.core.tests.AllCtfCoreTests.class,
     org.eclipse.linuxtools.ctf.parser.tests.AllCtfParserTests.class,
     org.eclipse.linuxtools.gdbtrace.core.tests.AllGdbTraceCoreTests.class,
     org.eclipse.linuxtools.gdbtrace.ui.tests.AllGdbTraceUITests.class,
-    org.eclipse.linuxtools.lttng2.core.tests.AllTests.class,
-    org.eclipse.linuxtools.lttng2.ui.tests.AllTests.class,
+    org.eclipse.linuxtools.lttng2.control.core.tests.AllTests.class,
+    org.eclipse.linuxtools.lttng2.control.ui.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.kernel.core.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.kernel.ui.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.ust.core.tests.AllTests.class,
     org.eclipse.linuxtools.lttng2.ust.ui.tests.AllTests.class,
+    org.eclipse.linuxtools.statesystem.core.tests.AllTests.class,
+    org.eclipse.linuxtools.tmf.analysis.xml.core.tests.AllAnalysisXmlCoreTests.class,
+    org.eclipse.linuxtools.tmf.analysis.xml.ui.tests.AllAnalysisXmlUiTests.class,
     org.eclipse.linuxtools.tmf.core.tests.AllTmfCoreTests.class,
     org.eclipse.linuxtools.tmf.ui.tests.AllTmfUITests.class,
+    org.eclipse.linuxtools.tmf.ctf.core.tests.AllTests.class
 })
 public class RunAllTests {
 

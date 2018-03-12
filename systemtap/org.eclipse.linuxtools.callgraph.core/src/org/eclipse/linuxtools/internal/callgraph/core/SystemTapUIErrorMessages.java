@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *     Red Hat - initial API and implementation
  *******************************************************************************/
@@ -24,39 +24,35 @@ import org.eclipse.ui.progress.UIJob;
  *
  */
 public class SystemTapUIErrorMessages extends UIJob {
-	private String title, message;
-	private static boolean active = true;
+    private String title, message;
+    private static boolean active = true;
 
-	public SystemTapUIErrorMessages(String name, String title, String message) {
-		super(name);
-		this.title = title;
-		this.message = message;
-	}
+    public SystemTapUIErrorMessages(String name, String title, String message) {
+        super(name);
+        this.title = title;
+        this.message = message;
+    }
 
-	@Override
-	public IStatus runInUIThread(IProgressMonitor monitor) {
-		if (!active) {
-			return Status.CANCEL_STATUS;
-		}
-		//Test that this job is running in the UI thread 
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		
-		if (window == null) {
-			return Status.CANCEL_STATUS; //Something is wrong!
-		}
-		
-		Shell sh = new Shell();
-	
-		MessageDialog.openError(sh, title, message);
-		return Status.OK_STATUS;
-	}
+    @Override
+    public IStatus runInUIThread(IProgressMonitor monitor) {
+        if (!active) {
+            return Status.CANCEL_STATUS;
+        }
+        //Test that this job is running in the UI thread
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
-	
-	public static boolean isActive() {
-		return active;
-	}
-	
-	public static void setActive(boolean val) {
-		active = val;
-	}
+        if (window == null) {
+            return Status.CANCEL_STATUS; //Something is wrong!
+        }
+
+        Shell sh = new Shell();
+
+        MessageDialog.openError(sh, title, message);
+        return Status.OK_STATUS;
+    }
+
+
+    public static void setActive(boolean val) {
+        active = val;
+    }
 }

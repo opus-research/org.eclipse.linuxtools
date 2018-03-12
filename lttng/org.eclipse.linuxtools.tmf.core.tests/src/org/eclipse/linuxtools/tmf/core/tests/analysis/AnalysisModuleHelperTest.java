@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013, 2014 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
+ *   Mathieu Rail - Added tests for getting a module's requirements
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.tests.analysis;
@@ -18,39 +19,47 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModule;
 import org.eclipse.linuxtools.tmf.core.analysis.IAnalysisModuleHelper;
 import org.eclipse.linuxtools.tmf.core.analysis.Messages;
 import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisManager;
-import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisModuleHelperCE;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
+import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisModuleHelperConfigElement;
+import org.eclipse.linuxtools.tmf.core.analysis.TmfAnalysisRequirement;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfAnalysisException;
-import org.eclipse.linuxtools.tmf.core.tests.shared.CtfTmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.tests.shared.TmfTestTrace;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis;
-import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestCtfAnalysis;
-import org.eclipse.linuxtools.tmf.tests.stubs.ctf.CtfTmfTraceStub;
+import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestAnalysis2;
+import org.eclipse.linuxtools.tmf.tests.stubs.analysis.TestRequirementAnalysis;
 import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub;
+import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub2;
+import org.eclipse.linuxtools.tmf.tests.stubs.trace.TmfTraceStub3;
 import org.eclipse.osgi.util.NLS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
- * Test suite for the {@link TmfAnalysisModuleHelperCE} class
+ * Test suite for the {@link TmfAnalysisModuleHelperConfigElement} class
  *
  * @author Geneviève Bastien
  */
 public class AnalysisModuleHelperTest {
 
     private IAnalysisModuleHelper fModule;
-    private IAnalysisModuleHelper fCtfModule;
+    private IAnalysisModuleHelper fModuleOther;
+    private IAnalysisModuleHelper fReqModule;
+    private ITmfTrace fTrace;
 
     /**
      * Gets the module helpers for 2 test modules
@@ -59,10 +68,14 @@ public class AnalysisModuleHelperTest {
     public void getModules() {
         fModule = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_PARAM);
         assertNotNull(fModule);
-        assertTrue(fModule instanceof TmfAnalysisModuleHelperCE);
-        fCtfModule = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_CTF);
-        assertNotNull(fCtfModule);
-        assertTrue(fCtfModule instanceof TmfAnalysisModuleHelperCE);
+        assertTrue(fModule instanceof TmfAnalysisModuleHelperConfigElement);
+        fModuleOther = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_SECOND);
+        assertNotNull(fModuleOther);
+        assertTrue(fModuleOther instanceof TmfAnalysisModuleHelperConfigElement);
+        fReqModule = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_REQ);
+        assertNotNull(fReqModule);
+        assertTrue(fReqModule instanceof TmfAnalysisModuleHelperConfigElement);
+        fTrace = TmfTestTrace.A_TEST_10K2.getTraceAsStub2();
     }
 
     /**
@@ -71,7 +84,7 @@ public class AnalysisModuleHelperTest {
     @After
     public void cleanupTraces() {
         TmfTestTrace.A_TEST_10K.dispose();
-        CtfTmfTestTrace.KERNEL.dispose();
+        fTrace.dispose();
     }
 
     /**
@@ -89,70 +102,66 @@ public class AnalysisModuleHelperTest {
         assertNotNull(helperbundle);
         assertEquals(thisbundle, helperbundle);
 
-        /* With ctf module */
-        assertEquals(AnalysisManagerTest.MODULE_CTF, fCtfModule.getId());
-        assertEquals("Test analysis ctf", fCtfModule.getName());
-        assertTrue(fCtfModule.isAutomatic());
+        /* With other module */
+        assertEquals(AnalysisManagerTest.MODULE_SECOND, fModuleOther.getId());
+        assertEquals("Test other analysis", fModuleOther.getName());
+        assertTrue(fModuleOther.isAutomatic());
     }
 
     /**
-     * Test the {@link TmfAnalysisModuleHelperCE#appliesToTraceType(Class)}
+     * Test the
+     * {@link TmfAnalysisModuleHelperConfigElement#appliesToTraceType(Class)}
      * method for the 2 modules
      */
     @Test
     public void testAppliesToTrace() {
-        /* non-ctf module */
+        /* stub module */
         assertFalse(fModule.appliesToTraceType(TmfTrace.class));
         assertTrue(fModule.appliesToTraceType(TmfTraceStub.class));
-        assertFalse(fModule.appliesToTraceType(CtfTmfTraceStub.class));
+        assertTrue(fModule.appliesToTraceType(TmfTraceStub2.class));
+        assertFalse(fModule.appliesToTraceType(TmfTraceStub3.class));
 
-        /* ctf module */
-        assertFalse(fCtfModule.appliesToTraceType(TmfTrace.class));
-        assertFalse(fCtfModule.appliesToTraceType(TmfTraceStub.class));
-        assertTrue(fCtfModule.appliesToTraceType(CtfTmfTraceStub.class));
+        /* stub module 2 */
+        assertFalse(fModuleOther.appliesToTraceType(TmfTrace.class));
+        assertFalse(fModuleOther.appliesToTraceType(TmfTraceStub.class));
+        assertTrue(fModuleOther.appliesToTraceType(TmfTraceStub2.class));
+        assertTrue(fModuleOther.appliesToTraceType(TmfTraceStub3.class));
     }
 
     /**
-     * Test the {@link TmfAnalysisModuleHelperCE#newModule(ITmfTrace)} method
+     * Test the
+     * {@link TmfAnalysisModuleHelperConfigElement#newModule(ITmfTrace)} method
      * for the 2 modules
      */
     @Test
     public void testNewModule() {
         /* Test analysis module with traceStub */
         Exception exception = null;
-        IAnalysisModule module = null;
-        try {
-            module = fModule.newModule(TmfTestTrace.A_TEST_10K.getTrace());
+        try (IAnalysisModule module = fModule.newModule(TmfTestTrace.A_TEST_10K.getTrace());) {
+            assertNotNull(module);
+            assertTrue(module instanceof TestAnalysis);
         } catch (TmfAnalysisException e) {
             exception = e;
         }
         assertNull(exception);
-        assertNotNull(module);
-        assertTrue(module instanceof TestAnalysis);
 
-        /* Test Analysis module with ctf trace, should return an exception */
-        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
-        CtfTmfTraceStub ctfTrace = (CtfTmfTraceStub) CtfTmfTestTrace.KERNEL.getTrace();
-        module = null;
-        try {
-            module = fModule.newModule(ctfTrace);
+        /* TestAnalysis2 module with trace, should return an exception */
+        try (IAnalysisModule module = fModuleOther.newModule(TmfTestTrace.A_TEST_10K.getTrace());) {
         } catch (TmfAnalysisException e) {
             exception = e;
         }
         assertNotNull(exception);
-        assertEquals(NLS.bind(Messages.TmfAnalysisModuleHelper_AnalysisDoesNotApply, fModule.getName()), exception.getMessage());
+        assertEquals(NLS.bind(Messages.TmfAnalysisModuleHelper_AnalysisDoesNotApply, fModuleOther.getName()), exception.getMessage());
 
-        /* Test analysis CTF module with ctf trace stub */
+        /* TestAnalysis2 module with a TraceStub2 */
         exception = null;
-        module = null;
-        try {
-            module = fCtfModule.newModule(ctfTrace);
+        try (IAnalysisModule module = fModuleOther.newModule(fTrace);) {
+            assertNotNull(module);
+            assertTrue(module instanceof TestAnalysis2);
         } catch (TmfAnalysisException e) {
             exception = e;
         }
         assertNull(exception);
-        assertNotNull(module);
-        assertTrue(module instanceof TestCtfAnalysis);
     }
 
     /**
@@ -160,8 +169,6 @@ public class AnalysisModuleHelperTest {
      */
     @Test
     public void testParameters() {
-        assumeTrue(CtfTmfTestTrace.KERNEL.exists());
-        CtfTmfTrace ctftrace = CtfTmfTestTrace.KERNEL.getTrace();
         ITmfTrace trace = TmfTestTrace.A_TEST_10K.getTrace();
 
         /*
@@ -169,48 +176,95 @@ public class AnalysisModuleHelperTest {
          * able to set the parameter
          */
         IAnalysisModuleHelper helper = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_PARAM);
-        IAnalysisModule module;
-        try {
-            module = helper.newModule(trace);
+        try (IAnalysisModule module = helper.newModule(trace);) {
+            assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
+            module.setParameter(TestAnalysis.PARAM_TEST, 1);
+            assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
+
         } catch (TmfAnalysisException e1) {
             fail(e1.getMessage());
             return;
         }
-
-        assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
-        module.setParameter(TestAnalysis.PARAM_TEST, 1);
-        assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
 
         /* This module has a parameter with default value */
         helper = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_PARAM_DEFAULT);
-        try {
-            module = helper.newModule(trace);
+        try (IAnalysisModule module = helper.newModule(trace);) {
+            assertEquals(3, module.getParameter(TestAnalysis.PARAM_TEST));
+            module.setParameter(TestAnalysis.PARAM_TEST, 1);
+            assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
+
         } catch (TmfAnalysisException e1) {
             fail(e1.getMessage());
             return;
         }
-        assertEquals(3, module.getParameter(TestAnalysis.PARAM_TEST));
-        module.setParameter(TestAnalysis.PARAM_TEST, 1);
-        assertEquals(1, module.getParameter(TestAnalysis.PARAM_TEST));
 
         /*
          * This module does not have a parameter so setting it should throw an
          * error
          */
-        helper = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_CTF);
-        try {
-            module = helper.newModule(ctftrace);
+        helper = TmfAnalysisManager.getAnalysisModule(AnalysisManagerTest.MODULE_SECOND);
+        Exception exception = null;
+        try (IAnalysisModule module = helper.newModule(fTrace);) {
+
+            assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
+
+            try {
+                module.setParameter(TestAnalysis.PARAM_TEST, 1);
+            } catch (RuntimeException e) {
+                exception = e;
+            }
         } catch (TmfAnalysisException e1) {
             fail(e1.getMessage());
             return;
         }
-        assertNull(module.getParameter(TestAnalysis.PARAM_TEST));
-        Exception exception = null;
-        try {
-            module.setParameter(TestAnalysis.PARAM_TEST, 1);
-        } catch (RuntimeException e) {
-            exception = e;
-        }
         assertNotNull(exception);
+    }
+
+    /**
+     * Test for the
+     * {@link TmfAnalysisModuleHelperConfigElement#getValidTraceTypes} method
+     */
+    @Test
+    public void testGetValidTraceTypes() {
+        Set<Class<? extends ITmfTrace>> expected = ImmutableSet.of((Class<? extends ITmfTrace>) TmfTraceStub.class, TmfTraceStub2.class, TmfTraceStub3.class);
+        Iterable<Class<? extends ITmfTrace>> traceTypes = fReqModule.getValidTraceTypes();
+        assertEquals(expected, traceTypes);
+    }
+
+    /**
+     * Test for the
+     * {@link TmfAnalysisModuleHelperConfigElement#getAnalysisRequirements}
+     * method
+     */
+    @Test
+    public void testGetRequirements() {
+        Iterable<TmfAnalysisRequirement> requirements = fReqModule.getAnalysisRequirements();
+        assertNotNull(requirements);
+
+        Map<String, TmfAnalysisRequirement> rMap = new HashMap<>();
+
+        for (TmfAnalysisRequirement req : requirements) {
+            assertFalse(rMap.containsKey(req.getType()));
+            rMap.put(req.getType(), req);
+        }
+        assertEquals(2, rMap.size());
+
+        /* Test if all types and values have been obtained */
+        TmfAnalysisRequirement req = rMap.get(TestRequirementAnalysis.EVENT_TYPE);
+        assertNotNull(req);
+
+        Set<String> values = req.getValues();
+        assertEquals(3, values.size());
+        assertTrue(values.contains(TestRequirementAnalysis.EXIT_SYSCALL));
+        assertTrue(values.contains(TestRequirementAnalysis.SCHED_SWITCH));
+        assertTrue(values.contains(TestRequirementAnalysis.SCHED_WAKEUP));
+
+        req = rMap.get(TestRequirementAnalysis.FIELD_TYPE);
+        assertNotNull(req);
+
+        values = req.getValues();
+        assertEquals(2, values.size());
+        assertTrue(values.contains(TestRequirementAnalysis.PID));
+        assertTrue(values.contains(TestRequirementAnalysis.TID));
     }
 }

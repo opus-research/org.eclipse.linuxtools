@@ -28,12 +28,6 @@ import org.eclipse.swt.graphics.Color;
  */
 public class CallsProfField extends AbstractSTDataViewersField implements IChartField {
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#compare(java.lang.Object,
-     * java.lang.Object)
-     */
     @Override
     public int compare(Object obj1, Object obj2) {
         TreeElement e1 = (TreeElement) obj1;
@@ -43,87 +37,56 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
         return s1 - s2;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getColumnHeaderText()
-     */
     @Override
     public String getColumnHeaderText() {
         return Messages.CallsProfField_CALLS;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getColumnHeaderTooltip()
-     */
     @Override
     public String getColumnHeaderTooltip() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getToolTipText(java.lang.Object)
-     */
     @Override
     public String getToolTipText(Object element) {
         if (element instanceof HistRoot) {
             return Messages.CallsProfField_TOTAL_NUMBER_OF_FUNCTION_CALLS;
         } else if (element instanceof HistFunction) {
             String format = Messages.CallsProfField_INVOCATION_NUMBER;
-            String s = String.format(format, ((HistFunction) element).getName());
-            return s;
+            return String.format(format, ((HistFunction) element).getName());
         } else if (element instanceof CGCategory) {
             CGCategory cat = (CGCategory) element;
             if (CGCategory.CHILDREN.equals(cat.getName())) {
                 String format = Messages.CallsProfField_TOTAL_CALL_NUMBER_BY_FUNCTION;
-                String s = String.format(format, cat.getParent().getName());
-                return s;
+                return String.format(format, cat.getParent().getName());
             } else {
                 String format = Messages.CallsProfField_INVOCATION_NUMBER;
-                String s = String.format(format, cat.getParent().getName());
-                return s;
+                return String.format(format, cat.getParent().getName());
             }
         } else if (element instanceof CGArc) {
             CGArc cgarc = (CGArc) element;
             if (CGCategory.CHILDREN.equals(cgarc.getParent().getName())) {
                 String format = Messages.CallsProfField_FUNCTION_CALL_NUMBER_BY_FUNCTION;
-                String s = String.format(format, cgarc.getParent().getParent().getName(), cgarc.getFunctionName());
-                return s;
+                return String.format(format, cgarc.getParent().getParent().getName(), cgarc.getFunctionName());
             } else {
                 String format = Messages.CallsProfField_FUNCTION_CALL_NUMBER_BY_FUNCTION;
-                String s = String.format(format, cgarc.getFunctionName(), cgarc.getParent().getParent().getName());
-                return s;
+                return String.format(format, cgarc.getFunctionName(), cgarc.getParent().getParent().getName());
             }
         }
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.linuxtools.dataviewers.abstractviewers.ISTDataViewersField#getValue(java.lang.Object)
-     */
     @Override
     public String getValue(Object obj) {
         TreeElement e = (TreeElement) obj;
         int i = e.getCalls();
-        if (i == -1)
+        if (i == -1) {
             return ""; //$NON-NLS-1$
+        }
         String ret = String.valueOf(i);
         return ret;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTDataViewersField#getBackground(java.lang.Object)
-     */
     @Override
     public Color getBackground(Object element) {
         return GmonView.getBackground(element);
@@ -133,8 +96,9 @@ public class CallsProfField extends AbstractSTDataViewersField implements IChart
     public Number getNumber(Object obj) {
         TreeElement e = (TreeElement) obj;
         int i = e.getCalls();
-        if (i == -1)
+        if (i == -1) {
             return 0L;
+        }
         return i;
     }
 

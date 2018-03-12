@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -56,8 +56,8 @@ public class TmfRequestExecutor implements Executor {
     private final String fExecutorName;
 
     // The request queues
-    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
-    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<TmfEventThread>(100);
+    private final Queue<TmfEventThread> fForegroundTasks = new ArrayBlockingQueue<>(100);
+    private final Queue<TmfEventThread> fBackgroundTasks = new ArrayBlockingQueue<>(100);
 
     // The tasks
     private TmfEventThread fActiveTask;
@@ -82,28 +82,9 @@ public class TmfRequestExecutor implements Executor {
         }
     }
 
-    /**
-     * Standard constructor
-     *
-     * @param executor
-     *            The executor service to use
-     */
-    @Deprecated
-    public TmfRequestExecutor(ExecutorService executor) {
-        this();
-    }
-
     // ------------------------------------------------------------------------
     // Getters
     // ------------------------------------------------------------------------
-
-    /**
-     * @return the number of pending requests
-     */
-    @Deprecated
-    public synchronized int getNbPendingRequests() {
-        return fForegroundTasks.size() + fBackgroundTasks.size();
-    }
 
     /**
      * @return the shutdown state (i.e. if it is accepting new requests)

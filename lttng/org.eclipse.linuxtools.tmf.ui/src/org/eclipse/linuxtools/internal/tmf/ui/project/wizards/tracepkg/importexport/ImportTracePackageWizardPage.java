@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -29,16 +30,13 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageOperation;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.AbstractTracePackageWizardPage;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageFilesElement;
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.swt.SWT;
@@ -137,7 +135,6 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
             IProject defaultProject = ResourcesPlugin.getWorkspace().getRoot().getProject(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME);
             if (!defaultProject.exists()) {
                 IProject project = TmfProjectRegistry.createProject(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, null, null);
-                TmfImportHelper.forceFolderRefresh(project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME));
                 fOpenedTmfProjects.add(project);
             }
         }
@@ -200,8 +197,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
     private void selectProject(IProject project) {
         fProjectText.setText(project.getName());
-        new TmfNavigatorContentProvider().getChildren(project);
-        fTmfTraceFolder = TmfProjectRegistry.getProject(project).getTracesFolder();
+        fTmfTraceFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
         updatePageCompletion();
     }
 
@@ -210,10 +206,22 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         return super.determinePageCompletion() && fTmfTraceFolder != null;
     }
 
+    /**
+     * Create the operation that will be responsible of creating the manifest
+     * based on the file name.
+     *
+     * @param fileName the file name to generate the manifest from
+     *
+     * @return the operation that will extract the manifest
+     */
+    protected AbstractTracePackageOperation createExtractManifestOperation(String fileName) {
+        return new TracePackageExtractManifestOperation(fileName);
+    }
+
     @Override
     protected Object createElementViewerInput() {
 
-        final TracePackageExtractManifestOperation op = new TracePackageExtractManifestOperation(getFilePathValue());
+        final AbstractTracePackageOperation op = createExtractManifestOperation(getFilePathValue());
 
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
@@ -237,7 +245,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
             // Canceled
         }
 
-        TracePackageElement[] resultElements = op.getResultElement();
+        TracePackageElement[] resultElements = op.getResultElements();
         if (resultElements == null || resultElements.length == 0) {
             return null;
         }
@@ -338,7 +346,7 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
 
     private boolean checkForOverwrite() {
         TracePackageElement[] traceElements = (TracePackageElement[]) getElementViewer().getInput();
-        List<TracePackageTraceElement> noImportTraces = new ArrayList<TracePackageTraceElement>();
+        List<TracePackageTraceElement> noImportTraces = new ArrayList<>();
         boolean noToAll = false;
         for (TracePackageElement packageElement : traceElements) {
             TracePackageTraceElement traceElement = (TracePackageTraceElement) packageElement;
@@ -351,9 +359,16 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
                 continue;
             }
 
-            String traceName = traceElement.getText();
-            if (traceExists(traceName)) {
-                int returnCode = promptForOverwrite(traceName);
+            if (traceExists(traceElement)) {
+                int returnCode = promptForOverwrite(traceElement.getDestinationElementPath());
+                // The return code is an index to a button in the dialog but the
+                // 'X' button in the window corner is not considered a button
+                // therefore it returns -1 and unfortunately, there is no
+                // constant for that.
+                if (returnCode < 0) {
+                    return false;
+                }
+
                 final String[] response = new String[] { IDialogConstants.NO_TO_ALL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.YES_LABEL };
                 if (response[returnCode].equals(IDialogConstants.YES_TO_ALL_LABEL)) {
                     break;
@@ -378,15 +393,9 @@ public class ImportTracePackageWizardPage extends AbstractTracePackageWizardPage
         return true;
     }
 
-    private boolean traceExists(String traceName) {
-        List<TmfTraceElement> traces = fTmfTraceFolder.getTraces();
-        for (TmfTraceElement t : traces) {
-            if (t.getName().equals(traceName)) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean traceExists(TracePackageTraceElement traceElement) {
+        IResource traceRes = fTmfTraceFolder.getResource().findMember(traceElement.getDestinationElementPath());
+        return traceRes != null;
     }
 
     private int promptForOverwrite(String traceName) {

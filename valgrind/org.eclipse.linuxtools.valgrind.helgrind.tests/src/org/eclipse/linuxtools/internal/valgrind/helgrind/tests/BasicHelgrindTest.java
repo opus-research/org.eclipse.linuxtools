@@ -26,26 +26,24 @@ import org.junit.Test;
 
 public class BasicHelgrindTest extends AbstractHelgrindTest {
 
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
-	}
+    @Before
+    public void prep() throws Exception {
+        proj = createProjectAndBuild("basicTest"); //$NON-NLS-1$
+    }
 
-	@Override
-	@After
-	public void tearDown() throws CoreException {
-		deleteProject(proj);
-		super.tearDown();
-	}
-	@Test
-	public void testNumErrors() throws CoreException, URISyntaxException, IOException   {
-		ILaunchConfiguration config = createConfiguration(proj.getProject());
-		doLaunch(config, "testHelgrindGeneric"); //$NON-NLS-1$
+    @Override
+    @After
+    public void tearDown() throws CoreException {
+        deleteProject(proj);
+        super.tearDown();
+    }
+    @Test
+    public void testNumErrors() throws CoreException, URISyntaxException, IOException   {
+        ILaunchConfiguration config = createConfiguration(proj.getProject());
+        doLaunch(config, "testHelgrindGeneric"); //$NON-NLS-1$
 
-		ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
-		assertEquals(1, view.getMessages().length);
-		assertEquals(view.getMessages()[0].getText(), Messages.getString("ValgrindOutputView.No_output")); //$NON-NLS-1$
-	}
+        ValgrindViewPart view = ValgrindUIPlugin.getDefault().getView();
+        assertEquals(1, view.getMessages().length);
+        assertEquals(view.getMessages()[0].getText(), Messages.getString("ValgrindOutputView.No_output")); //$NON-NLS-1$
+    }
 }

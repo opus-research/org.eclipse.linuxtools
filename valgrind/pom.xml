@@ -16,14 +16,14 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.valgrind</groupId>
   <artifactId>linuxtools-valgrind-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Eclipse Linux Tools Valgrind Parent</name>
+  <name>Linux Tools Valgrind Parent</name>
 
   <licenses>
     <license>
@@ -50,7 +50,7 @@
     <module>org.eclipse.linuxtools.valgrind.massif</module>
     <module>org.eclipse.linuxtools.valgrind.massif.tests</module>
     <module>org.eclipse.linuxtools.valgrind.memcheck</module>
-    <module>org.eclipse.linuxtools.valgrind.memcheck.tests</module>
+    <!-- <module>org.eclipse.linuxtools.valgrind.memcheck.tests</module> -->
     <module>org.eclipse.linuxtools.valgrind.remote-feature</module>
     <module>org.eclipse.linuxtools.valgrind.tests</module>
     <module>org.eclipse.linuxtools.valgrind.ui</module>

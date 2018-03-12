@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -36,7 +36,7 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
     // ------------------------------------------------------------------------
 
     /** The list of coalesced requests */
-    private final List<ITmfEventRequest> fRequests = new ArrayList<ITmfEventRequest>();
+    private final List<ITmfEventRequest> fRequests = new ArrayList<>();
 
     /**
      * We do not use super.fRange, because in the case of coalesced requests,
@@ -191,17 +191,12 @@ public class TmfCoalescedEventRequest extends TmfEventRequest {
         super.handleData(data);
         long index = getIndex() + getNbRead() - 1;
         for (ITmfEventRequest request : fRequests) {
-            if (data == null) {
-                request.handleData(null);
-            } else {
-                long start = request.getIndex();
-                long end = start + request.getNbRequested();
-                if (!request.isCompleted() && index >= start && index < end) {
-                    ITmfTimestamp ts = data.getTimestamp();
-                    if (request.getRange().contains(ts)) {
-                        if (request.getDataType().isInstance(data)) {
-                            request.handleData(data);
-                        }
+            long start = request.getIndex();
+            if (!request.isCompleted() && index >= start && request.getNbRead() < request.getNbRequested()) {
+                ITmfTimestamp ts = data.getTimestamp();
+                if (request.getRange().contains(ts)) {
+                    if (request.getDataType().isInstance(data)) {
+                        request.handleData(data);
                     }
                 }
             }

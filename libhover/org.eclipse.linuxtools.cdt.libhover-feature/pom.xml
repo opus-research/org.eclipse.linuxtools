@@ -14,7 +14,7 @@
   <parent>
     <artifactId>linuxtools-libhover-parent</artifactId>
     <groupId>org.eclipse.linuxtools.cdt.libhover</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.eclipse.linuxtools.cdt.libhover.feature</artifactId>
@@ -22,7 +22,7 @@
   <packaging>eclipse-feature</packaging>
 
   <name>Linux Tools Libhover Feature</name>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -38,7 +38,7 @@
             <configuration>
               <excludes>
                 <plugin id="org.eclipse.linuxtools.cdt.libhover.library.docs"/>
-		<plugin id="org.eclipse.linuxtools.cdt.libhover.glibc"/>
+        <plugin id="org.eclipse.linuxtools.cdt.libhover.glibc"/>
               </excludes>
             </configuration>
           </execution>

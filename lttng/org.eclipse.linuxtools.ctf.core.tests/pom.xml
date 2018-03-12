@@ -16,7 +16,7 @@
   <parent>
     <artifactId>linuxtools-lttng-parent</artifactId>
     <groupId>org.eclipse.linuxtools.lttng</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <name>Linux Tools CTF Core Tests Plug-in</name>
@@ -42,7 +42,7 @@
           <executions>
             <execution>
               <id>prepare</id>
-              <phase>validate</phase>
+              <phase>pre-integration-test</phase>
               <configuration>
                 <target>
                  <ant antfile="get-traces.xml" dir="traces" />
@@ -89,6 +89,7 @@
                 </fileset>
                 <fileset><directory>traces/ctf-testsuite</directory></fileset>
                 <fileset><directory>traces/cyg-profile</directory></fileset>
+                <fileset><directory>traces/django-benchmark</directory></fileset>
                 <fileset><directory>traces/funky_trace</directory></fileset>
                 <fileset><directory>traces/hello-lost</directory></fileset>
                 <fileset><directory>traces/kernel</directory></fileset>
@@ -96,6 +97,7 @@
                 <fileset><directory>traces/synctraces</directory></fileset>
                 <fileset><directory>traces/synthetic-trace</directory></fileset>
                 <fileset><directory>traces/trace2</directory></fileset>
+                <fileset><directory>traces/exp</directory></fileset>
               </filesets>
             </configuration>
             <goals>

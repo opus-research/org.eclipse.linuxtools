@@ -27,48 +27,64 @@ import org.eclipse.core.resources.IProject;
  * page.
  */
 public class CdtSpawnerProcessFactory extends LinuxtoolsProcessFactory {
-	private static CdtSpawnerProcessFactory instance = null;
+    private static CdtSpawnerProcessFactory instance = null;
 
-	public static CdtSpawnerProcessFactory getFactory() {
-		if (instance == null) {
-			instance = new CdtSpawnerProcessFactory();
-		}
-		return instance;
-	}
+    public static CdtSpawnerProcessFactory getFactory() {
+        if (instance == null) {
+            instance = new CdtSpawnerProcessFactory();
+        }
+        return instance;
+    }
 
-	public Process exec(String cmd, IProject project) throws IOException {
-		return exec(cmd, null, project);
-	}
+    public Process exec(String[] cmdarray, IProject project) throws IOException {
+        return exec(cmdarray, null, project);
+    }
 
-	public Process exec(String[] cmdarray, IProject project) throws IOException {
-		return exec(cmdarray, null, project);
-	}
+    public Process exec(String[] cmdarray, String[] envp, IProject project) throws IOException {
+        envp = updateEnvironment(envp, project);
+        return ProcessFactory.getFactory().exec(cmdarray, envp);
+    }
 
-	public Process exec(String[] cmdarray, String[] envp, IProject project) throws IOException {
-		envp = updateEnvironment(envp, project);
-		return ProcessFactory.getFactory().exec(cmdarray, envp);
-	}
+    public Process exec(String cmdarray[], String[] envp, File dir, IProject project)
+        throws IOException {
+        envp = updateEnvironment(envp, project);
+        return ProcessFactory.getFactory().exec(cmdarray, envp, dir);
+    }
 
-	public Process exec(String cmd, String[] envp, IProject project) throws IOException {
-		envp = updateEnvironment(envp, project);
-		return ProcessFactory.getFactory().exec(cmd, envp);
-	}
+    public Process exec(String cmdarray[], String[] envp, File dir, PTY pty, IProject project)
+        throws IOException {
+        envp = updateEnvironment(envp, project);
+        return ProcessFactory.getFactory().exec(cmdarray, envp, dir, pty);
+    }
 
-	public Process exec(String cmd, String[] envp, File dir, IProject project)
-		throws IOException {
-		envp = updateEnvironment(envp, project);
-		return ProcessFactory.getFactory().exec(cmd, envp, dir);
-	}
-
-	public Process exec(String cmdarray[], String[] envp, File dir, IProject project)
-		throws IOException {
-		envp = updateEnvironment(envp, project);
-		return ProcessFactory.getFactory().exec(cmdarray, envp, dir);
-	}
-
-	public Process exec(String cmdarray[], String[] envp, File dir, PTY pty, IProject project)
-		throws IOException {
-		envp = updateEnvironment(envp, project);
-		return ProcessFactory.getFactory().exec(cmdarray, envp, dir, pty);
-	}
+    /**
+     * Executes a command array using pty
+     *
+     * @param cmdarray -- Split a command string on the ' ' character
+     * @param envp -- Use <code>getEnvironment(ILaunchConfiguration)</code> in the AbstractCLaunchDelegate.
+     * @param dir -- Working directory
+     * @param usePty -- A value of 'true' usually suffices
+     * @return A properly formed process, or null
+     * @since 3.0
+     */
+    public Process exec(String[] cmdarray, String[] envp, File dir,
+            boolean usePty) {
+        Process process = null;
+        try {
+            if (dir == null) {
+                process = ProcessFactory.getFactory().exec(cmdarray, envp);
+            } else {
+                if (PTY.isSupported() && usePty) {
+                    process = ProcessFactory.getFactory().exec(cmdarray,
+                            envp, dir, new PTY());
+                } else {
+                    process = ProcessFactory.getFactory().exec(cmdarray,
+                            envp, dir);
+                }
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return process;
+    }
 }

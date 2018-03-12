@@ -14,34 +14,23 @@ import org.eclipse.cdt.core.model.ICElement;
 import org.eclipse.cdt.core.model.ICElementVisitor;
 
 public class TranslationUnitVisitor implements ICElementVisitor {
-	private String functions;
+    private String functions;
 
-	public TranslationUnitVisitor() {
-		super();
-		functions = ""; //$NON-NLS-1$
-	}
+    public TranslationUnitVisitor() {
+        super();
+        functions = ""; //$NON-NLS-1$
+    }
 
-	private long time;
+    @Override
+    public boolean visit(ICElement arg0) {
+        if (arg0.getElementType() == ICElement.C_FUNCTION) {
+            functions += arg0.getElementName() + " "; //$NON-NLS-1$
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public boolean visit(ICElement arg0) {
-		if (arg0.getElementType() == ICElement.C_FUNCTION) {
-			functions += arg0.getElementName() + " "; //$NON-NLS-1$
-			return false;
-		}
-		return true;
-	}
-
-	public String getFunctions() {
-		return functions;
-	}
-
-	public int getNumberOfFunctions() {
-		return (functions.split(" ").length); //$NON-NLS-1$
-	}
-
-	public double getTime() {
-		return time;
-	}
-
+    public String getFunctions() {
+        return functions;
+    }
 }

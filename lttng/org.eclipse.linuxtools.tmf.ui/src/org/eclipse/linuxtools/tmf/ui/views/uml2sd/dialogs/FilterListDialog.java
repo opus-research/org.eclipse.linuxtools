@@ -134,8 +134,8 @@ public class FilterListDialog extends Dialog {
     }
 
     /**
-	 * Handles table selection count.
-	 */
+     * Handles table selection count.
+     */
     protected void handleTableSelectionCount() {
         int count = fTable.getSelectionCount();
         fEdit.setEnabled(count == 1);
@@ -290,7 +290,7 @@ public class FilterListDialog extends Dialog {
     @Override
     public void okPressed() {
         if (fTable.getItemCount() > 0) {
-            fFilters = new ArrayList<FilterCriteria>();
+            fFilters = new ArrayList<>();
         } else {
             fFilters = null;
         }
@@ -350,7 +350,7 @@ public class FilterListDialog extends Dialog {
         int i = 0;
         DialogSettings section = null;
         int size = 0;
-        List<FilterCriteria> globalFilters = new ArrayList<FilterCriteria>();
+        List<FilterCriteria> globalFilters = new ArrayList<>();
         if (settings != null) {
             try {
                 size = settings.getInt(FILTERS_LIST_SIZE);

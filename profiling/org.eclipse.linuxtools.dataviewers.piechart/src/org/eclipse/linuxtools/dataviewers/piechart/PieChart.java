@@ -17,51 +17,42 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.swtchart.Chart;
+import org.swtchart.IAxis;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
 
 public class PieChart extends Chart {
 
-	protected List<RGB> colorList = new ArrayList<RGB>();
+    protected List<RGB> colorList = new ArrayList<>();
+    private Color[] customColors = null;
+    private PieChartPaintListener pieChartPaintListener;
 
-	/**
-	 * A PieChart with no titles given to its pies.
-	 * @param parent
-	 * @param style
-	 */
     public PieChart(Composite parent, int style) {
-        this(parent, style, new String[0]);
-    }
-
-    /**
-     * A PieChart with titles given to each pie it draws.
-     * @param parent The parent composite.
-     * @param style The style of the parent composite.
-     * @param labels The title of each pie chart that is to be drawn.
-     * A null / not present title indicates no title.
-     * @since 1.1
-     */
-    public PieChart(Composite parent, int style, String labels[]) {
         super(parent, style);
-        Control plotArea = null;
-        for (Control child : getChildren()) {
-            if (child.getClass().getName().equals("org.swtchart.internal.axis.AxisTitle")) { //$NON-NLS-1$
-				child.setVisible(false); // Don't show original Plot Area and axis
-			} else if (child.getClass().getName().equals("org.swtchart.internal.PlotArea")) { //$NON-NLS-1$
-                child.setVisible(false); // Don't show original Plot Area and axis
-                plotArea = child;
-            }
+        // Hide all original axes and plot area
+        for (IAxis axis : getAxisSet().getAxes()) {
+            axis.getTitle().setVisible(false);
         }
-        this.addPaintListener(new PieChartPaintListener(this, plotArea, labels));
+        getPlotArea().setVisible(false);
+        addPaintListener(pieChartPaintListener = new PieChartPaintListener(this));
+        IAxis xAxis = getAxisSet().getXAxis(0);
+        xAxis.enableCategory(true);
+        xAxis.setCategorySeries(new String[]{""}); //$NON-NLS-1$
     }
 
     @Override
     public void addPaintListener(PaintListener listener) {
         if (!listener.getClass().getName().startsWith("org.swtchart.internal.axis")) { //$NON-NLS-1$
-			super.addPaintListener(listener);
-		}
+            super.addPaintListener(listener);
+        }
+    }
+
+    /**
+     * @since 2.0
+     */
+    public void setCustomColors(Color[] customColors) {
+        this.customColors = customColors.clone();
     }
 
     /**
@@ -72,45 +63,83 @@ public class PieChart extends Chart {
      * @param labels The titles of each series. (These are not the same as titles given to pies.)
      */
     public void addPieChartSeries(String labels[], double val[][]) {
+        setSeriesNames(val[0].length);
         for (ISeries s : this.getSeriesSet().getSeries()) {
-			this.getSeriesSet().deleteSeries(s.getId());
-		}
+            this.getSeriesSet().deleteSeries(s.getId());
+        }
 
         int size = Math.min(labels.length, val.length);
         for (int i = 0; i < size; i++) {
             IBarSeries s = (IBarSeries) this.getSeriesSet().createSeries(ISeries.SeriesType.BAR, labels[i]);
             double d[] = new double[val[i].length];
             for (int j = 0; j < val[i].length; j++) {
-				d[j] = val[i][j];
-			}
+                d[j] = val[i][j];
+            }
             s.setXSeries(d);
-            s.setBarColor(new Color(this.getDisplay(), sliceColor(i)));
+            if (customColors != null) {
+                s.setBarColor(customColors[i % customColors.length]);
+            } else {
+                s.setBarColor(new Color(this.getDisplay(), sliceColor(i)));
+            }
+        }
+    }
+
+    /**
+     * Sets this chart's category names such that the number of names
+     * is equal to the number of pies. This method will only make changes
+     * to category series if they are not already properly set.
+     * @param numExpected The number of pies / the expected number of category names.
+     */
+    private void setSeriesNames(int numExpected) {
+        IAxis xAxis = getAxisSet().getXAxis(0);
+        if (xAxis.getCategorySeries().length != numExpected) {
+            String[] seriesNames = new String[numExpected];
+            for (int i = 0, n = Math.min(xAxis.getCategorySeries().length, numExpected); i < n; i++) {
+                seriesNames[i] = xAxis.getCategorySeries()[i];
+            }
+            for (int i = xAxis.getCategorySeries().length; i < numExpected; i++) {
+                seriesNames[i] = ""; //$NON-NLS-1$
+            }
+            xAxis.setCategorySeries(seriesNames);
         }
     }
 
     protected RGB sliceColor(int i) {
-    	if (colorList.size() > i) {
-    		return colorList.get(i);
-    	}
+        if (colorList.size() > i) {
+            return colorList.get(i);
+        }
 
-    	RGB next;
+        RGB next = IColorsConstants.COLORS[i % IColorsConstants.COLORS.length];
+        colorList.add(next);
+        return next;
+    }
 
-    	if (colorList.size() < IColorsConstants.COLORS.length) {
-    		next = IColorsConstants.COLORS[i];
-    	}
-    	else {
-    		RGB prev = colorList.get(colorList.size()-1);
-    		int mod = 192;
-    		int red = (int) (mod * Math.random());
-    		int green = (int) ((mod - red) * Math.random());
-    		int blue = mod - red - green;
-    		next = new RGB(0, 0, 0);
-    		next.red = (prev.red + red) % 256;
-    		next.green = (prev.green + green) % 256;
-    		next.blue = (prev.blue + blue) % 256;
-    	}
+    /**
+     * Given a set of 2D pixel coordinates (typically those of a mouse cursor), return the
+     * index of the given pie's slice that those coordinates reside in.
+     * @param pieIndex The index of the pie to get the slice of.
+     * @param x The x-coordinate to test.
+     * @param y The y-coordinate to test.
+     * @return The slice that contains the point with coordinates (x,y).
+     * @since 2.0
+     */
+    public int getSliceIndexFromPosition(int pieIndex, int x, int y) {
+        return pieChartPaintListener.getSliceIndexFromPosition(pieIndex, x, y);
+    }
 
-    	colorList.add(next);
-    	return next;
+    /**
+     * Given a pie and one of its slices, returns the size of the slice as a percentage of the pie.
+     * @param pieIndex The index of the pie to check.
+     * @param sliceIndex The slice of the pie to get the percentage of.
+     * @return The percentage of the entire pie taken up by the slice.
+     * @since 2.0
+     */
+    public double getSlicePercent(int pieIndex, int sliceIndex) {
+        double max = 0;
+        ISeries series[] = getSeriesSet().getSeries();
+        for (int i = 0; i < series.length; i++) {
+            max += series[i].getXSeries()[pieIndex];
+        }
+        return series[sliceIndex].getXSeries()[pieIndex] / max * 100;
     }
 }

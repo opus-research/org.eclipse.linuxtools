@@ -10,22 +10,21 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.profiling.provider.tests.stubby;
 
+import org.eclipse.cdt.launch.AbstractCLaunchDelegate;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.linuxtools.profiling.launch.ProfileLaunchConfigurationDelegate;
 
-public class StubbyLaunchConfigurationDelegate extends
-		ProfileLaunchConfigurationDelegate {
+public class StubbyLaunchConfigurationDelegate extends AbstractCLaunchDelegate {
 
-	@Override
-	public void launch(ILaunchConfiguration configuration, String mode,
-			ILaunch launch, IProgressMonitor monitor) {
-	}
+    @Override
+    public void launch(ILaunchConfiguration configuration, String mode,
+            ILaunch launch, IProgressMonitor monitor) {
+    }
 
-	@Override
-	protected String getPluginID() {
-		return null;
-	}
+    @Override
+    protected String getPluginID() {
+        return null;
+    }
 
 }

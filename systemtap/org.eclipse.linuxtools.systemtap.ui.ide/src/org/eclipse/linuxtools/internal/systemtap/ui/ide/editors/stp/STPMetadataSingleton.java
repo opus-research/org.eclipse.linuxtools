@@ -14,8 +14,13 @@ package org.eclipse.linuxtools.internal.systemtap.ui.ide.editors.stp;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.TapsetLibrary;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.ICompletable;
+import org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.nodedata.ProbevarNodeData;
 import org.eclipse.linuxtools.systemtap.structures.TreeNode;
 
 
@@ -24,125 +29,123 @@ import org.eclipse.linuxtools.systemtap.structures.TreeNode;
  * Build and hold completion metadata for Systemtap. This originally is generated from stap coverage data
  *
  */
-public class STPMetadataSingleton {
+public final class STPMetadataSingleton {
 
-	public static String[] NO_MATCHES = new String[0];
+    public static TreeNode[] NO_MATCHES = new TreeNode[0];
 
-	private static STPMetadataSingleton instance = null;
+    private static STPMetadataSingleton instance = null;
 
-	protected STPMetadataSingleton() {
-		TapsetLibrary.init();
-	}
+    private STPMetadataSingleton() {}
 
-	public static STPMetadataSingleton getInstance() {
-		if (instance == null) {
-			instance = new STPMetadataSingleton();
-		}
-		return instance;
-	}
+    public static STPMetadataSingleton getInstance() {
+        if (instance == null) {
+            instance = new STPMetadataSingleton();
+        }
+        return instance;
+    }
 
-	public void waitForInitialization(){
-		TapsetLibrary.waitForInitialization();
-	}
+    public void waitForInitialization() {
+        TapsetLibrary.waitForInitialization();
+    }
 
-	/**
-	 * Given the parameter return the completion proposals that best match the data.
-	 *
-	 * @param match - completion hint.
-	 *
-	 * @return - completion proposals.
-	 *
-	 */
-	public String[] getCompletionResults(String match) {
+    public TreeNode[] getFunctionCompletions(String prefix) {
+        TreeNode node = TapsetLibrary.getFunctions();
+        return getMatchingChildren(node, prefix);
+    }
 
-		// Check to see if the proposal hint included a <tapset>.<partialprobe>
-		// or just a <probe>. (ie syscall. or syscall.re).
-		boolean tapsetAndProbeIncluded = match.indexOf('.') >= 0;
+    public TreeNode[] getProbeCompletions(String prefix) {
+        List<TreeNode> matches = new LinkedList<>();
+        String groupName = extractProbeGroupName(prefix);
 
-		TreeNode node = TapsetLibrary.getProbes();
-		if (node == null) {
-			return NO_MATCHES;
-		}
+        for (TreeNode node : TapsetLibrary.getProbeCategoryNodes()) {
+            if (node == null) {
+                continue;
+            }
 
-		// If the result is a tapset and partial probe, get the tapset, then
-		// narrow down the list with partial probe matches.
-		if (tapsetAndProbeIncluded) {
-			node = node.getChildByName(getTapset(match));
-			if (node == null) {
-				return NO_MATCHES;
-			}
+            TreeNode groupNode = node.getChildByName(groupName);
+            if (groupNode != null) {
+                node = groupNode;
+            }
 
-			// Now get the completions.
-			return getMatchingChildren(node, match);
-		}
+            matches.addAll(Arrays.asList(getMatchingChildren(node, prefix)));
+        }
 
-		// Now get the completions.
-		return getMatchingChildren(node, match);
-	}
+        return !matches.isEmpty() ? matches.toArray(new TreeNode[matches.size()]) : NO_MATCHES;
+    }
 
-	/**
-	 * Returns a list of functions that complete the given prefix.
-	 * @param prefix
-	 * @return
-	 */
-	public String[] getFunctionCompletions(String prefix) {
-		TreeNode node = TapsetLibrary.getFunctions();
-		return getMatchingChildren(node, prefix);
-	}
+    /**
+     * Returns a list of variables available in the given probe.
+     * @param probe The probe for which to find variables
+     * @param prefix The prefix to complete.
+     * @return a list of variables matching the prefix.
+     */
+    public TreeNode[] getProbeVariableCompletions(String probe, String prefix) {
+        // The only probes that may have avilable variables are non-static ones.
+        TreeNode node = getProbeAlias(probe);
+        return node != null ? getMatchingChildren(node, prefix) : NO_MATCHES;
+    }
 
-	/**
-	 * Returns a list of variables available in the given probe.
-	 * @param probe The probe for which to find variables
-	 * @param prefix The prefix to complete.
-	 * @return a list of variables matching the prefix.
-	 */
-	public String[] getProbeVariableCompletions(String probe, String prefix){
-		TreeNode node = TapsetLibrary.getProbes();
-		if (node == null) {
-			return NO_MATCHES;
-		}
+    public boolean isVariableInProbe(String probe, String variable) {
+        TreeNode node = getProbeAlias(probe);
+        if (node == null) {
+            return false;
+        }
+        for (int i = 0, n = node.getChildCount(); i < n; i++) {
+            TreeNode child = node.getChildAt(i);
+            String nodeVar = ((ProbevarNodeData) child.getData()).getCompletionText();
+            if (nodeVar.equals(variable)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-		// Get the matching leaf node.
-		node = node.getChildByName(getTapset(probe));
-		if (node == null) {
-			return NO_MATCHES;
-		}
+    public TreeNode getProbeAlias(String probe) {
+        TreeNode node = TapsetLibrary.getProbeAliases();
+        if (node == null) {
+            return null;
+        }
 
-		node = node.getChildByName(probe);
-		if (node == null) {
-			return NO_MATCHES;
-		}
+        node = node.getChildByName(extractProbeGroupName(probe));
+        if (node == null) {
+            return null;
+        }
 
-		// Get the completions.
-		return getMatchingChildren(node, prefix);
-	}
+        return node.getChildByName(probe);
+    }
 
-	private String[] getMatchingChildren(TreeNode node, String prefix) {
-		ArrayList<String> matches = new ArrayList<String>();
+    private TreeNode[] getMatchingChildren(TreeNode node, String prefix) {
+        ArrayList<TreeNode> matches = new ArrayList<>();
 
-		int n = node.getChildCount();
-		for (int i = 0; i < n; i++) {
-			if (node.getChildAt(i).toString().startsWith(prefix)){
-				matches.add(node.getChildAt(i).toString());
-			}
-		}
+        for (int i = 0, n = node.getChildCount(); i < n; i++) {
+            TreeNode childNode = node.getChildAt(i);
+            String childName;
+            if (childNode.getData() instanceof ICompletable) {
+                childName = ((ICompletable) childNode.getData()).getCompletionText();
+            } else {
+                childName = childNode.toString();
+            }
+            if (childName.startsWith(prefix)) {
+                matches.add(childNode);
+            }
+        }
 
-		return matches.toArray(new String[0]);
-	}
+        return matches.toArray(new TreeNode[0]);
+    }
 
-	/**
-	 * Given data, extract <tapset>
-	 *
-	 * @param data - hint data
-	 * @return
-	 */
-	private String getTapset(String data) {
-		int i = data.indexOf('.');
-		if (i < 0){
-			return data;
-		}
-
-		return data.substring(0, data.indexOf('.'));
-	}
+    private String extractProbeGroupName(String probeName) {
+        int dotIndex = probeName.indexOf('.');
+        int parenIndex = probeName.indexOf('(');
+        if (dotIndex > 0 && parenIndex > 0) {
+            return probeName.substring(0, Math.min(dotIndex, parenIndex));
+        }
+        if (dotIndex > 0) {
+            return probeName.substring(0, dotIndex);
+        }
+        if (parenIndex > 0) {
+            return probeName.substring(0, parenIndex);
+        }
+        return probeName;
+    }
 
 }

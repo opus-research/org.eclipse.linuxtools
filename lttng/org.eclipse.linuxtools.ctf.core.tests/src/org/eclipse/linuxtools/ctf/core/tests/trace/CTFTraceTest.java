@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,16 +23,15 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.ByteOrder;
-import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.linuxtools.ctf.core.event.CTFClock;
-import org.eclipse.linuxtools.ctf.core.event.types.Definition;
+import org.eclipse.linuxtools.ctf.core.event.types.IDefinition;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.tests.shared.CtfTestTrace;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
-import org.eclipse.linuxtools.ctf.core.trace.Stream;
+import org.eclipse.linuxtools.ctf.core.trace.CTFStream;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,8 +72,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testOpen_existing() {
-        try {
-            CTFTrace result = testTrace.getTraceFromFile();
+        try (CTFTrace result = testTrace.getTraceFromFile();) {
             assertNotNull(result.getUUID());
         } catch (CTFReaderException e) {
             fail();
@@ -90,8 +88,9 @@ public class CTFTraceTest {
     @Test(expected = org.eclipse.linuxtools.ctf.core.trace.CTFReaderException.class)
     public void testOpen_invalid() throws CTFReaderException {
         File path = new File("");
-        CTFTrace result = new CTFTrace(path);
-        assertNotNull(result);
+        try (CTFTrace result = new CTFTrace(path);) {
+            assertNotNull(result);
+        }
     }
 
     /**
@@ -114,7 +113,7 @@ public class CTFTraceTest {
 
         // Add a stream
         try {
-            Stream stream = new Stream(testTrace.getTrace());
+            CTFStream stream = new CTFStream(testTrace.getTrace());
             stream.setId(1234);
             fixture.addStream(stream);
         } catch (CTFReaderException e) {
@@ -188,16 +187,7 @@ public class CTFTraceTest {
     @Test
     public void testGetStream() {
         Long id = new Long(0L);
-        Stream result = fixture.getStream(id);
-        assertNotNull(result);
-    }
-
-    /**
-     * Run the Map<Long, Stream> getStreams() method test.
-     */
-    @Test
-    public void testGetStreams() {
-        Map<Long, Stream> result = fixture.getStreams();
+        CTFStream result = fixture.getStream(id);
         assertNotNull(result);
     }
 
@@ -225,7 +215,7 @@ public class CTFTraceTest {
     @Test
     public void testLookupDefinition() {
         String lookupPath = "trace.packet.header";
-        Definition result = fixture.lookupDefinition(lookupPath);
+        IDefinition result = fixture.lookupDefinition(lookupPath);
         assertNotNull(result);
     }
 
@@ -262,8 +252,7 @@ public class CTFTraceTest {
      */
     @Test
     public void testPacketHeaderIsSet_invalid() {
-        try {
-            CTFTrace fixture2 = testTrace.getTraceFromFile();
+        try (CTFTrace fixture2 = testTrace.getTraceFromFile();){
             fixture2.setMinor(1L);
             fixture2.setUUID(UUID.randomUUID());
             fixture2.setPacketHeader((StructDeclaration) null); /* it's null here! */
@@ -399,22 +388,23 @@ public class CTFTraceTest {
      * @throws CTFReaderException not expected
      */
     @Test
-    public void callsitePosition() throws CTFReaderException{
+    public void callsitePosition() throws CTFReaderException {
         long ip1 = 2;
         long ip2 = 5;
         long ip3 = 7;
-        CTFTrace callsiteTest = testTrace.getTraceFromFile();
-        callsiteTest.addCallsite("testEvent", null, ip1, null, 23);
-        callsiteTest.addCallsite("testEvent", null, ip2, null, 50);
-        callsiteTest.addCallsite("testEvent", null, ip3, null, 15);
+        try (CTFTrace callsiteTest = testTrace.getTraceFromFile()) {
+            callsiteTest.addCallsite("testEvent", null, ip1, null, 23);
+            callsiteTest.addCallsite("testEvent", null, ip2, null, 50);
+            callsiteTest.addCallsite("testEvent", null, ip3, null, 15);
 
-        assertEquals(2, (callsiteTest.getCallsite("testEvent", 1)).getIp());
-        assertEquals(2, (callsiteTest.getCallsite("testEvent", 2)).getIp());
-        assertEquals(5, (callsiteTest.getCallsite("testEvent", 3)).getIp());
-        assertEquals(5, (callsiteTest.getCallsite("testEvent", 5)).getIp());
-        assertEquals(7, (callsiteTest.getCallsite("testEvent", 6)).getIp());
-        assertEquals(7, (callsiteTest.getCallsite("testEvent", 7)).getIp());
-        assertEquals(7, (callsiteTest.getCallsite("testEvent", 8)).getIp());
+            assertEquals(2, (callsiteTest.getCallsite("testEvent", 1)).getIp());
+            assertEquals(2, (callsiteTest.getCallsite("testEvent", 2)).getIp());
+            assertEquals(5, (callsiteTest.getCallsite("testEvent", 3)).getIp());
+            assertEquals(5, (callsiteTest.getCallsite("testEvent", 5)).getIp());
+            assertEquals(7, (callsiteTest.getCallsite("testEvent", 6)).getIp());
+            assertEquals(7, (callsiteTest.getCallsite("testEvent", 7)).getIp());
+            assertEquals(7, (callsiteTest.getCallsite("testEvent", 8)).getIp());
+        }
     }
 
 }

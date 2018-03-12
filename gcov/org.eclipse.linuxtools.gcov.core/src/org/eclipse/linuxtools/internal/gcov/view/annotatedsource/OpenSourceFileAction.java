@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.linuxtools.binutils.link2source.STLink2SourceSupport;
-import org.eclipse.linuxtools.dataviewers.annotatedsourceeditor.actions.AbstractOpenSourceFileAction;
 import org.eclipse.linuxtools.internal.gcov.Activator;
 import org.eclipse.linuxtools.internal.gcov.parser.SourceFile;
 import org.eclipse.ui.IEditorInput;
@@ -33,46 +32,34 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class OpenSourceFileAction {
+public final class OpenSourceFileAction {
 
     /**
      * Shared instance of this class
      */
-    public static final OpenSourceFileAction sharedInstance = new OpenSourceFileAction();
-
     private OpenSourceFileAction() {
     }
 
     // FIXME: move this method in binutils plugin.
-    private IFileStore getFileStore(IProject project, IPath path) {
-        IEditorInput input = STLink2SourceSupport.sharedInstance.getEditorInput(path, project);
+    private static IFileStore getFileStore(IProject project, IPath path) {
+        IEditorInput input = STLink2SourceSupport.getEditorInput(path, project);
         if (input instanceof IURIEditorInput) {
             IURIEditorInput editorInput = (IURIEditorInput) input;
             URI uri = editorInput.getURI();
             try {
-                IFileStore fs = EFS.getStore(uri);
-                return fs;
-            } catch (CoreException _) {
+                return EFS.getStore(uri);
+            } catch (CoreException e) {
                 return null;
             }
         }
         return null;
     }
 
-    private GcovSourceEditorInput getInput(SourceFile sourceFile, IFileStore fs) {
-        GcovSourceEditorInput input = new GcovSourceEditorInput(fs, sourceFile);
-        IWorkbenchPage p = CUIPlugin.getActivePage();
-        IEditorPart editorPart = p.findEditor(input);
-        if (editorPart != null) {
-            p.closeEditor(editorPart, false);
-        }
-        return input;
-    }
-
-    public void openAnnotatedSourceFile(IProject project, IFile binary, SourceFile sourceFile, int lineNumber) {
+    public static void openAnnotatedSourceFile(IProject project, IFile binary, SourceFile sourceFile, int lineNumber) {
         if (sourceFile == null) {
             return;
         }
@@ -84,7 +71,7 @@ public class OpenSourceFileAction {
         openAnnotatedSourceFile(project, binary, sourceFile, path, lineNumber);
     }
 
-    public void openAnnotatedSourceFile(IProject project, IFile binary, SourceFile sourceFile, IPath realLocation,
+    public static void openAnnotatedSourceFile(IProject project, IFile binary, SourceFile sourceFile, IPath realLocation,
             int lineNumber) {
         IWorkbenchPage page = CUIPlugin.getActivePage();
         if (page != null) {
@@ -103,9 +90,8 @@ public class OpenSourceFileAction {
                     Activator.getDefault().getLog().log(s);
                 }
             } else {
-                IEditorInput input = getInput(sourceFile, fs);
                 try {
-                    IEditorPart editor = page.openEditor(input, AbstractOpenSourceFileAction.EDITOR_ID, true);
+                    IEditorPart editor = IDE.openEditorOnFileStore(page, fs);
                     if (lineNumber > 0 && editor instanceof ITextEditor) {
                         IDocumentProvider provider = ((ITextEditor) editor).getDocumentProvider();
                         IDocument document = provider.getDocument(editor.getEditorInput());

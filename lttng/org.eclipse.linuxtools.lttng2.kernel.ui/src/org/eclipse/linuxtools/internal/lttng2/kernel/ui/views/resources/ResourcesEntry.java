@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, École Polytechnique de Montréal
+ * Copyright (c) 2012, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,7 +13,9 @@
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources;
 
-import org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
+import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeGraphEntry;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
 
 /**
@@ -21,7 +23,7 @@ import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.TimeGraphEntry;
  *
  * @author Patrick Tasse
  */
-public class ResourcesEntry extends TimeGraphEntry {
+public class ResourcesEntry extends TimeGraphEntry implements Comparable<ITimeGraphEntry> {
 
     /** Type of resource */
     public static enum Type {
@@ -36,7 +38,7 @@ public class ResourcesEntry extends TimeGraphEntry {
     }
 
     private final int fId;
-    private final LttngKernelTrace fTrace;
+    private final @NonNull ITmfTrace fTrace;
     private final Type fType;
     private final int fQuark;
 
@@ -58,7 +60,8 @@ public class ResourcesEntry extends TimeGraphEntry {
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(int quark, LttngKernelTrace trace, String name, long startTime, long endTime, Type type, int id) {
+    public ResourcesEntry(int quark, @NonNull ITmfTrace trace, String name,
+            long startTime, long endTime, Type type, int id) {
         super(name, startTime, endTime);
         fId = id;
         fTrace = trace;
@@ -80,7 +83,8 @@ public class ResourcesEntry extends TimeGraphEntry {
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(LttngKernelTrace trace, String name, long startTime, long endTime, int id) {
+    public ResourcesEntry(@NonNull ITmfTrace trace, String name,
+            long startTime, long endTime, int id) {
         this(-1, trace, name, startTime, endTime, Type.NULL, id);
     }
 
@@ -100,7 +104,8 @@ public class ResourcesEntry extends TimeGraphEntry {
      * @param id
      *            The id of this entry
      */
-    public ResourcesEntry(int quark, LttngKernelTrace trace, long startTime, long endTime, Type type, int id) {
+    public ResourcesEntry(int quark, @NonNull ITmfTrace trace,
+            long startTime, long endTime, Type type, int id) {
         this(quark, trace, type.toString() + " " + id, startTime, endTime, type, id); //$NON-NLS-1$
     }
 
@@ -114,11 +119,11 @@ public class ResourcesEntry extends TimeGraphEntry {
     }
 
     /**
-     * Get the entry's kernel trace
+     * Get the entry's trace
      *
-     * @return the entry's kernel trace
+     * @return the entry's trace
      */
-    public LttngKernelTrace getTrace() {
+    public @NonNull ITmfTrace getTrace() {
         return fTrace;
     }
 
@@ -154,21 +159,51 @@ public class ResourcesEntry extends TimeGraphEntry {
      * @param entry
      *            The entry to add
      */
-    public void addChild(ResourcesEntry entry) {
+    @Override
+    public void addChild(TimeGraphEntry entry) {
+        // FIXME This check won't be necessary once all ITimeGraphEntry's are
+        // made Comparable.
+        if (!(entry instanceof ResourcesEntry)) {
+            throw new IllegalArgumentException();
+        }
+        ResourcesEntry rEntry = (ResourcesEntry) entry;
+
+        /*
+         * Insert in the array, keeping the elements sorted
+         * (CopyOnWriteArrayList doesn't support Collections#sort,
+         * unfortunately).
+         */
         int index;
         for (index = 0; index < getChildren().size(); index++) {
             ResourcesEntry other = (ResourcesEntry) getChildren().get(index);
-            if (entry.getType().compareTo(other.getType()) < 0) {
+            if (rEntry.compareTo(other) < 0) {
                 break;
-            } else if (entry.getType().equals(other.getType())) {
-                if (entry.getId() < other.getId()) {
-                    break;
-                }
             }
         }
 
-        entry.setParent(this);
-        getChildren().add(index, entry);
+        rEntry.setParent(this);
+        getChildren().add(index, rEntry);
+    }
+
+    @Override
+    public int compareTo(ITimeGraphEntry other) {
+        if (!(other instanceof ResourcesEntry)) {
+            /* Should not happen, but if it does, put those entries at the end */
+            return -1;
+        }
+        ResourcesEntry o = (ResourcesEntry) other;
+
+        /*
+         * Resources entry names should all be of type "ABC 123"
+         *
+         * We want to filter on the Type first (the "ABC" part), then on the ID
+         * ("123") in numerical order (so we get 1,2,10 and not 1,10,2).
+         */
+        int ret = this.getType().compareTo(o.getType());
+        if (ret != 0) {
+            return ret;
+        }
+        return Integer.compare(this.getId(), o.getId());
     }
 
 }

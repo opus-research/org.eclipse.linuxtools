@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -14,7 +14,6 @@
 
 package org.eclipse.linuxtools.lttng2.ust.core.trace;
 
-import java.io.File;
 import java.nio.BufferOverflowException;
 
 import org.eclipse.core.resources.IProject;
@@ -23,14 +22,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.eclipse.linuxtools.ctf.core.trace.CTFTrace;
 import org.eclipse.linuxtools.internal.lttng2.ust.core.Activator;
-import org.eclipse.linuxtools.internal.lttng2.ust.core.trace.callstack.LttngUstCallStackProvider;
-import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
-import org.eclipse.linuxtools.tmf.core.ctfadaptor.CtfTmfTrace;
-import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemFactory;
-import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
+import org.eclipse.linuxtools.tmf.core.trace.TraceValidationStatus;
+import org.eclipse.linuxtools.tmf.ctf.core.CtfTmfTrace;
 
 /**
  * Class to contain LTTng-UST traces
@@ -40,8 +33,7 @@ import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
  */
 public class LttngUstTrace extends CtfTmfTrace {
 
-    /** Name of the history file for the callstack state system */
-    private static final String CALLSTACK_FILENAME = "ust-callstack.ht"; //$NON-NLS-1$
+    private static final int CONFIDENCE = 100;
 
     /**
      * Default constructor
@@ -50,53 +42,28 @@ public class LttngUstTrace extends CtfTmfTrace {
         super();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation sets the confidence to 100 if the trace is a valid
+     * CTF trace in the "ust" domain.
+     */
     @Override
     public IStatus validate(final IProject project, final String path)  {
-        CTFTrace temp;
-        IStatus status;
-        /*  Make sure the trace is openable as a CTF trace. */
-        try {
-            temp = new CTFTrace(path);
+        try (CTFTrace temp = new CTFTrace(path);) {
+            /* Make sure the domain is "ust" in the trace's env vars */
+            String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
+            if (dom != null && dom.equals("\"ust\"")) { //$NON-NLS-1$
+                return new TraceValidationStatus(CONFIDENCE, Activator.PLUGIN_ID);
+            }
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_DomainError);
+
         } catch (CTFReaderException e) {
-            status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString(), e);
-            return status;
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString(), e);
         } catch (NullPointerException e) {
-            status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString(), e);
-            return status;
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString(), e);
         } catch (final BufferOverflowException e) {
-            status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_TraceReadError + ": " + Messages.LttngUstTrace_MalformedTrace); //$NON-NLS-1$
-            return status;
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_TraceReadError + ": " + Messages.LttngUstTrace_MalformedTrace); //$NON-NLS-1$
         }
-
-        /* Make sure the domain is "ust" in the trace's env vars */
-        String dom = temp.getEnvironment().get("domain"); //$NON-NLS-1$
-        temp.dispose();
-        if (dom != null && dom.equals("\"ust\"")) { //$NON-NLS-1$
-            return Status.OK_STATUS;
-        }
-        status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.LttngUstTrace_DomainError);
-        return status;
-    }
-
-    @Override
-    public IStatus buildStateSystem() {
-        super.buildStateSystem();
-
-        /*
-         * Build the state system for the UST Callstack (will be empty if the
-         * required events are not present).
-         */
-        String directory = TmfTraceManager.getSupplementaryFileDir(this);
-        final File htFile = new File(directory + CALLSTACK_FILENAME);
-        ITmfStateProvider csInput = new LttngUstCallStackProvider(this);
-
-        try {
-            ITmfStateSystem ss = TmfStateSystemFactory.newFullHistory(htFile, csInput, false);
-            registerStateSystem(CallStackStateProvider.ID, ss);
-        }  catch (TmfTraceException e) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
-        }
-
-        return Status.OK_STATUS;
     }
 }

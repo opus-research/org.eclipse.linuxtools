@@ -16,14 +16,14 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.cdt.libhover</groupId>
   <artifactId>linuxtools-libhover-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Eclipse Linux Tools Libhover Parent</name>
+  <name>Linux Tools Libhover Parent</name>
 
   <licenses>
     <license>
@@ -51,6 +51,7 @@
     <module>org.eclipse.linuxtools.cdt.libhover.devhelp</module>
     <module>org.eclipse.linuxtools.cdt.libhover.devhelp.tests</module>
     <module>org.eclipse.linuxtools.cdt.libhover.devhelp-feature</module>
+    <module>org.eclipse.linuxtools.cdt.libhover.tests</module>
   </modules>
 
 </project>

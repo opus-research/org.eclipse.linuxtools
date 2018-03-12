@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 Ericsson
+ * Copyright (c) 2011, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,6 +12,7 @@
  *   Francois Chouinard - Moved from LTTng to TMF
  *   Patrick Tasse - Support selection range
  *   Jean-Christian Kouamé - Support to manage lost events
+ *   Xavier Raynaud - Support multi-trace coloring
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.views.histogram;
@@ -53,7 +54,7 @@ public class HistogramScaledData {
     /**
      * Array of scaled values
      */
-    public int[] fData;
+    public HistogramBucket[] fData;
     /**
      * Array of scaled values combined including the lost events.
      * This array contains the number of lost events for each bar in the histogram
@@ -73,11 +74,6 @@ public class HistogramScaledData {
      * @since 2.2
      */
     public long fMaxCombinedValue;
-    /**
-     * The index of the current bucket.
-     */
-    @Deprecated
-    public int fCurrentBucket;
     /**
      * The index of the selection begin bucket.
      * @since 2.1
@@ -117,6 +113,7 @@ public class HistogramScaledData {
      * @since 2.2
      */
     public static volatile boolean hideLostEvents = false;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -131,7 +128,7 @@ public class HistogramScaledData {
         fWidth = width;
         fHeight = height;
         fBarWidth = barWidth;
-        fData = new int[width / fBarWidth];
+        fData = new HistogramBucket[width / fBarWidth];
         fLostEventsData = new int[width / fBarWidth];
         fBucketDuration = 1;
         fMaxValue = 0;

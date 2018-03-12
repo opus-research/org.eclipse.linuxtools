@@ -36,71 +36,61 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class GmonViewer extends AbstractSTTreeViewer {
 
-	private ISTDataViewersField[] fields;
+    private ISTDataViewersField[] fields;
 
-	/**
-	 * Constructor
-	 * @param parent
-	 */
-	public GmonViewer(Composite parent) {
-		super(parent);
-	}
+    /**
+     * Constructor
+     * @param parent
+     */
+    public GmonViewer(Composite parent) {
+        super(parent);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer#createViewer(org.eclipse.swt.widgets.Composite, int)
-	 */
-	@Override
-	protected TreeViewer createViewer(Composite parent, int style) {
-		TreeViewer tv = super.createViewer(parent, style);
-		tv.setAutoExpandLevel(2);
-		return tv;
-	}
+    @Override
+    protected TreeViewer createViewer(Composite parent, int style) {
+        TreeViewer tv = super.createViewer(parent, style);
+        tv.setAutoExpandLevel(2);
+        return tv;
+    }
 
-	@Override
-	protected ITreeContentProvider createContentProvider() {
-		return FileHistogramContentProvider.sharedInstance;
-	}
+    @Override
+    protected ITreeContentProvider createContentProvider() {
+        return FileHistogramContentProvider.sharedInstance;
+    }
 
-	@Override
-	public ISTDataViewersField[] getAllFields() {
-		if (fields == null) {
-			fields = new ISTDataViewersField[] {
-					new NameProfField(),
-					new SampleProfField(this),
-					new CallsProfField(),
-					new SamplePerCallField(this),
-					new RatioProfField()
-			};
-		}
-		return fields;
-	}
+    @Override
+    public ISTDataViewersField[] getAllFields() {
+        if (fields == null) {
+            fields = new ISTDataViewersField[] {
+                    new NameProfField(),
+                    new SampleProfField(this),
+                    new CallsProfField(),
+                    new SamplePerCallField(this),
+                    new RatioProfField()
+            };
+        }
+        return fields;
+    }
 
-	@Override
-	public IDialogSettings getDialogSettings() {
-		return Activator.getDefault().getDialogSettings();
-	}
+    @Override
+    public IDialogSettings getDialogSettings() {
+        return Activator.getDefault().getDialogSettings();
+    }
 
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#handleOpenEvent(org.eclipse.jface.viewers.OpenEvent)
-	 */
-	@Override
-	protected void handleOpenEvent(OpenEvent event) {
-		IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-		TreeElement element = (TreeElement) selection.getFirstElement();
-		if (element != null){
-			String s = element.getSourcePath();
-			if (s == null || "??".equals(s)) { //$NON-NLS-1$
-				return; // nothing to do here.
-			}
-			else {
-				int lineNumber             = element.getSourceLine();
-				IBinaryObject exec = ((HistRoot)element.getRoot()).decoder.getProgram();
-				STLink2SourceSupport.sharedInstance.openSourceFileAtLocation(exec, s, lineNumber);
-			}
-		}
-	}
+    @Override
+    protected void handleOpenEvent(OpenEvent event) {
+        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+        TreeElement element = (TreeElement) selection.getFirstElement();
+        if (element != null){
+            String s = element.getSourcePath();
+            if (s == null || "??".equals(s)) { //$NON-NLS-1$
+                return; // nothing to do here.
+            } else {
+                int lineNumber = element.getSourceLine();
+                IBinaryObject exec = ((HistRoot)element.getRoot()).decoder.getProgram();
+                STLink2SourceSupport.openSourceFileAtLocation(exec, s, lineNumber);
+            }
+        }
+    }
 
 }

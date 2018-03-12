@@ -40,7 +40,7 @@ public class STCopyAction extends Action {
     }
 
     @Override
-	public void run() {
+    public void run() {
         Clipboard cb = new Clipboard(Display.getDefault());
         IStructuredSelection selections = (IStructuredSelection) stViewer.getViewer().getSelection();
         Iterator<?> iterator = selections.iterator();
@@ -50,8 +50,9 @@ public class STCopyAction extends Action {
             Object obj = iterator.next();
             boolean needTab = false;
             for (ISTDataViewersField field : stViewer.getAllFields()) {
-                if (needTab)
+                if (needTab) {
                     sb.append("\t");
+                }
                 needTab = true;
                 if (field.getValue(obj) != null) {
                     sb.append(field.getValue(obj));

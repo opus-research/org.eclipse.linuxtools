@@ -6,12 +6,11 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *******************************************************************************/
 
 package org.eclipse.linuxtools.internal.oprofile.core.model;
 
-import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
 
 
 /**
@@ -19,67 +18,59 @@ import org.eclipse.linuxtools.internal.oprofile.core.Oprofile;
  * of the profiled binary.
  */
 public class OpModelSession {
-	private static final String DEFAULT_SESSION_STRING = "current"; //$NON-NLS-1$
+    private static final String DEFAULT_SESSION_STRING = "current"; //$NON-NLS-1$
 
-	private OpModelEvent parentEvent;
-	private OpModelImage image;
-	private String name;
-	private String printTabs = "";		//for nice output //$NON-NLS-1$
+    private String name;
+    private String printTabs = "";        //for nice output //$NON-NLS-1$
+    private OpModelEvent[] events;
 
-	public OpModelSession(OpModelEvent event, String name) {
-		parentEvent = event;
-		this.name = name;
-		image = null;
-	}
-	
-	public OpModelImage getImage() {
-		return image;
-	}
+    public OpModelSession(String name) {
+        this.name = name;
+    }
 
-	public OpModelEvent getEvent() {
-		return parentEvent;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public int getCount() {
-		if (image == null) {
-			return 0;
-		} else {
-			return image.getCount();
-		}
-	}
-	
-	public boolean isDefaultSession() {
-		return name.equals(DEFAULT_SESSION_STRING); 
-	}
-	
-	public void refreshModel() {
-		//populate this session with samples
-		image = getNewImage();
-	}
-	
-	protected OpModelImage getNewImage() {
-		return Oprofile.getModelData(parentEvent.getName(), name);
-	}
 
-	public String toString(String tabs) {
-		printTabs = tabs;
-		String s = toString();
-		printTabs = ""; //$NON-NLS-1$
-		return s;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String toString() {
-		String s = name + "\n"; //$NON-NLS-1$
-		if (image != null) {
-			s += printTabs + "Image: "; //$NON-NLS-1$
-			s += image.toString(printTabs + "\t"); //$NON-NLS-1$
-		}
-		return s;
-		
-	}
+    public OpModelEvent[] getEvents() {
+        return events;
+    }
+
+
+    public void setEvents(OpModelEvent[] events) {
+        this.events = events;
+    }
+
+    public boolean isDefaultSession() {
+        return name.equals(DEFAULT_SESSION_STRING);
+    }
+
+    public void refreshModel() {
+        if (events != null) {
+            for (int i = 0; i < events.length; i++) {
+                events[i].refreshModel();
+            }
+        }
+    }
+
+    public String toString(String tabs) {
+        printTabs = tabs;
+        String s = toString();
+        printTabs = ""; //$NON-NLS-1$
+        return s;
+    }
+
+    @Override
+    public String toString() {
+        String s = name + "\n"; //$NON-NLS-1$
+        if (events != null) {
+            for (int i = 0; i < events.length; i++) {
+                s += printTabs + "Event: "; //$NON-NLS-1$
+                s += events[i].toString(printTabs + "\t"); //$NON-NLS-1$
+            }
+        }
+        return s;
+
+    }
 }

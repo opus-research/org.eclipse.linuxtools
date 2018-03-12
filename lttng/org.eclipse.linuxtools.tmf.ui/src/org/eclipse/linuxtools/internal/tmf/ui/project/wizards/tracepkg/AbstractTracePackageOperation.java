@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +34,9 @@ import org.eclipse.ui.internal.wizards.datatransfer.TarFile;
 @SuppressWarnings("restriction")
 abstract public class AbstractTracePackageOperation {
     private IStatus fStatus;
+    // Result of this operation, if any
+    private TracePackageElement[] fResultElements;
+
     private final String fFileName;
 
     /**
@@ -64,6 +66,27 @@ abstract public class AbstractTracePackageOperation {
      */
     public IStatus getStatus() {
         return fStatus;
+    }
+
+    /**
+     * Get the resulting elements for this operation, if any
+     *
+     * @return the resulting elements or null if no result is produced by this
+     *         operation
+     */
+    public TracePackageElement[] getResultElements() {
+        return fResultElements;
+    }
+
+    /**
+     * Set the resulting elements for this operation, if any
+     *
+     * @param elements
+     *            the resulting elements produced by this operation, can be set
+     *            to null
+     */
+    public void setResultElements(TracePackageElement[] elements) {
+        fResultElements = elements;
     }
 
     /**
@@ -98,20 +121,14 @@ abstract public class AbstractTracePackageOperation {
         }
 
         try {
-            ZipFile zipFile = new ZipFile(fFileName);
-            return new ZipArchiveFile(zipFile);
-        } catch (ZipException e) {
-            // ignore
+            return new ZipArchiveFile(new ZipFile(fFileName));
         } catch (IOException e) {
             // ignore
         }
 
         try {
-            TarFile tarFile = new TarFile(fFileName);
-            return new TarArchiveFile(tarFile);
-        } catch (TarException e) {
-            // ignore
-        } catch (IOException e) {
+            return new TarArchiveFile(new TarFile(fFileName));
+        } catch (TarException | IOException e) {
             // ignore
         }
 
@@ -128,8 +145,9 @@ abstract public class AbstractTracePackageOperation {
     protected int getNbCheckedElements(TracePackageElement[] elements) {
         int totalWork = 0;
         for (TracePackageElement tracePackageElement : elements) {
-            if (tracePackageElement.getChildren() != null) {
-                totalWork += getNbCheckedElements(tracePackageElement.getChildren());
+            TracePackageElement[] children = tracePackageElement.getChildren();
+            if (children != null && children.length > 0) {
+                totalWork += getNbCheckedElements(children);
             } else if (tracePackageElement.isChecked()) {
                 ++totalWork;
             }
@@ -218,7 +236,7 @@ abstract public class AbstractTracePackageOperation {
 
         @Override
         public Enumeration<? extends ArchiveEntry> entries() {
-            Vector<ArchiveEntry> v = new Vector<ArchiveEntry>();
+            Vector<ArchiveEntry> v = new Vector<>();
             for (Enumeration<?> e = fTarFile.entries(); e.hasMoreElements();) {
                 v.add(new TarArchiveEntry((TarEntry) e.nextElement()));
             }
@@ -329,7 +347,7 @@ abstract public class AbstractTracePackageOperation {
 
         @Override
         public Enumeration<? extends ArchiveEntry> entries() {
-            Vector<ArchiveEntry> v = new Vector<ArchiveEntry>();
+            Vector<ArchiveEntry> v = new Vector<>();
             for (Enumeration<?> e = fZipFile.entries(); e.hasMoreElements();) {
                 v.add(new ZipAchiveEntry((ZipEntry) e.nextElement()));
             }

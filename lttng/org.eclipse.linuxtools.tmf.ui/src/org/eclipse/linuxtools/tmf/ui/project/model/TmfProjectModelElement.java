@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,25 +9,33 @@
  * Contributors:
  *   Francois Chouinard - Initial API and implementation
  *   Bernd Hufmann - Added supplementary files/folder handling
+ *   Patrick Tasse - Refactor resource change listener
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
 
+import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.navigator.CommonNavigator;
+import org.eclipse.ui.navigator.CommonViewer;
 
 /**
  * The implementation of the base TMF project model element. It provides default implementation
@@ -36,7 +44,7 @@ import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
  * @version 1.0
  * @author Francois Chouinard
  */
-public abstract class TmfProjectModelElement implements ITmfProjectModelElement, IResourceChangeListener {
+public abstract class TmfProjectModelElement implements ITmfProjectModelElement {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -76,14 +84,9 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         fName = name;
         fResource = resource;
         fPath = resource.getFullPath();
-        fLocation = resource.getLocationURI();
+        fLocation = new File(resource.getLocationURI()).toURI();
         fParent = parent;
-        fChildren = new ArrayList<ITmfProjectModelElement>();
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-    }
-
-    private void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        fChildren = new CopyOnWriteArrayList<>();
     }
 
     // ------------------------------------------------------------------------
@@ -110,6 +113,14 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         return fLocation;
     }
 
+    /**
+     * @since 3.0
+     */
+    @Override
+    public TmfProjectElement getProject() {
+        return fParent.getProject();
+    }
+
     @Override
     public ITmfProjectModelElement getParent() {
         return fParent;
@@ -133,26 +144,39 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
     @Override
     public void removeChild(ITmfProjectModelElement child) {
         fChildren.remove(child);
-        if (child instanceof TmfProjectModelElement) {
-            ((TmfProjectModelElement) child).dispose();
-        }
-        refresh();
     }
 
     @Override
     public void refresh() {
-        // Do nothing by default: sub-classes override this on an "as-needed"
-        // basis.
-    }
+        // make sure the model is updated in the current thread
+        refreshChildren();
 
-    // ------------------------------------------------------------------------
-    // IResourceChangeListener
-    // ------------------------------------------------------------------------
+        Display.getDefault().asyncExec(new Runnable(){
+            @Override
+            public void run() {
+                IWorkbench wb = PlatformUI.getWorkbench();
+                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
+                if (wbWindow == null) {
+                    return;
+                }
+                IWorkbenchPage activePage = wbWindow.getActivePage();
+                if (activePage == null) {
+                    return;
+                }
 
-    @Override
-    public void resourceChanged(IResourceChangeEvent event) {
-        // Do nothing by default: sub-classes override this on an "as-needed"
-        // basis.
+                for (IViewReference viewReference : activePage.getViewReferences()) {
+                    IViewPart viewPart = viewReference.getView(false);
+                    if (viewPart instanceof CommonNavigator) {
+                        CommonViewer commonViewer = ((CommonNavigator) viewPart).getCommonViewer();
+                        Object element = TmfProjectModelElement.this;
+                        if (element instanceof TmfProjectElement) {
+                            // for the project element the viewer uses the IProject resource
+                            element = getResource();
+                        }
+                        commonViewer.refresh(element);
+                    }
+                }
+            }});
     }
 
     // ------------------------------------------------------------------------
@@ -182,35 +206,66 @@ public abstract class TmfProjectModelElement implements ITmfProjectModelElement,
         return element.fPath.equals(fPath);
     }
 
+    // ------------------------------------------------------------------------
+    // Operations
+    // ------------------------------------------------------------------------
+
     /**
-     * Returns the trace specific supplementary directory under the project's supplementary folder.
-     * The folder will be created if it doesn't exist.
-     *
-     * @param supplFoldername - folder name.
-     * @return returns the trace specific supplementary directory
+     * Refresh the children of this model element, adding new children and
+     * removing dangling children as necessary. The remaining children should
+     * also refresh their own children sub-tree.
      */
-    public IFolder getTraceSupplementaryFolder(String supplFoldername) {
-        IFolder supplFolderParent = getSupplementaryFolderParent();
-        return supplFolderParent.getFolder(supplFoldername);
+    void refreshChildren() {
+        // Sub-classes may override this method as needed
     }
 
     /**
-     * Returns the supplementary folder for this project
+     * Returns the trace specific supplementary folder under the project's
+     * supplementary folder. The returned folder and its parent folders may not
+     * exist.
      *
-     * @return the supplementary folder for this project
+     * @param supplFolderPath
+     *            folder path relative to the project's supplementary folder
+     * @return the trace specific supplementary folder
      */
-    public IFolder getSupplementaryFolderParent() {
+    public IFolder getTraceSupplementaryFolder(String supplFolderPath) {
         TmfProjectElement project = getProject();
         IProject projectResource = project.getResource();
-        IFolder supplFolderParent = projectResource.getFolder(TmfCommonConstants.TRACE_SUPPLEMENATARY_FOLDER_NAME);
-
-        if (!supplFolderParent.exists()) {
-            try {
-                supplFolderParent.create(true, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                Activator.getDefault().logError("Error creating project specific supplementary folder " + supplFolderParent, e); //$NON-NLS-1$
-            }
-        }
-        return supplFolderParent;
+        IFolder supplFolderParent = projectResource.getFolder(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER_NAME);
+        IFolder folder = supplFolderParent.getFolder(supplFolderPath);
+        return folder;
     }
+
+    /**
+     * Returns the trace specific supplementary folder under the project's
+     * supplementary folder. Its parent folders will be created if they don't
+     * exist. If createFolder is true, the returned folder will be created,
+     * otherwise it may not exist.
+     *
+     * @param supplFolderPath
+     *            folder path relative to the project's supplementary folder
+     * @param createFolder
+     *            if true, the returned folder will be created
+     * @return the trace specific supplementary folder
+     * @since 3.0
+     */
+    public IFolder prepareTraceSupplementaryFolder(String supplFolderPath, boolean createFolder) {
+        IFolder folder = getTraceSupplementaryFolder(supplFolderPath);
+        try {
+            if (createFolder) {
+                TraceUtils.createFolder(folder, new NullProgressMonitor());
+            } else {
+                TraceUtils.createFolder((IFolder) folder.getParent(), new NullProgressMonitor());
+            }
+        } catch (CoreException e) {
+            Activator.getDefault().logError("Error creating supplementary folder " + folder.getFullPath(), e); //$NON-NLS-1$
+        }
+        return folder;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '(' + getPath() + ')';
+    }
+
 }

@@ -15,9 +15,10 @@ import java.util.Iterator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.linuxtools.dataviewers.STDataViewersActivator;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTTreeViewer;
-import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersImages;
 import org.eclipse.linuxtools.dataviewers.abstractviewers.STDataViewersMessages;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * This action expands the selected items of the tree
@@ -34,18 +35,14 @@ public class STExpandSelectionAction extends Action {
      *            the stViewer to expand
      */
     public STExpandSelectionAction(AbstractSTTreeViewer stViewer) {
-        super(STDataViewersMessages.expandSelectionAction_title, STDataViewersImages
-                .getImageDescriptor(STDataViewersImages.IMG_EXPANDALL));
+        super(STDataViewersMessages.expandSelectionAction_title,
+        		AbstractUIPlugin.imageDescriptorFromPlugin(STDataViewersActivator.PLUGIN_ID,
+        				"icons/expand_all.gif")); //$NON-NLS-1$
         this.stViewer = stViewer;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.action.Action#run()
-     */
     @Override
-	public void run() {
+    public void run() {
         TreeSelection selection = (TreeSelection) stViewer.getViewer().getSelection();
         if (selection != null && selection != TreeSelection.EMPTY) {
             for (Iterator<?> itSel = selection.iterator(); itSel.hasNext();) {

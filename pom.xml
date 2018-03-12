@@ -21,7 +21,7 @@
   </prerequisites>
   <groupId>org.eclipse.linuxtools</groupId>
   <artifactId>linuxtools-parent</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Eclipse Linux Tools Parent</name>
@@ -50,15 +50,13 @@
 
   <properties>
     <mirror-repo-name>updates-nightly</mirror-repo-name>
-    <tycho-version>0.19.0</tycho-version>
-    <tycho-extras-version>0.19.0</tycho-extras-version>
-    <platform-version-name>luna</platform-version-name>
-    <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
-    <swtbot-site>http://download.eclipse.org/technology/swtbot/snapshots</swtbot-site>
-    <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20130118183705/repository</orbit-site>
+    <tycho-version>0.20.0</tycho-version>
+    <tycho-extras-version>0.20.0</tycho-extras-version>
+    <target-platform>linuxtools-e4.4</target-platform>
     <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.jacoco.reportPath>${project.basedir}/../../target/jacoco.exec</sonar.jacoco.reportPath>
+    <sonar.java.source>1.7</sonar.java.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <pluginRepositories>
@@ -66,65 +64,13 @@
       <id>repo.eclipse.org</id>
       <url>https://repo.eclipse.org/content/groups/releases/</url>
     </pluginRepository>
+    <pluginRepository>
+      <id>tycho-snapshots</id>
+      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+    </pluginRepository>
   </pluginRepositories>
-  <repositories>
-    <repository>
-      <id>swtbot</id>
-      <layout>p2</layout>
-      <url>${swtbot-site}</url>
-    </repository>
-    <repository>
-      <id>orbit</id>
-      <layout>p2</layout>
-      <url>${orbit-site}</url>
-    </repository>
-  </repositories>
-  
+
   <profiles>
-    <profile>
-      <id>platform-kepler</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-        <property>
-          <name>platform-version-name</name>
-          <value>kepler</value>
-        </property>
-      </activation>
-      <properties>
-        <eclipse-site>http://download.eclipse.org/releases/kepler</eclipse-site>
-        <platform-version>[4.3,)</platform-version>
-        <sdk-version>4.3</sdk-version>
-      </properties>
-      <repositories>
-        <repository>
-          <id>kepler</id>
-          <layout>p2</layout>
-          <url>${eclipse-site}</url>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
-      <id>platform-luna</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-        <property>
-          <name>platform-version-name</name>
-          <value>luna</value>
-        </property>
-      </activation>
-      <properties>
-        <eclipse-site>http://download.eclipse.org/releases/staging</eclipse-site>
-        <platform-version>[4.3,)</platform-version>
-        <sdk-version>4.3</sdk-version>
-      </properties>
-      <repositories>
-        <repository>
-          <id>luna</id>
-          <layout>p2</layout>
-          <url>${eclipse-site}</url>
-        </repository>
-      </repositories>
-    </profile>
     <profile>
       <id>build-server</id>
       <build>
@@ -185,6 +131,11 @@
             </executions>
           </plugin>
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>2.3.1</version>
+          </plugin>
+          <plugin>
             <groupId>org.eclipse.tycho.extras</groupId>
             <artifactId>tycho-pack200b-plugin</artifactId>
             <version>${tycho-extras-version}</version>
@@ -222,6 +173,7 @@
 
 
   <modules>
+    <module>profiling</module>
     <module>changelog</module>
     <module>gcov</module>
     <module>gprof</module>
@@ -230,7 +182,6 @@
     <module>man</module>
     <module>oprofile</module>
     <module>perf</module>
-    <module>profiling</module>
     <module>rpm</module>
     <module>systemtap</module>
     <module>valgrind</module>
@@ -263,6 +214,14 @@
               <arch>x86_64</arch>
             </environment>
           </environments>
+          <target>
+            <artifact>
+              <groupId>org.eclipse.linuxtools</groupId>
+              <artifactId>org.eclipse.linuxtools.target</artifactId>
+              <classifier>${target-platform}</classifier>
+              <version>1.0.0</version>
+            </artifact>
+          </target>
         </configuration>
       </plugin>
       <plugin>
@@ -298,7 +257,7 @@
        <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.3.201306030806</version>
+        <version>0.7.0.201403182114</version>
         <executions>
           <execution>
            <id>pre-test</id>
@@ -307,7 +266,7 @@
            </goals>
 	   <configuration>
               <!-- Where to put jacoco coverage report -->
-              <destFile>${sonar.jacoco.reportPath}</destFile> 
+              <destFile>${sonar.jacoco.reportPath}</destFile>
               <includes>
                 <include>org.eclipse.linuxtools.*</include>
               </includes>
@@ -352,7 +311,7 @@
                </dependency>
             </dependencies>
             <product>org.eclipse.platform.ide</product>
- 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine> 
+ 	    <argLine>${tycho.testArgLine} -Xms512m -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine>
 	  </configuration>
 	</plugin>
         <plugin>

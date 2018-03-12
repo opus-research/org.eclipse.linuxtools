@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,7 +9,7 @@
  * Contributors:
  *     Francois Chouinard - Initial API and implementation
  *     Marc-Andre Laperle - Add time zone preference
- *     Patrick Tasse - Updated for negative value formatting
+ *     Patrick Tasse - Updated for negative value formatting and fraction of sec
  *******************************************************************************/
 
 package org.eclipse.linuxtools.tmf.core.timestamp;
@@ -22,19 +22,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A formatting and parsing facility that can handle timestamps that span the
- * epoch with a precision down to the nanosecond. It can  be understood as a
- * simplified and more constrained version of SimpleDateFormat as it limits the
- * number of allowed pattern characters and the acceptable timestamp formats.
+ * epoch with a precision down to the nanosecond. It can be understood as an
+ * extension of SimpleDateFormat that supports seconds since the epoch (Jan 1,
+ * 1970, 00:00:00 GMT), additional sub-second patterns and optional delimiters.
  * <p>
  * The timestamp representation is broken down into a number of optional
  * components that can be assembled into a fairly simple way.
  *
- * <h4>Date Pattern</h4>
+ * <h4>Date and Time Patterns</h4>
+ * All date and time pattern letters defined in {@link SimpleDateFormat} are
+ * supported with the following exceptions:
  * <blockquote>
  * <table border=0 cellspacing=3 cellpadding=0 >
  *     <tr bgcolor="#ccccff">
@@ -42,56 +42,34 @@ import java.util.regex.Pattern;
  *         <th align=left>Description
  *         <th align=left>Value Range
  *         <th align=left>Example
- *     <tr>
- *         <td><code>yyyy</code>
- *         <td>Year
- *         <td><code>1970-...</code>
- *         <td><code>2012</code>
- *     <tr bgcolor="#eeeeff">
- *         <td><code>MM</code>
- *         <td>Month in year
- *         <td><code>01-12</code>
- *         <td><code>09</code>
- *     <tr>
- *         <td><code>dd</code>
- *         <td>Day in month
- *         <td><code>01-31</code>
- *         <td><code>22</code>
- * </table>
- * </blockquote>
- *
- * <h4>Time Pattern</h4>
- * <blockquote>
- * <table border=0 cellspacing=3 cellpadding=0 >
- *     <tr bgcolor="#ccccff">
- *         <th align=left>Format
- *         <th align=left>Description
- *         <th align=left>Value Range
- *         <th align=left>Example
- *     <tr>
- *         <td><code>HH</code>
- *         <td>Hour in day
- *         <td><code>00-23</code>
- *         <td><code>07</code>
- *     <tr bgcolor="#eeeeff">
- *         <td><code>mm</code>
- *         <td>Minute in hour
- *         <td><code>00-59</code>
- *         <td><code>35</code>
- *     <tr>
- *         <td><code>ss</code>
- *         <td>Second in minute
- *         <td><code>00-59</code>
- *         <td><code>41</code>
  *     <tr bgcolor="#eeeeff">
  *         <td><code>T</code>
  *         <td>The seconds since the epoch
- *         <td><code>00-...</code>
+ *         <td><code>0-9223372036</code>
  *         <td><code>1332170682</code>
+ *     <tr>
+ *         <td><code>S</code>
+ *         <td>Millisecond
+ *         <td><code>N/A</code>
+ *         <td><code>Not supported</code>
+ *     <tr bgcolor="#eeeeff">
+ *         <td><code>W</code>
+ *         <td>Week in month
+ *         <td><code>N/A</code>
+ *         <td><code>Not supported</code>
  * </table>
  * </blockquote>
- *
- * <h4>Sub-Seconds Pattern</h4>
+ * <p>
+ * <strong>Note:</strong> When parsing, if "T" is used, no other Date and Time
+ * pattern letter will be interpreted and the entire pre-delimiter input string
+ * will be parsed as a number. Also, "T" should be used for time intervals.
+ * <p>
+ * <strong>Note:</strong> The decimal separator between the Date and Time
+ * pattern and the Sub-Seconds pattern is mandatory (if there is a fractional
+ * part) and must be one of the sub-second delimiters. Date and Time pattern
+ * letters are not interpreted after the decimal separator.
+ * <p>
+ * <h4>Sub-Seconds Patterns</h4>
  * <blockquote>
  * <table border=0 cellspacing=3 cellpadding=0 >
  *     <tr bgcolor="#ccccff">
@@ -100,43 +78,50 @@ import java.util.regex.Pattern;
  *         <th align=left>Value Range
  *         <th align=left>Example
  *     <tr>
- *         <td><code>SSS</code>
- *         <td>Millisecond in second
- *         <td><code>000-999</code>
- *         <td><code>123</code>
+ *         <td><code>S</code>
+ *         <td>Fraction of second
+ *         <td><code>0-999999999</code>
+ *         <td><code>123456789</code>
  *     <tr bgcolor="#eeeeff">
- *         <td><code>CCC</code>
+ *         <td><code>C</code>
  *         <td>Microseconds in ms
- *         <td><code>000-999</code>
+ *         <td><code>0-999</code>
  *         <td><code>456</code>
  *     <tr>
- *         <td><code>NNN</code>
- *         <td>Nanosecond in &#181s
- *         <td><code>000-999</code>
+ *         <td><code>N</code>
+ *         <td>Nanoseconds in &#181s
+ *         <td><code>0-999</code>
  *         <td><code>789</code>
  * </table>
  * </blockquote>
+ * <strong>Note:</strong> The fraction of second pattern can be split, in which
+ * case parsing and formatting continues at the next digit. Digits beyond the
+ * total number of pattern letters are ignored when parsing and truncated when
+ * formatting.
+ * <p>
+ * <strong>Note:</strong> When parsing, "S", "C" and "N" are interchangeable
+ * and are all handled as fraction of second ("S"). The use of "C" and "N" is
+ * discouraged but is supported for backward compatibility.
+ * <p>
  *
- * <strong>Note: </strong>If "T" is used, no other Date or Time pattern
- * can be used. Also, "T" should be used for time intervals.
- * <p>
- * <strong>Note: </strong>Each sub-field can be separated by a single,
- * optional character delimiter. However, the between Date/Time and the
- * Sub-seconds pattern is mandatory (if there is a fractional part) and
- * has to be separated from Date/time by "." (period).
- * <p>
- * The recognized delimiters are:
+ * The recognized sub-second delimiters are:
  * <ul>
  * <li>Space ("<code> </code>")
- * <li>Period (<code>".</code>")
+ * <li>Period ("<code>.</code>")
  * <li>Comma ("<code>,</code>")
  * <li>Dash ("<code>-</code>")
  * <li>Underline ("<code>_</code>")
  * <li>Colon ("<code>:</code>")
  * <li>Semicolon ("<code>;</code>")
  * <li>Slash ("<code>/</code>")
+ * <li>Single-quote ("<code>''</code>")
  * <li>Double-quote ("<code>"</code>")
  * </ul>
+ * <p>
+ * <strong>Note:</strong> When parsing, sub-second delimiters are optional if
+ * unquoted. However, an extra delimiter or any other unexpected character in
+ * the input string ends the parsing of digits. All other quoted or unquoted
+ * characters in the sub-second pattern are matched against the input string.
  *
  * <h4>Examples</h4>
  * The following examples show how timestamp patterns are interpreted in
@@ -149,19 +134,19 @@ import java.util.regex.Pattern;
  *         <th align=left>Date and Time Pattern
  *         <th align=left>Result
  *     <tr>
- *         <td><code>"yyyy-MM-dd HH:mm:ss.SSS.CCC.NNN"</code>
+ *         <td><code>"yyyy-MM-dd HH:mm:ss.SSS.SSS.SSS"</code>
  *         <td><code>2012-03-19 11:24:42.539.677.389</code>
  *     <tr bgcolor="#eeeeff">
- *         <td><code>"yyyy-MM-dd HH:mm:ss.SSS.CCC"</code>
+ *         <td><code>"yyyy-MM-dd HH:mm:ss.SSS.SSS"</code>
  *         <td><code>2012-03-19 11:24:42.539.677</code>
  *     <tr>
- *         <td><code>"yyyy-D HH:mm:ss.SSS.CCC"</code>
+ *         <td><code>"yyyy-D HH:mm:ss.SSS.SSS"</code>
  *         <td><code>2012-79 11:24:42.539.677</code>
  *     <tr bgcolor="#eeeeff">
- *         <td><code>"ss.SSSCCCNNN"</code>
- *         <td><code>42.539677389</code>
+ *         <td><code>"ss,SSSS"</code>
+ *         <td><code>42,5397</code>
  *     <tr>
- *         <td><code>"T.SSS CCC NNN"</code>
+ *         <td><code>"T.SSS SSS SSS"</code>
  *         <td><code>1332170682.539 677 389</code>
  *     <tr bgcolor="#eeeeff">
  *         <td><code>"T"</code>
@@ -187,26 +172,12 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     /**
      * The default timestamp pattern
      */
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss.SSS CCC NNN"; //$NON-NLS-1$
+    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss.SSS SSS SSS"; //$NON-NLS-1$
 
     /**
-     * The LTTng 0.x legacy timestamp format
+     * The default interval pattern
      */
-    public static final String DEFAULT_INTERVAL_PATTERN = "TTT.SSS CCC NNN"; //$NON-NLS-1$
-
-    // Fractions of seconds supported patterns
-    private static final String DOT_RE = "\\.";                 //$NON-NLS-1$
-    private static final String SEP_RE = "[ \\.,-_:;/\\\"]?";   //$NON-NLS-1$
-    private static final String DGTS_3_RE  = "(\\d{3})";        //$NON-NLS-1$
-    private static final String DGTS_13_RE = "(\\d{1,3})";      //$NON-NLS-1$
-
-    private static final String MILLISEC_RE = DOT_RE + DGTS_13_RE;
-    private static final String MICROSEC_RE = DOT_RE + DGTS_3_RE + SEP_RE + DGTS_13_RE;
-    private static final String NANOSEC_RE  = DOT_RE + DGTS_3_RE + SEP_RE + DGTS_3_RE + SEP_RE + DGTS_13_RE;
-
-    private static final Pattern MILLISEC_PAT = Pattern.compile(MILLISEC_RE);
-    private static final Pattern MICROSEC_PAT = Pattern.compile(MICROSEC_RE);
-    private static final Pattern NANOSEC_PAT  = Pattern.compile(NANOSEC_RE);
+    public static final String DEFAULT_INTERVAL_PATTERN = "TTT.SSS SSS SSS"; //$NON-NLS-1$
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -221,8 +192,20 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // The timestamp pattern
     private String fPattern;
 
-    // The timestamp pattern
-    private List<String> fSupplPatterns = new ArrayList<String>();
+    // The index of the decimal separator in the pattern
+    private int fPatternDecimalSeparatorIndex;
+
+    // The decimal separator
+    private char fDecimalSeparator = '\0';
+
+    // The date and time pattern unquoted characters
+    private String fDateTimePattern;
+
+    // The sub-seconds pattern
+    private String fSubSecPattern;
+
+    // The list of supplementary patterns
+    private List<String> fSupplPatterns = new ArrayList<>();
 
     /**
      * The supplementary pattern letters. Can be redefined by sub-classes
@@ -231,6 +214,16 @@ public class TmfTimestampFormat extends SimpleDateFormat {
      * pattern.
      */
     protected String fSupplPatternLetters = "TSCN"; //$NON-NLS-1$
+    /**
+     * The sub-second pattern letters.
+     * @since 3.0
+     */
+    protected String fSubSecPatternChars = "SCN"; //$NON-NLS-1$
+    /**
+     * The optional sub-second delimiter characters.
+     * @since 3.0
+     */
+    protected String fDelimiterChars = " .,-_:;/'\""; //$NON-NLS-1$
 
     /*
      * The bracketing symbols used to mitigate the risk of a format string
@@ -297,16 +290,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     }
 
     /**
-     * @param pattern the new default time pattern
-     * @deprecated The default time pattern depends on the preferences, see
-     *             {@link TmfTimePreferences}. To change the default time
-     *             pattern, modify the preferences and call {@link #updateDefaultFormats()}
-     */
-    @Deprecated
-    public static void setDefaultTimeFormat(final String pattern) {
-    }
-
-    /**
      * @return the default time format pattern
      */
     public static TmfTimestampFormat getDefaulTimeFormat() {
@@ -314,17 +297,6 @@ public class TmfTimestampFormat extends SimpleDateFormat {
             fDefaultTimeFormat = new TmfTimestampFormat(TmfTimePreferences.getInstance().getTimePattern(), TmfTimePreferences.getInstance().getTimeZone());
         }
         return fDefaultTimeFormat;
-    }
-
-    /**
-     * @param pattern the new default interval pattern
-     * @deprecated The default interval format pattern depends on the
-     *             preferences, see {@link TmfTimePreferences}. To change the
-     *             default time pattern, modify the preferences and call
-     *             {@link #updateDefaultFormats()}
-     */
-    @Deprecated
-    public static void setDefaultIntervalFormat(final String pattern) {
     }
 
     /**
@@ -340,8 +312,20 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     @Override
     public void applyPattern(String pattern) {
         fPattern = pattern;
-        String quotedPattern = quoteSpecificTags(pattern);
-        super.applyPattern(quotedPattern);
+        fPatternDecimalSeparatorIndex = indexOfPatternDecimalSeparator(pattern);
+        fDateTimePattern = unquotePattern(pattern.substring(0, fPatternDecimalSeparatorIndex));
+        // Check that 'S' is not present in the date and time pattern
+        if (fDateTimePattern.indexOf('S') != -1) {
+            throw new IllegalArgumentException("Illegal pattern character 'S'"); //$NON-NLS-1$
+        }
+        // Check that 'W' is not present in the date and time pattern
+        if (fDateTimePattern.indexOf('W') != -1) {
+            throw new IllegalArgumentException("Illegal pattern character 'W'"); //$NON-NLS-1$
+        }
+        // The super pattern is the date/time pattern, quoted and bracketed
+        super.applyPattern(quoteSpecificTags(pattern.substring(0, fPatternDecimalSeparatorIndex), true));
+        // The sub-seconds pattern is bracketed (but not quoted)
+        fSubSecPattern = quoteSpecificTags(pattern.substring(fPatternDecimalSeparatorIndex), false);
     }
 
     @Override
@@ -364,44 +348,30 @@ public class TmfTimestampFormat extends SimpleDateFormat {
         // Split the timestamp value into its sub-components
         long date = value / 1000000; // milliseconds since January 1, 1970, 00:00:00 GMT
         long sec = value / 1000000000;    // seconds since January 1, 1970, 00:00:00 GMT
-        long ms  = Math.abs(value) % 1000000000 / 1000000;  // milliseconds
-        long cs  = Math.abs(value) % 1000000    / 1000;     // microseconds
-        long ns  = Math.abs(value) % 1000;                  // nanoseconds
+        long ms  = Math.abs((value % 1000000000) / 1000000); // milliseconds
+        long cs  = Math.abs((value % 1000000)    / 1000);    // microseconds
+        long ns  = Math.abs(value % 1000);                   // nanoseconds
 
         // Adjust for negative value when formatted as a date
-        if (value < 0 && ms + cs + ns > 0 && !fPattern.contains("T")) { //$NON-NLS-1$
+        if (value < 0 && ms + cs + ns > 0 && !super.toPattern().contains(fOpenBracket + "T")) { //$NON-NLS-1$
             date -= 1;
             long nanosec = 1000000000 - (1000000 * ms + 1000 * cs + ns);
             ms = nanosec / 1000000;
-            cs = nanosec % 1000000 / 1000;
+            cs = (nanosec % 1000000) / 1000;
             ns = nanosec % 1000;
         }
 
-        // Let the base class fill the stuff it knows about
+        // Let the base class format the date/time pattern
         StringBuffer result = new StringBuffer(super.format(date));
+        // Append the sub-second pattern
+        result.append(fSubSecPattern);
 
-        // In the case where there is no separation between 2 supplementary
-        // fields, the pattern will have the form "..'[pat-1]''[pat-2]'.." and
-        // the base class format() will interpret the 2 adjacent quotes as a
-        // wanted character in the result string as ("..[pat-1]'[pat-2]..").
-        // Remove these extra quotes before filling the supplementary fields.
-        int loc = result.indexOf(fCloseBracket + "'" + fOpenBracket); //$NON-NLS-1$
-        while (loc != -1) {
-            result.deleteCharAt(loc + fCloseBracket.length());
-            loc = result.indexOf(fCloseBracket + "'" + fOpenBracket); //$NON-NLS-1$
-        }
-
+        int fractionDigitsPrinted = 0;
         // Fill in our extensions
         for (String pattern : fSupplPatterns) {
             int length = pattern.length();
-
-            // Prepare the format buffer
-            StringBuffer fmt = new StringBuffer(length);
-            for (int i = 0; i < length; i++) {
-                fmt.append("0"); //$NON-NLS-1$
-            }
-            DecimalFormat dfmt = new DecimalFormat(fmt.toString());
-            String fmtVal = ""; //$NON-NLS-1$;
+            long val = 0;
+            int bufLength = 0;
 
             // Format the proper value as per the pattern
             switch (pattern.charAt(0)) {
@@ -409,24 +379,40 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                     if (value < 0 && sec == 0) {
                         result.insert(0, '-');
                     }
-                    fmtVal = dfmt.format(sec);
+                    val = sec;
+                    bufLength = Math.min(length, 10);
                     break;
                 case 'S':
-                    fmtVal = dfmt.format(ms);
+                    val = 1000000 * ms + 1000 * cs + ns;
+                    bufLength = 9;
                     break;
                 case 'C':
-                    fmtVal = dfmt.format(cs);
+                    val = cs;
+                    bufLength = Math.min(length, 3);
                     break;
                 case 'N':
-                    fmtVal = dfmt.format(ns);
+                    val = ns;
+                    bufLength = Math.min(length, 3);
                     break;
                 default:
                     break;
             }
 
-            // Substitute the placeholder with the formatted value
+            // Prepare the format buffer
+            StringBuffer fmt = new StringBuffer();
+            for (int i = 0; i < bufLength; i++) {
+                fmt.append("0"); //$NON-NLS-1$
+            }
+            DecimalFormat dfmt = new DecimalFormat(fmt.toString());
+            String fmtVal = dfmt.format(val);
+            if (pattern.charAt(0) == 'S') {
+                fmtVal = fmtVal.substring(fractionDigitsPrinted, Math.min(bufLength, fractionDigitsPrinted + length));
+                fractionDigitsPrinted += fmtVal.length();
+            }
+
+            // Substitute the placeholder pattern with the formatted value
             String ph = new StringBuffer(fOpenBracket + pattern + fCloseBracket).toString();
-            loc = result.indexOf(ph);
+            int loc = result.indexOf(ph);
             result.replace(loc, loc + length + fOpenBracket.length() + fCloseBracket.length(), fmtVal);
         }
 
@@ -436,134 +422,116 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     /**
      * Parse a string according to the format pattern
      *
-     * @param string the source string
-     * @param ref the reference (base) time
-     * @return the parsed value
+     * @param source the source string
+     * @param ref the reference (base) time (in ns)
+     * @return the parsed value (in ns)
      * @throws ParseException if the string has an invalid format
      */
-    public synchronized long parseValue(final String string, final long ref) throws ParseException {
+    public synchronized long parseValue(final String source, final long ref) throws ParseException {
 
         // Trivial case
-        if (string == null || string.length() == 0) {
+        if (source == null || source.length() == 0) {
             return 0;
         }
 
-        // The timestamp sub-components
-        long seconds  = -1;
-        long millisec =  0;
-        long microsec =  0;
-        long nanosec  =  0;
+        long seconds  = 0;
+        boolean isNegative = source.charAt(0) == '-';
+        boolean isDateTimeFormat = true;
 
-        // Since we are processing the fractional part, substitute it with
-        // its pattern so the base parser doesn't complain
-        StringBuilder sb = new StringBuilder(string);
-        int dot = string.indexOf('.');
-        if (dot == -1) {
-            sb.append('.');
-            dot = string.length();
-        }
-        sb = new StringBuilder(string.substring(0, dot));
-        String basePattern = super.toPattern();
-        int dot2 = basePattern.indexOf('.');
-        if (dot2 != -1) {
-            sb.append(basePattern.substring(dot2));
-        }
+        int index = indexOfSourceDecimalSeparator(source);
 
-        // Fill in our extensions
+        // Check for seconds in epoch pattern
         for (String pattern : fSupplPatterns) {
-            String pat = fOpenBracket + pattern + fCloseBracket;
-            Matcher matcher;
-
-            // Extract the substring corresponding to the extra pattern letters
-            // and replace with the pattern so the base parser can do its job.
-            switch (pattern.charAt(0)) {
-                case 'T':
-                    // Remove everything up to the first "." and  compute the
-                    // number of seconds since the epoch. If there is no period,
-                    // assume an integer value and return immediately
-                    if (dot < 1) {
-                        return new DecimalFormat("0").parse(string).longValue() * 1000000000; //$NON-NLS-1$
-                    }
-                    seconds = new DecimalFormat("0").parse(string.substring(0, dot)).longValue(); //$NON-NLS-1$
-                    sb.delete(0, dot);
-                    sb.insert(0, pat);
-                    break;
-                case 'S':
-                    matcher = MILLISEC_PAT.matcher(string.substring(dot));
-                    if (matcher.find()) {
-                        millisec = new Long(matcher.group(1));
-                        for (int l = matcher.group(1).length(); l < 3; l++) {
-                            millisec *= 10;
-                        }
-                    }
-                    stripQuotes(sb, pattern);
-                    break;
-                case 'C':
-                    matcher = MICROSEC_PAT.matcher(string.substring(dot));
-                    if (matcher.find()) {
-                        microsec = new Long(matcher.group(2));
-                        for (int l = matcher.group(2).length(); l < 3; l++) {
-                            microsec *= 10;
-                        }
-                    }
-                    stripQuotes(sb, pattern);
-                    break;
-                case 'N':
-                    matcher = NANOSEC_PAT.matcher(string.substring(dot));
-                    if (matcher.find()) {
-                        nanosec = new Long(matcher.group(3));
-                        for (int l = matcher.group(3).length(); l < 3; l++) {
-                            nanosec *= 10;
-                        }
-                    }
-                    stripQuotes(sb, pattern);
-                    break;
-                default:
-                    break;
+            if (pattern.charAt(0) == 'T') {
+                isDateTimeFormat = false;
+                // Remove everything up to the first "." and compute the
+                // number of seconds since the epoch. If there is no period,
+                // assume an integer value and return immediately
+                if (index == 0 || (isNegative && index <= 1)) {
+                    seconds = 0;
+                } else if (index == source.length()) {
+                    return new DecimalFormat("0").parse(source).longValue() * 1000000000; //$NON-NLS-1$
+                } else {
+                    seconds = new DecimalFormat("0").parse(source.substring(0, index)).longValue(); //$NON-NLS-1$
+                }
+                break;
             }
         }
 
         // If there was no "T" (thus not an interval), parse as a date
-        if (seconds == -1) {
-            Date baseDate = super.parse(sb.toString());
+        if (isDateTimeFormat && super.toPattern().length() > 0) {
+            Date baseDate = super.parse(source.substring(0, index));
+            getCalendar();
 
-            Calendar refTime = Calendar.getInstance(getTimeZone());
-            refTime.setTimeInMillis(ref / 1000000);
-            Calendar newTime = Calendar.getInstance(getTimeZone());
-            newTime.setTimeInMillis(baseDate.getTime());
-
-            int[] fields = new int[] { Calendar.YEAR, Calendar.MONTH, Calendar.DATE, Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND };
-            for (int field : fields) {
-                int value = newTime.get(field);
-                // Do some adjustments...
-                if (field == Calendar.YEAR) {
-                    value -= 1970;
-                } else if (field == Calendar.DATE) {
-                    value -= 1;
+            if (ref != Long.MIN_VALUE) {
+                Calendar baseTime = Calendar.getInstance(getTimeZone());
+                baseTime.setTimeInMillis(baseDate.getTime());
+                Calendar newTime = Calendar.getInstance(getTimeZone());
+                newTime.setTimeInMillis(ref / 1000000);
+                boolean setRemainingFields = false;
+                if (dateTimePatternContains("yY")) { //$NON-NLS-1$
+                    newTime.set(Calendar.YEAR, baseTime.get(Calendar.YEAR));
+                    setRemainingFields = true;
                 }
-                // ... and fill-in the empty fields
-                if (value == 0) {
-                    newTime.set(field, refTime.get(field));
-                } else {
-                    break; // Get out as soon as we have a significant value
+                if (setRemainingFields || dateTimePatternContains("M")) { //$NON-NLS-1$
+                    newTime.set(Calendar.MONTH, baseTime.get(Calendar.MONTH));
+                    setRemainingFields = true;
                 }
+                if (setRemainingFields || dateTimePatternContains("d")) { //$NON-NLS-1$
+                    newTime.set(Calendar.DATE, baseTime.get(Calendar.DATE));
+                    setRemainingFields = true;
+                } else if (dateTimePatternContains("D")) { //$NON-NLS-1$
+                    newTime.set(Calendar.DAY_OF_YEAR, baseTime.get(Calendar.DAY_OF_YEAR));
+                    setRemainingFields = true;
+                } else if (dateTimePatternContains("w")) { //$NON-NLS-1$
+                    newTime.set(Calendar.WEEK_OF_YEAR, baseTime.get(Calendar.WEEK_OF_YEAR));
+                    setRemainingFields = true;
+                }
+                if (dateTimePatternContains("F")) { //$NON-NLS-1$
+                    newTime.set(Calendar.DAY_OF_WEEK_IN_MONTH, baseTime.get(Calendar.DAY_OF_WEEK_IN_MONTH));
+                    setRemainingFields = true;
+                }
+                if (dateTimePatternContains("Eu")) { //$NON-NLS-1$
+                    newTime.set(Calendar.DAY_OF_WEEK, baseTime.get(Calendar.DAY_OF_WEEK));
+                    setRemainingFields = true;
+                }
+                if (setRemainingFields || dateTimePatternContains("aHkKh")) { //$NON-NLS-1$
+                    newTime.set(Calendar.HOUR_OF_DAY, baseTime.get(Calendar.HOUR_OF_DAY));
+                    setRemainingFields = true;
+                }
+                if (setRemainingFields || dateTimePatternContains("m")) { //$NON-NLS-1$
+                    newTime.set(Calendar.MINUTE, baseTime.get(Calendar.MINUTE));
+                    setRemainingFields = true;
+                }
+                if (setRemainingFields || dateTimePatternContains("s")) { //$NON-NLS-1$
+                    newTime.set(Calendar.SECOND, baseTime.get(Calendar.SECOND));
+                }
+                seconds = newTime.getTimeInMillis() / 1000;
+            } else {
+                seconds = baseDate.getTime() / 1000;
             }
-            seconds = newTime.getTimeInMillis() / 1000;
+        } else if (isDateTimeFormat && ref != Long.MIN_VALUE) {
+            // If the date and time pattern is empty, adjust for reference
+            seconds = ref / 1000000000;
         }
 
+        long nanos = parseSubSeconds(source.substring(index));
+        if (isNegative && !isDateTimeFormat) {
+            nanos = -nanos;
+        }
         // Compute the value in ns
-        return seconds * 1000000000 +  millisec * 1000000 +  microsec * 1000 +  nanosec;
+        return seconds * 1000000000 + nanos;
     }
 
     /**
      * Parse a string according to the format pattern
      *
-     * @param string the source string
-     * @return the parsed value
+     * @param source the source string
+     * @return the parsed value (in ns)
      * @throws ParseException if the string has an invalid format
      */
-    public long parseValue(final String string) throws ParseException {
-        long result = parseValue(string, 0);
+    public long parseValue(final String source) throws ParseException {
+        long result = parseValue(source, Long.MIN_VALUE);
         return result;
 
     }
@@ -573,17 +541,137 @@ public class TmfTimestampFormat extends SimpleDateFormat {
     // ------------------------------------------------------------------------
 
     /**
+     * Finds the index of the decimal separator in the pattern string, which is
+     * the last delimiter found before the first sub-second pattern character.
+     * Returns the pattern string length if decimal separator is not found.
+     */
+    private int indexOfPatternDecimalSeparator(String pattern) {
+        int lastDelimiterIndex = pattern.length();
+        boolean inQuote = false;
+        int index = 0;
+        while (index < pattern.length()) {
+            char ch = pattern.charAt(index);
+            if (ch == '\'') {
+                if (index + 1 < pattern.length()) {
+                    index++;
+                    ch = pattern.charAt(index);
+                    if (ch != '\'') {
+                        inQuote = !inQuote;
+                    }
+                }
+            }
+            if (!inQuote) {
+                if (fSubSecPatternChars.indexOf(ch) != -1) {
+                    if (lastDelimiterIndex < pattern.length()) {
+                        fDecimalSeparator = pattern.charAt(lastDelimiterIndex);
+                    }
+                    return lastDelimiterIndex;
+                }
+                if (fDelimiterChars.indexOf(ch) != -1) {
+                    lastDelimiterIndex = index;
+                    if (ch == '\'') {
+                        lastDelimiterIndex--;
+                    }
+                }
+            }
+            index++;
+        }
+        return pattern.length();
+    }
+
+    /**
+     * Finds the first index of a decimal separator in the source string.
+     * Skips the number of decimal separators in the format pattern.
+     * Returns the source string length if decimal separator is not found.
+     */
+    private int indexOfSourceDecimalSeparator(String source) {
+        String pattern = fPattern.substring(0, fPatternDecimalSeparatorIndex);
+        String separator = fDecimalSeparator == '\'' ? "''" : String.valueOf(fDecimalSeparator); //$NON-NLS-1$
+        int sourcePos = source.indexOf(fDecimalSeparator);
+        int patternPos = pattern.indexOf(separator);
+        while (patternPos != -1 && sourcePos != -1) {
+            sourcePos = source.indexOf(fDecimalSeparator, sourcePos + 1);
+            patternPos = pattern.indexOf(separator, patternPos + separator.length());
+        }
+        if (sourcePos == -1) {
+            sourcePos = source.length();
+        }
+        return sourcePos;
+    }
+
+    /**
+     * Parse the sub-second digits in the input. Handle delimiters as optional
+     * characters. Match any non-pattern and non-delimiter pattern characters
+     * against the input. Returns the number of nanoseconds.
+     */
+    private long parseSubSeconds(String input) throws ParseException {
+        StringBuilder digits = new StringBuilder("000000000"); //$NON-NLS-1$
+        String pattern = fPattern.substring(fPatternDecimalSeparatorIndex);
+        boolean inQuote = false;
+        int digitIndex = 0;
+        int inputIndex = 0;
+        int patternIndex = 0;
+        while (patternIndex < pattern.length()) {
+            char ch = pattern.charAt(patternIndex);
+            if (ch == '\'') {
+                patternIndex++;
+                if (patternIndex < pattern.length()) {
+                    ch = pattern.charAt(patternIndex);
+                    if (ch != '\'') {
+                        inQuote = !inQuote;
+                    }
+                } else if (inQuote) {
+                    // final end quote
+                    break;
+                }
+            }
+            if (fDelimiterChars.indexOf(ch) != -1 && !inQuote) {
+                // delimiter is optional if not in quote
+                if (inputIndex < input.length() && input.charAt(inputIndex) == ch) {
+                    inputIndex++;
+                }
+                patternIndex++;
+                continue;
+            } else if (fSubSecPatternChars.indexOf(ch) != -1 && !inQuote) {
+                // read digit if not in quote
+                if (inputIndex < input.length() && Character.isDigit(input.charAt(inputIndex))) {
+                    if (digitIndex < digits.length()) {
+                        digits.setCharAt(digitIndex, input.charAt(inputIndex));
+                        digitIndex++;
+                    }
+                    inputIndex++;
+                } else {
+                    // not a digit, stop parsing digits
+                    digitIndex = digits.length();
+                }
+                patternIndex++;
+                continue;
+            }
+            if (inputIndex >= input.length() || input.charAt(inputIndex) != ch) {
+                throw new ParseException("Unparseable sub-seconds: \"" + input + '\"', inputIndex); //$NON-NLS-1$
+            }
+            patternIndex++;
+            inputIndex++;
+        }
+        return Long.parseLong(digits.toString());
+    }
+
+    /**
      * Copy the pattern but quote (bracket with "[&" and "&]") the
-     * TmfTimestampFormat specific tags so these fields are treated as
-     * comments by the base class.
+     * TmfTimestampFormat specific tags. Optionally surround tags with single
+     * quotes so these fields are treated as comments by the base class.
      *
      * It also keeps track of the corresponding quoted fields so they can be
      * properly populated later on (by format()).
      *
-     * @param pattern the 'extended' pattern
+     * @param pattern
+     *            the 'extended' pattern
+     * @param includeQuotes
+     *            true to include quotes from pattern and add single quotes
+     *            around tags
      * @return the quoted and bracketed pattern
      */
-    private String quoteSpecificTags(final String pattern) {
+    private String quoteSpecificTags(final String pattern, boolean includeQuotes) {
 
         StringBuffer result = new StringBuffer();
 
@@ -592,7 +680,9 @@ public class TmfTimestampFormat extends SimpleDateFormat {
 
         for (int i = 0; i < length; i++) {
             char c = pattern.charAt(i);
-            result.append(c);
+            if (c != '\'' || includeQuotes) {
+                result.append(c);
+            }
             if (c == '\'') {
                 // '' is treated as a single quote regardless of being
                 // in a quoted section.
@@ -607,37 +697,77 @@ public class TmfTimestampFormat extends SimpleDateFormat {
                 inQuote = !inQuote;
                 continue;
             }
-            if (!inQuote) {
-                if (fSupplPatternLetters.indexOf(c) != -1) {
-                    StringBuilder pat = new StringBuilder();
-                    pat.append(c);
-                    result.insert(result.length() - 1, "'" + fOpenBracket); //$NON-NLS-1$
-                    while ((i + 1) < length && pattern.charAt(i + 1) == c) {
-                        result.append(c);
-                        pat.append(c);
-                        i++;
+            if (!inQuote && (fSupplPatternLetters.indexOf(c) != -1)) {
+                if (pattern.charAt(0) == fDecimalSeparator) {
+                    if (fSubSecPatternChars.indexOf(c) == -1) {
+                        // do not quote non-sub-second pattern letters in sub-second pattern
+                        continue;
                     }
-                    result.append(fCloseBracket + "'"); //$NON-NLS-1$
-                    fSupplPatterns.add(pat.toString());
+                } else {
+                    if (fSubSecPatternChars.indexOf(c) != -1) {
+                        // do not quote sub-second pattern letters in date and time pattern
+                        continue;
+                    }
                 }
+                StringBuilder pat = new StringBuilder();
+                pat.append(c);
+                if (includeQuotes) {
+                    result.insert(result.length() - 1, "'"); //$NON-NLS-1$
+                }
+                result.insert(result.length() - 1, fOpenBracket);
+                while ((i + 1) < length && pattern.charAt(i + 1) == c) {
+                    result.append(c);
+                    pat.append(c);
+                    i++;
+                }
+                result.append(fCloseBracket);
+                if (includeQuotes) {
+                    result.append("'"); //$NON-NLS-1$
+                }
+                fSupplPatterns.add(pat.toString());
             }
         }
         return result.toString();
     }
 
     /**
-     * Remove the quotes from the pattern
-     *
-     * @param sb
-     * @param pattern
+     * Returns the unquoted characters in this pattern.
      */
-    private void stripQuotes(StringBuilder sb, String pattern) {
-        String pt = "'" + fOpenBracket + pattern + fCloseBracket + "'";  //$NON-NLS-1$//$NON-NLS-2$
-        int l = sb.indexOf(pt);
-        if (l != -1) {
-            sb.delete(l + pt.length() - 1, l + pt.length());
-            sb.delete(l, l + 1);
+    private static String unquotePattern(String pattern) {
+        boolean inQuote = false;
+        int index = 0;
+        StringBuilder result = new StringBuilder();
+        while (index < pattern.length()) {
+            char ch = pattern.charAt(index);
+            if (ch == '\'') {
+                if (index + 1 < pattern.length()) {
+                    index++;
+                    ch = pattern.charAt(index);
+                    if (ch != '\'') {
+                        inQuote = !inQuote;
+                    }
+                }
+            }
+            if (!inQuote) {
+                result.append(ch);
+            }
+            index++;
         }
+        return result.toString();
     }
 
+    /**
+     * Returns true if the date and time pattern contains any of these chars.
+     */
+    private boolean dateTimePatternContains(String chars) {
+        int index = 0;
+        while (index < chars.length()) {
+            char ch = chars.charAt(index);
+            if (fDateTimePattern.indexOf(ch) != -1) {
+                return true;
+            }
+            index++;
+        }
+        return false;
+    }
 }

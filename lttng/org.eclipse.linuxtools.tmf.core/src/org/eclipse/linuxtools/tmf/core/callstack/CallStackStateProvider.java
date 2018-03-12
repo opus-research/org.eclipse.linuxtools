@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,13 +13,13 @@
 package org.eclipse.linuxtools.tmf.core.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.core.Activator;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.osgi.util.NLS;
@@ -64,8 +64,6 @@ import org.eclipse.osgi.util.NLS;
  */
 public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
 
-    /** CallStack state system ID */
-    public static final String ID = "org.eclipse.linuxtools.tmf.callstack"; //$NON-NLS-1$
     /** Thread attribute */
     public static final String THREADS = "Threads"; //$NON-NLS-1$
     /** CallStack stack-attribute */
@@ -73,6 +71,8 @@ public abstract class CallStackStateProvider extends AbstractTmfStateProvider {
     /** Undefined function exit name */
     public static final String UNDEFINED = "UNDEFINED"; //$NON-NLS-1$
 
+    /** CallStack state system ID */
+    private static final String ID = "org.eclipse.linuxtools.tmf.callstack"; //$NON-NLS-1$
     /** Dummy function name for when no function is expected */
     private static final String NO_FUNCTION = "no function"; //$NON-NLS-1$
 

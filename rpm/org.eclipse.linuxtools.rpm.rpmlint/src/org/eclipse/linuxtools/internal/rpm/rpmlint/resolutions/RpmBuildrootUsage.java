@@ -16,24 +16,18 @@ package org.eclipse.linuxtools.internal.rpm.rpmlint.resolutions;
  *
  */
 public class RpmBuildrootUsage extends ARemoveLineResolution{
-	/**
-	 * The rpmlint ID of the warning.
-	 */
-	public static final String ID = "rpm-buildroot-usage"; //$NON-NLS-1$
+    /**
+     * The rpmlint ID of the warning.
+     */
+    public static final String ID = "rpm-buildroot-usage"; //$NON-NLS-1$
 
-	/**
-	 * @see org.eclipse.ui.IMarkerResolution2#getDescription()
-	 */
-	@Override
-	public String getDescription() {
-		return Messages.RpmBuildrootUsage_0;
-	}
+    @Override
+    public String getDescription() {
+        return Messages.RpmBuildrootUsage_0;
+    }
 
-	/**
-	 * @see org.eclipse.ui.IMarkerResolution#getLabel()
-	 */
-	@Override
-	public String getLabel() {
-		return ID;
-	}
+    @Override
+    public String getLabel() {
+        return ID;
+    }
 }

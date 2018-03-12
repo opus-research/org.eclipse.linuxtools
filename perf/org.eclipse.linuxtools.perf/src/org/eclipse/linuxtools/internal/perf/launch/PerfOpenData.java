@@ -34,7 +34,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
 public class PerfOpenData extends ProfileLaunchShortcut implements
-		IEditorLauncher {
+        IEditorLauncher {
 
     @Override
     public void open(IPath file) {
@@ -53,53 +53,53 @@ public class PerfOpenData extends ProfileLaunchShortcut implements
                                 projectName = project.getName();
                                 URI fileURI = ((IFile)element).getLocationURI();
                                 ILaunchConfiguration config = createDefaultConfiguration(projectName);
-                                PerfCore.Report(config, null, null, null, fileURI.getPath(), null);
+                                PerfCore.report(config, null, null, null, fileURI.getPath(), null);
                                 String timestamp = DateFormat.getInstance().format(new Date(eFile.getLocalTimeStamp()));
-                                PerfCore.RefreshView(fileURI.toString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                                PerfCore.refreshView(fileURI.toString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                         }
                 }
         } else {
                 projectName = location.getProject().getName();
                 ILaunchConfiguration config = createDefaultConfiguration(projectName);
-                PerfCore.Report(config, null, null, null, file.toOSString(), null);
+                PerfCore.report(config, null, null, null, file.toOSString(), null);
                 String timestamp = DateFormat.getInstance().format(new Date(location.getLocalTimeStamp()));
-                PerfCore.RefreshView(file.toOSString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                PerfCore.refreshView(file.toOSString() + " (" + timestamp + ")"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
-	@Override
-	protected ILaunchConfigurationType getLaunchConfigType() {
-		return getLaunchManager().getLaunchConfigurationType(
-				PerfPlugin.LAUNCHCONF_ID);
-	}
+    @Override
+    protected ILaunchConfigurationType getLaunchConfigType() {
+        return getLaunchManager().getLaunchConfigurationType(
+                PerfPlugin.LAUNCHCONF_ID);
+    }
 
-	@Override
-	protected void setDefaultProfileAttributes(
-			ILaunchConfigurationWorkingCopy wc) {
-		wc.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
-		wc.setAttribute(IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE, true);
-	}
+    @Override
+    protected void setDefaultProfileAttributes(
+            ILaunchConfigurationWorkingCopy wc) {
+        wc.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
+        wc.setAttribute(IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE, true);
+    }
 
-	/**
-	 * Create an ILaunchConfiguration instance given the project's name.
-	 *
-	 * @param projectName
-	 * @return ILaunchConfiguration based on String projectName
-	 */
-	protected ILaunchConfiguration createDefaultConfiguration(String projectName) {
-		ILaunchConfiguration config = null;
-		try {
-			ILaunchConfigurationType configType = getLaunchConfigType();
-			ILaunchConfigurationWorkingCopy wc = configType.newInstance(
-					null,
-					getLaunchManager().generateLaunchConfigurationName(
-							projectName));
-			wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectName);
-			config = wc;
+    /**
+     * Create an ILaunchConfiguration instance given the project's name.
+     *
+     * @param projectName
+     * @return ILaunchConfiguration based on String projectName
+     */
+    private ILaunchConfiguration createDefaultConfiguration(String projectName) {
+        ILaunchConfiguration config = null;
+        try {
+            ILaunchConfigurationType configType = getLaunchConfigType();
+            ILaunchConfigurationWorkingCopy wc = configType.newInstance(
+                    null,
+                    getLaunchManager().generateLaunchConfigurationName(
+                            projectName));
+            wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectName);
+            config = wc;
 
-		} catch (CoreException e) {
-			PerfCore.logException(e);
-		}
-		return config;
-	}
+        } catch (CoreException e) {
+            PerfCore.logException(e);
+        }
+        return config;
+    }
 }

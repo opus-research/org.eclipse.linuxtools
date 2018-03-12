@@ -35,87 +35,75 @@ import org.eclipse.swt.widgets.Composite;
 
 public class CovViewer extends AbstractSTTreeViewer {
 
-	private ISTDataViewersField[] fields;
+    private ISTDataViewersField[] fields;
 
-	/**
-	 * Constructor
-	 * @param parent
-	 */
-	public CovViewer(Composite parent) {
-		super(parent, SWT.BORDER | SWT.H_SCROLL| SWT.V_SCROLL | SWT.MULTI | 
-				SWT.FULL_SELECTION);
-	}
+    /**
+     * Constructor
+     * @param parent
+     */
+    public CovViewer(Composite parent) {
+        super(parent, SWT.BORDER | SWT.H_SCROLL| SWT.V_SCROLL | SWT.MULTI |
+                SWT.FULL_SELECTION);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#createContentProvider()
-	 */
-	@Override
-	protected IContentProvider createContentProvider() {
-		return CovFileContentProvider.sharedInstance;
+    @Override
+    protected IContentProvider createContentProvider() {
+        return CovFileContentProvider.sharedInstance;
 
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getAllFields()
-	 */
-	@Override
-	public ISTDataViewersField[] getAllFields() {
-		if (fields == null) {
-			fields = new ISTDataViewersField[] { 
-					new FieldName(),
-					new FieldTotalLines(), 
-					new FieldInstrumentedLines(),
-					new FieldExecutedLines(), 
-					new FieldCoveragePercentage() };
-		}
-		return fields;
-	}
+    @Override
+    public ISTDataViewersField[] getAllFields() {
+        if (fields == null) {
+            fields = new ISTDataViewersField[] {
+                    new FieldName(),
+                    new FieldTotalLines(),
+                    new FieldInstrumentedLines(),
+                    new FieldExecutedLines(),
+                    new FieldCoveragePercentage() };
+        }
+        return fields;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#getDialogSettings()
-	 */
-	@Override
-	public IDialogSettings getDialogSettings() {
-		return org.eclipse.linuxtools.internal.gcov.Activator.getDefault().getDialogSettings();
-	}
+    @Override
+    public IDialogSettings getDialogSettings() {
+        return org.eclipse.linuxtools.internal.gcov.Activator.getDefault().getDialogSettings();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.linuxtools.dataviewers.abstractviewers.AbstractSTViewer#handleOpenEvent(org.eclipse.jface.viewers.OpenEvent)
-	 */
-	@Override
-	protected void handleOpenEvent(OpenEvent event) {
+    @Override
+    protected void handleOpenEvent(OpenEvent event) {
 
-		IStructuredSelection selection = (IStructuredSelection) event
-		.getSelection();
-		TreeElement element = (TreeElement) selection.getFirstElement();
+        IStructuredSelection selection = (IStructuredSelection) event
+        .getSelection();
+        TreeElement element = (TreeElement) selection.getFirstElement();
 
-		if (element != null) {
-			if (element.getParent() != null) {
-				String sourceLoc = ""; //$NON-NLS-1$
-				long lineNumber = 0;
+        if (element != null) {
+            if (element.getParent() != null) {
+                String sourceLoc = ""; //$NON-NLS-1$
+                long lineNumber = 0;
 
-				if (element.getClass() == CovFileTreeElement.class)
-					sourceLoc = element.getName();
+                if (element.getClass() == CovFileTreeElement.class) {
+                    sourceLoc = element.getName();
+                } else if (element.getClass() == CovFunctionTreeElement.class) {
+                    sourceLoc = ((CovFunctionTreeElement) element).getSourceFilePath();
+                    lineNumber  =((CovFunctionTreeElement)element).getFirstLnNmbr();
+                }
+                CovManager cvm = (CovManager) this.getInput();
+                SourceFile sourceFile = cvm.getSourceFile(sourceLoc);
+                if (sourceFile != null) {
+                    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+                    String binaryLoc = cvm.getBinaryPath();
+                    IPath binaryPath = new Path(binaryLoc);
+                    IFile binary = root.getFileForLocation(binaryPath);
+                    IProject project = null;
+                    if (binary != null) {
+                        project = binary.getProject();
+                    }
 
-				else if (element.getClass() == CovFunctionTreeElement.class) {
-					sourceLoc = ((CovFunctionTreeElement) element).getSourceFilePath();
-					lineNumber  =((CovFunctionTreeElement)element).getFirstLnNmbr();
-				}
-				CovManager cvm = (CovManager) this.getInput();
-				SourceFile sourceFile = cvm.getSourceFile(sourceLoc);
-				if (sourceFile != null) {
-					IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-					String binaryLoc = cvm.getBinaryPath();
-					IPath binaryPath = new Path(binaryLoc);
-					IFile binary = root.getFileForLocation(binaryPath);
-					IProject project = null;
-					if (binary != null) project = binary.getProject();
-
-					OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project, 
-							binary, sourceFile, (int)lineNumber);
-				}
-			}
-		}
-	}
+                    OpenSourceFileAction.openAnnotatedSourceFile(project,
+                            binary, sourceFile, (int)lineNumber);
+                }
+            }
+        }
+    }
 }

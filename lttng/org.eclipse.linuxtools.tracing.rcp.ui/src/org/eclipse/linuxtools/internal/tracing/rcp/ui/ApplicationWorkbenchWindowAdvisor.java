@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,16 +12,13 @@
 package org.eclipse.linuxtools.internal.tracing.rcp.ui;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.linuxtools.internal.tracing.rcp.ui.cli.CliParser;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfNavigatorContentProvider;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfOpenTraceHelper;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfProjectRegistry;
+import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -101,24 +98,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     public void postWindowCreate() {
         super.postWindowOpen();
         TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().addPerspectiveListener(new PerspectiveListener());
-        createDefaultProject();
+        IProject defaultProject = createDefaultProject();
         hideActionSets();
-        openTraceIfNecessary();
+        openTraceIfNecessary(defaultProject);
     }
 
 
 
-    private static void openTraceIfNecessary() {
+    private static void openTraceIfNecessary(IProject project) {
         String traceToOpen = TracingRcpPlugin.getDefault().getCli().getArgument(CliParser.OPEN_FILE_LOCATION);
         if (traceToOpen != null) {
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            final IWorkspaceRoot root = workspace.getRoot();
-            IProject project = root.getProject(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME);
-            final TmfNavigatorContentProvider ncp = new TmfNavigatorContentProvider();
-            ncp.getChildren( project ); // force the model to be populated
-            TmfOpenTraceHelper oth = new TmfOpenTraceHelper();
             try {
-                oth.openTraceFromPath(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME,traceToOpen, TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell());
+                TmfTraceFolder destinationFolder = TmfProjectRegistry.getProject(project, true).getTracesFolder();
+                TmfOpenTraceHelper.openTraceFromPath(destinationFolder, traceToOpen, TracingRcpPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getShell());
             } catch (CoreException e) {
                 TracingRcpPlugin.getDefault().logError(e.getMessage());
             }
@@ -142,8 +134,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         }
     }
 
-    private static void createDefaultProject() {
-        TmfProjectRegistry.createProject(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, null, new NullProgressMonitor());
+    private static IProject createDefaultProject() {
+        return TmfProjectRegistry.createProject(TmfCommonConstants.DEFAULT_TRACE_PROJECT_NAME, null, new NullProgressMonitor());
     }
 
     /**

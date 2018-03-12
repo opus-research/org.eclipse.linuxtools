@@ -80,25 +80,23 @@ public class STDataViewersExportToCSVDialog extends Dialog {
 
     private Button exportTreePrefixButton = null;
 
-    private Button restoreDefaults = null;
-
     private STDataViewersCSVExporter exporter = null;
 
     private ModifyListener updatePreviewModifyListener = new ModifyListener() {
         @Override
-		public void modifyText(ModifyEvent e) {
+        public void modifyText(ModifyEvent e) {
             updatePreview();
         }
     };
 
     private SelectionListener updatePreviewSelectionListener = new SelectionListener() {
         @Override
-		public void widgetDefaultSelected(SelectionEvent e) {
+        public void widgetDefaultSelected(SelectionEvent e) {
             widgetSelected(e);
         }
 
         @Override
-		public void widgetSelected(SelectionEvent e) {
+        public void widgetSelected(SelectionEvent e) {
             updatePreview();
         }
     };
@@ -176,7 +174,7 @@ public class STDataViewersExportToCSVDialog extends Dialog {
         browseOutputButton.setText("File System...");
         browseOutputButton.addSelectionListener(new SelectionAdapter() {
             @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 handleBrowse();
             }
         });
@@ -187,7 +185,7 @@ public class STDataViewersExportToCSVDialog extends Dialog {
         browseOutputInWorkspaceButton.setText("Workspace...");
         browseOutputInWorkspaceButton.addSelectionListener(new SelectionAdapter() {
             @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 handleBrowseWorkspace();
             }
         });
@@ -242,12 +240,12 @@ public class STDataViewersExportToCSVDialog extends Dialog {
         exportTreePrefixButton.addSelectionListener(updatePreviewSelectionListener);
         exportTreePrefixButton.addSelectionListener(new SelectionListener() {
             @Override
-			public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
             @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 boolean enabled = exportTreePrefixButton.getSelection();
                 enableTreePrefixText(enabled);
             }
@@ -347,16 +345,16 @@ public class STDataViewersExportToCSVDialog extends Dialog {
     }
 
     private void createRestoreDefaultsButton(Composite composite) {
-        restoreDefaults = new Button(composite, SWT.NONE);
+        Button restoreDefaults = new Button(composite, SWT.NONE);
         restoreDefaults.setText("Restore Defaults");
         restoreDefaults.addSelectionListener(new SelectionListener() {
             @Override
-			public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
 
             @Override
-			public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 restoreDefaults();
             }
         });
@@ -417,59 +415,59 @@ public class STDataViewersExportToCSVDialog extends Dialog {
         }
     }
 
-    public String createPreview(String Separator, String childMarker, String lastChildMarker, String nodeMarker,
+    public String createPreview(String separator, String childMarker, String lastChildMarker, String nodeMarker,
             String leafMarker, String childLink, String noChildLink, boolean exportTreePrefix) {
-        String preview = "";
+        StringBuilder preview = new StringBuilder();
 
         if (exportTreePrefix) {
-            preview += "Hierarchy" + Separator;
+            preview.append("Hierarchy").append(separator);
         }
 
-        preview += "col_1" + Separator + "col_2" + "\n";
+        preview.append("col_1").append(separator).append("col_2\n");
 
         if (exportTreePrefix) {
-            preview += childMarker + nodeMarker + Separator;
+            preview.append(childMarker).append(nodeMarker).append(separator);
         }
 
-        preview += "A1" + Separator + "B1" + "\n";
+        preview.append("A1").append(separator).append("B1\n");
 
         if (exportTreePrefix) {
-            preview += childLink + lastChildMarker + leafMarker + Separator;
+            preview.append(childLink).append(lastChildMarker).append(leafMarker).append(separator);
         }
 
-        preview += "A11" + Separator + "B11" + "\n";
+        preview.append("A11").append(separator).append("B11\n");
 
         if (exportTreePrefix) {
-            preview += lastChildMarker + nodeMarker + Separator;
+            preview.append(lastChildMarker).append(nodeMarker).append(separator);
         }
 
-        preview += "A2" + Separator + "B2" + "\n";
+        preview.append("A2").append(separator).append("B2\n");
 
         if (exportTreePrefix) {
-            preview += noChildLink + childMarker + leafMarker + Separator;
+            preview.append(noChildLink).append(childMarker).append(leafMarker).append(separator);
         }
 
-        preview += "A21" + Separator + "B21" + "\n";
+        preview.append("A21").append(separator).append("B21\n");
 
         if (exportTreePrefix) {
-            preview += noChildLink + childMarker + nodeMarker + Separator;
+            preview.append(noChildLink).append(childMarker).append(nodeMarker).append(separator);
         }
 
-        preview += "A22" + Separator + "B22" + "\n";
+        preview.append("A22").append(separator).append("B22\n");
 
         if (exportTreePrefix) {
-            preview += noChildLink + childLink + lastChildMarker + leafMarker + Separator;
+            preview.append(noChildLink).append(childLink).append(lastChildMarker).append(leafMarker).append(separator);
         }
 
-        preview += "A221" + Separator + "B221" + "\n";
+        preview.append("A221").append(separator).append("B221\n");
 
         if (exportTreePrefix) {
-            preview += noChildLink + lastChildMarker + leafMarker + Separator;
+            preview.append(noChildLink).append(lastChildMarker).append(leafMarker).append(separator);
         }
 
-        preview += "A23" + Separator + "B23";
+        preview.append("A23").append(separator).append("B23");
 
-        return activateSpecialChars(preview);
+        return activateSpecialChars(preview.toString());
     }
 
     private void enableTreePrefixText(boolean enabled) {
@@ -587,8 +585,9 @@ public class STDataViewersExportToCSVDialog extends Dialog {
         t = f.getParent();
         dialog.setFilterPath(t);
         String s = dialog.open();
-        if (s != null)
+        if (s != null) {
             outputFile.setText(s);
+        }
     }
 
 }

@@ -18,14 +18,14 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.statevalue.TmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue.Type;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 
 /**
@@ -75,7 +75,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
     /**
      * Map of mipmap features per attribute. The map's key is the base attribute quark.
      */
-    private Map<Integer, Set<ITmfMipmapFeature>> featureMap = new HashMap<Integer, Set<ITmfMipmapFeature>>();
+    private Map<Integer, Set<ITmfMipmapFeature>> featureMap = new HashMap<>();
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -161,7 +161,7 @@ public abstract class AbstractTmfMipmapStateProvider extends AbstractTmfStatePro
         if (features != null) {
             return features;
         }
-        features = new LinkedHashSet<ITmfMipmapFeature>();
+        features = new LinkedHashSet<>();
         if (value.isNull()) {
             return features;
         }

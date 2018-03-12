@@ -20,38 +20,38 @@ import java.util.LinkedList;
  */
 public interface TreeElement {
 
-	/**
-	 * Gets the parent of this tree node;
-	 * @return a tree node
-	 */
-	TreeElement getParent();
-	
-	/**
-	 * Gets the children of this tree node
-	 * @return an array of tree nodes
-	 */
-	LinkedList<? extends TreeElement> getChildren();
-	
-	/**
-	 * Checks whether this tree node has children
-	 * @return <code>true</code> if this tree node has children,
-	 * <code>false</code> otherwise.
-	 */
-	boolean hasChildren();
-	
-	
-	String getName();
-	
-	int getSamples();
-	
-	int getCalls();
-	
-	String getSourcePath();
-	
-	int   getSourceLine();
-	
-	TreeElement getRoot();
-	
-	
-	
+    /**
+     * Gets the parent of this tree node;
+     * @return a tree node
+     */
+    TreeElement getParent();
+
+    /**
+     * Gets the children of this tree node
+     * @return an array of tree nodes
+     */
+    LinkedList<? extends TreeElement> getChildren();
+
+    /**
+     * Checks whether this tree node has children
+     * @return <code>true</code> if this tree node has children,
+     * <code>false</code> otherwise.
+     */
+    boolean hasChildren();
+
+
+    String getName();
+
+    int getSamples();
+
+    int getCalls();
+
+    String getSourcePath();
+
+    int getSourceLine();
+
+    TreeElement getRoot();
+
+
+
 }

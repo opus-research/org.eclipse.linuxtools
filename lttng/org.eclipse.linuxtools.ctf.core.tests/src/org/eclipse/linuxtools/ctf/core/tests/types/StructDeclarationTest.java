@@ -13,15 +13,17 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDefinition;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,23 +71,30 @@ public class StructDeclarationTest {
     /**
      * Run the StructDefinition createDefinition(DefinitionScope,String) method
      * test.
+     *
+     * @throws CTFReaderException
+     *             out of bounds
      */
     @Test
-    public void testCreateDefinition() {
+    public void testCreateDefinition() throws CTFReaderException {
         String fieldName = "";
-        StructDefinition result = fixture.createDefinition(null, fieldName);
+        ByteBuffer allocate = ByteBuffer.allocate(100);
+        if( allocate == null){
+            throw new IllegalStateException("Failed to allocate memory");
+        }
+        BitBuffer bb = new BitBuffer(allocate);
+        StructDefinition result = fixture.createDefinition(null, fieldName, bb);
         assertNotNull(result);
     }
 
     /**
-     * Run the HashMap<String, Declaration> getFields() method test.
+     * Run the Declaration getField(String) method test.
      */
     @Test
-    public void testGetFields() {
-        Map<String, IDeclaration> result = fixture.getFields();
+    public void testGetField() {
+        IDeclaration result = fixture.getField("test");
 
-        assertNotNull(result);
-        assertEquals(0, result.size());
+        assertNull(result);
     }
 
     /**
@@ -93,10 +102,10 @@ public class StructDeclarationTest {
      */
     @Test
     public void testGetFieldsList() {
-        List<String> result = fixture.getFieldsList();
+        Iterable<String> result = fixture.getFieldsList();
 
         assertNotNull(result);
-        assertEquals(0, result.size());
+        assertEquals(false, result.iterator().hasNext());
     }
 
     /**

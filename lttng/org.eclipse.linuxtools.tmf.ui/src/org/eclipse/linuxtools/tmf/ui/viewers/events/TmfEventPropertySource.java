@@ -123,7 +123,7 @@ public class TmfEventPropertySource implements IPropertySource {
 
         @Override
         public IPropertyDescriptor[] getPropertyDescriptors() {
-            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>(fContent.getFields().length);
+            List<IPropertyDescriptor> descriptors = new ArrayList<>(fContent.getFields().size());
             for (ITmfEventField field : fContent.getFields()) {
                 if (field != null) {
                     descriptors.add(new ReadOnlyTextPropertyDescriptor(field, field.getName()));
@@ -135,7 +135,7 @@ public class TmfEventPropertySource implements IPropertySource {
         @Override
         public Object getPropertyValue(Object id) {
             ITmfEventField field = (ITmfEventField) id;
-            if (field.getFields() != null && field.getFields().length > 0) {
+            if (field.getFields() != null && field.getFields().size() > 0) {
                 return new ContentPropertySource(field);
             }
             return field.getFormattedValue();
@@ -181,7 +181,7 @@ public class TmfEventPropertySource implements IPropertySource {
 
         @Override
         public IPropertyDescriptor[] getPropertyDescriptors() {
-            List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+            List<IPropertyDescriptor> descriptors= new ArrayList<>();
             if (fSourceLookup.getCallsite() != null) {
                 descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_FILE_NAME, NAME_FILE_NAME));
                 descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_LINE_NUMBER, NAME_LINE_NUMBER));
@@ -235,7 +235,7 @@ public class TmfEventPropertySource implements IPropertySource {
 
         @Override
         public IPropertyDescriptor[] getPropertyDescriptors() {
-            List<IPropertyDescriptor> descriptors = new ArrayList<IPropertyDescriptor>();
+            List<IPropertyDescriptor> descriptors = new ArrayList<>();
 
             for (String customAttribute : event.listCustomAttributes()) {
                 descriptors.add(new ReadOnlyTextPropertyDescriptor(customAttribute, customAttribute));
@@ -280,7 +280,7 @@ public class TmfEventPropertySource implements IPropertySource {
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        List<IPropertyDescriptor> descriptors= new ArrayList<IPropertyDescriptor>();
+        List<IPropertyDescriptor> descriptors= new ArrayList<>();
 
         /* Display basic event information */
         descriptors.add(new ReadOnlyTextPropertyDescriptor(ID_TIMESTAMP, NAME_TIMESTAMP));

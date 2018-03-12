@@ -14,14 +14,14 @@ import org.eclipse.debug.core.ILaunch;
 
 public interface IValgrindMessage {
 
-	public abstract IValgrindMessage getParent();
+    IValgrindMessage getParent();
 
-	public abstract IValgrindMessage[] getChildren();
+    IValgrindMessage[] getChildren();
 
-	public abstract String getText();
-	
-	public abstract ILaunch getLaunch();
+    String getText();
 
-	public abstract void addChild(IValgrindMessage child);
+    ILaunch getLaunch();
+
+    void addChild(IValgrindMessage child);
 
 }

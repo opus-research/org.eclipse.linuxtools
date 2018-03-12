@@ -8,29 +8,13 @@
  *
  * Contributors:
  *    Keith Seitz <keiths@redhat.com> - initial API and implementation
- *    Kent Sebastian <ksebasti@redhat.com> - 
+ *    Kent Sebastian <ksebasti@redhat.com> -
  *    Thavidu Ranatunga (IBM) - derived from
  *       org.eclipse.linuxtools.oprofile.launch.configuration.OprofileSetupTab
  *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.remote.launch;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
 
 public class PerfOptionsTab extends org.eclipse.linuxtools.internal.perf.launch.PerfOptionsTab {
 
-	private Exception ex;
-
-	@Override
-	public void initializeFrom(ILaunchConfiguration config) {
-		super.initializeFrom(config);
-	}
-
-	@Override
-	public boolean isValid (ILaunchConfiguration config) {
-		if (ex != null) {
-			setErrorMessage(ex.getLocalizedMessage());
-			return false;
-		}
-		return super.isValid(config);
-	}
 }

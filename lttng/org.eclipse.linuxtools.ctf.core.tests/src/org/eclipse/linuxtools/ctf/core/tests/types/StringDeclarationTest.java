@@ -14,10 +14,14 @@ package org.eclipse.linuxtools.ctf.core.tests.types;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.ByteBuffer;
+
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
-import org.eclipse.linuxtools.ctf.core.event.types.IDefinitionScope;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StringDefinition;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,13 +72,21 @@ public class StringDeclarationTest {
     /**
      * Run the StringDefinition createDefinition(DefinitionScope,String) method
      * test.
+     *
+     * @throws CTFReaderException
+     *             out of buffer exception
      */
     @Test
-    public void testCreateDefinition() {
+    public void testCreateDefinition() throws CTFReaderException {
         IDefinitionScope definitionScope = null;
         String fieldName = "id";
+        ByteBuffer allocate = ByteBuffer.allocate(100);
+        if (allocate == null) {
+            throw new IllegalStateException("Failed to allocate memory");
+        }
+        BitBuffer bb = new BitBuffer(allocate);
         StringDefinition result = fixture.createDefinition(definitionScope,
-                fieldName);
+                fieldName, bb);
 
         assertNotNull(result);
     }
@@ -90,15 +102,6 @@ public class StringDeclarationTest {
         assertEquals("ASCII", result.name());
         assertEquals("ASCII", result.toString());
         assertEquals(1, result.ordinal());
-    }
-
-    /**
-     * Run the void setEncoding(Encoding) method test.
-     */
-    @Test
-    public void testSetEncoding() {
-        Encoding encoding = Encoding.ASCII;
-        fixture.setEncoding(encoding);
     }
 
     /**

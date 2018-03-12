@@ -3,7 +3,7 @@
 	<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html" label="SystemTap User Guide">
 		<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html" label="Overview">
 			<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#The_SystemTap_Plugin" label="The SystemTap Plugin"></topic>
-			<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#Systemtap" label="Systemtap"></topic>
+			<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#SystemTap" label="SystemTap"></topic>
 			<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#Installing" label="Installing">
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#Requirements" label="Requirements"></topic>
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/User-Guide.html#Kernel_Source_Location" label="Kernel Source Location"></topic>
@@ -30,6 +30,11 @@
 			<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Tasks" label="Tasks">
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Creating_SystemTap_Scripts" label="Creating SystemTap Scripts"></topic>
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Using_the_STP_Editor" label="Using the STP Editor"></topic>
+				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Creating_Run_Configurations" label="Creating Run Configurations">
+					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Local.2FRemote_Runs" label="Local/Remote Runs"></topic>
+					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#SystemTap_Options" label="SystemTap Options"></topic>
+					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Graphing" label="Graphing"></topic>
+				</topic>
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Viewing_Data_Charts" label="Viewing Data Charts"></topic>
 			</topic>
 			<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-IDE.html#Reference" label="Reference">
@@ -75,7 +80,14 @@
 					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Pie_Graph" label="Pie Graph"></topic>
 				</topic>
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Filters" label="Filters"></topic>
-				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Graph_Interaction" label="Graph Interaction"></topic>
+				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Graph_Interaction" label="Graph Interaction">
+					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Graph_Options" label="Graph Options"></topic>
+					<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Graph_Coordinate_Tooltips" label="Graph Coordinate Tooltips"></topic>
+				</topic>
+			</topic>
+			<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Graphing_Tasks" label="Graphing Tasks">
+				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Importing.2FExporting_Data_Sets" label="Importing/Exporting Data Sets"></topic>
+				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Saving_a_Graph_Image" label="Saving a Graph Image"></topic>
 			</topic>
 			<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Reference_2" label="Reference">
 				<topic href="Linux_Tools_Project/Systemtap/User_Guide/SystemTap-Graphing.html#Frequently_Asked_Questions_2" label="Frequently Asked Questions"></topic>

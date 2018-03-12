@@ -6,8 +6,8 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.oprofile.ui.model;
 
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiMessages;
@@ -19,53 +19,58 @@ import org.eclipse.swt.graphics.Image;
  * @since 1.1
  */
 public class UiModelError implements IUiModelElement {
-	public static final UiModelError NO_SAMPLES_ERROR = new UiModelError(OprofileUiMessages.getString("root.error.nosamples")); //$NON-NLS-1$
+    public static final UiModelError NO_SAMPLES_ERROR = new UiModelError(OprofileUiMessages.getString("root.error.nosamples")); //$NON-NLS-1$
 
-	private String errorMessage;
-	
-	/**
-	 * Constructor to the UiModelError class
-	 * @param message Error message
-	 */
-	public UiModelError(String message) {
-		errorMessage = message;
-	}
-	
-	/** IUiModelElement functions **/
-	public String getLabelText() {
-		return errorMessage;
-	}
+    private String errorMessage;
 
-	/**
-	 * Returns the children of this element.
-	 * @return An array of child elements or null
-	 */
-	public IUiModelElement[] getChildren() {
-		return null;
-	}
-	
-	/**
-	 * Return whether the element has any children
-	 * @return true if the element has any children, false otherwise
-	 */
-	public boolean hasChildren() {
-		return false;
-	}
+    /**
+     * Constructor to the UiModelError class
+     * @param message Error message
+     */
+    public UiModelError(String message) {
+        errorMessage = message;
+    }
 
-	/**
-	 * Returns the element's parent.
-	 * @return The parent element or null
-	 */
-	public IUiModelElement getParent() {
-		return null;
-	}
-	
-	/**
-	 * Returns the Image to display next to the text in the tree viewer.
-	 * In this case it is an error icon.
-	 * @return an Image object of the icon
-	 */
-	public Image getLabelImage() {
-		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.ERROR_ICON).createImage();
-	}
+    /** IUiModelElement functions **/
+    @Override
+    public String getLabelText() {
+        return errorMessage;
+    }
+
+    /**
+     * Returns the children of this element.
+     * @return An array of child elements or null
+     */
+    @Override
+    public IUiModelElement[] getChildren() {
+        return null;
+    }
+
+    /**
+     * Return whether the element has any children
+     * @return true if the element has any children, false otherwise
+     */
+    @Override
+    public boolean hasChildren() {
+        return false;
+    }
+
+    /**
+     * Returns the element's parent.
+     * @return The parent element or null
+     */
+    @Override
+    public IUiModelElement getParent() {
+        return null;
+    }
+
+    /**
+     * Returns the Image to display next to the text in the tree viewer.
+     * In this case it is an error icon.
+     * @return an Image object of the icon
+     */
+    @Override
+    public Image getLabelImage() {
+        return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.ERROR_ICON).createImage();
+    }
 }

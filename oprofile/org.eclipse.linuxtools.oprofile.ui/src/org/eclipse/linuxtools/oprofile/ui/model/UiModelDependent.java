@@ -6,9 +6,11 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation 
- *******************************************************************************/ 
+ *    Kent Sebastian <ksebasti@redhat.com> - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.linuxtools.oprofile.ui.model;
+
+import java.util.Arrays;
 
 import org.eclipse.linuxtools.internal.oprofile.core.model.OpModelImage;
 import org.eclipse.linuxtools.internal.oprofile.ui.OprofileUiMessages;
@@ -19,78 +21,89 @@ import org.eclipse.swt.graphics.Image;
  * @since 1.1
  */
 public class UiModelDependent implements IUiModelElement {
-	private IUiModelElement parent;
-	private OpModelImage dataModelDependents[];
-	private UiModelImage dependents[];
-	private int totalCount;
-	private int depCount;
+    private IUiModelElement parent;
+    private OpModelImage dataModelDependents[];
+    private UiModelImage dependents[];
+    private int totalCount;
+    private int depCount;
 
-	/**
-	 * Constructor to this UiModelDependent class
-	 * @param parent The parent element
-	 * @param dependents The dependent images
-	 * @param totalCount The total count of samples for the parent session
-	 * @param depCount The count for all dependent images
-	 */
-	public UiModelDependent(IUiModelElement parent, OpModelImage dependents[], int totalCount, int depCount) {
-		this.parent = parent;
-		this.dataModelDependents = dependents;
-		this.dependents = null;
-		this.totalCount = totalCount;
-		this.depCount = depCount;
-		refreshModel();
-	}
+    /**
+     * Constructor to this UiModelDependent class
+     * @param parent The parent element
+     * @param dependents The dependent images
+     * @param totalCount The total count of samples for the parent session
+     * @param depCount The count for all dependent images
+     */
+    public UiModelDependent(IUiModelElement parent, OpModelImage dependents[], int totalCount, int depCount) {
+        this.parent = parent;
+        this.dataModelDependents = dependents;
+        this.dependents = null;
+        this.totalCount = totalCount+depCount;
+        this.depCount = depCount;
+        refreshModel();
+    }
 
-	private void refreshModel() {
-		dependents = new UiModelImage[dataModelDependents.length];
-		
-		for (int i = 0; i < dataModelDependents.length; i++) {
-			dependents[i] = new UiModelImage(this, dataModelDependents[i], totalCount, 0);
-		}
-	}
-	
-	@Override
-	public String toString() {
-		double countPercentage = (double)depCount / (double)totalCount;
-		String percentage = OprofileUiPlugin.getPercentageString(countPercentage);
+    private void refreshModel() {
+        dependents = new UiModelImage[dataModelDependents.length];
 
-		return percentage + " " + OprofileUiMessages.getString("uimodel.percentage.in") + OprofileUiMessages.getString("uimodel.dependent.dependent.images"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ 
-	}
+        for (int i = 0; i < dataModelDependents.length; i++) {
+            dependents[i] = new UiModelImage(this, dataModelDependents[i], totalCount, 0);
+        }
+    }
 
-	/** IUiModelElement functions **/
-	public String getLabelText() {
-		return toString();
-	}
+    @Override
+    public String toString() {
+        double countPercentage = (double)depCount / (double)totalCount;
+        String percentage = OprofileUiPlugin.getPercentageString(countPercentage);
 
-	/**
-	 * Returns the children of this element.
-	 * @return An array of child elements or null
-	 */
-	public IUiModelElement[] getChildren() {
-		return dependents;
-	}
+        return percentage + " " + OprofileUiMessages.getString("uimodel.percentage.in")+" " + OprofileUiMessages.getString("uimodel.dependent.dependent.images"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    }
 
-	/**
-	 * Returns if the element has any children.
-	 * @return true if the element has children, false otherwise
-	 */
-	public boolean hasChildren() {
-		return true;	//must have children, or this object wouldn't be created
-	}
+    /** IUiModelElement functions **/
+    @Override
+    public String getLabelText() {
+        return toString();
+    }
 
-	/**
-	 * Returns the parent element.
-	 * @return the parent element or null
-	 */
-	public IUiModelElement getParent() {
-		return parent;
-	}
+    /**
+     * Returns the children of this element.
+     * @return An array of child elements or null
+     */
+    @Override
+    public IUiModelElement[] getChildren() {
 
-	/**
-	 * Returns the Image to display next to the text in the tree viewer.
-	 * @return an Image object of the icon
-	 */
-	public Image getLabelImage() {
-		return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.DEPENDENT_ICON).createImage();
-	}
+        if (UiModelRoot.SortType.LIB == UiModelRoot.getSortingType()) {
+            Arrays.sort(dependents, UiModelSorting.getInstance());
+            return dependents;
+        }
+
+        return dependents;
+    }
+
+    /**
+     * Returns if the element has any children.
+     * @return true if the element has children, false otherwise
+     */
+    @Override
+    public boolean hasChildren() {
+        return true;    //must have children, or this object wouldn't be created
+    }
+
+    /**
+     * Returns the parent element.
+     * @return the parent element or null
+     */
+    @Override
+    public IUiModelElement getParent() {
+        return parent;
+    }
+
+    /**
+     * Returns the Image to display next to the text in the tree viewer.
+     * @return an Image object of the icon
+     */
+    @Override
+    public Image getLabelImage() {
+        return OprofileUiPlugin.getImageDescriptor(OprofileUiPlugin.DEPENDENT_ICON).createImage();
+    }
 }

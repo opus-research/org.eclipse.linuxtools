@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -12,10 +12,18 @@
 
 package org.eclipse.linuxtools.ctf.core.event.types;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.event.scope.LexicalScope;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
 /**
  * A CTF structure declaration.
@@ -28,15 +36,17 @@ import java.util.Map;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class StructDeclaration implements IDeclaration {
+public class StructDeclaration extends Declaration {
 
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
 
-    private final Map<String, IDeclaration> fields = new HashMap<String, IDeclaration>();
-    private final List<String> fieldsList = new LinkedList<String>();
-    private long maxAlign;
+    /** linked list of field names. So fieldName->fieldValue */
+    private final @NonNull Map<String, IDeclaration> fFieldMap = new LinkedHashMap<>();
+
+    /** maximum bit alignment */
+    private long fMaxAlign;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -51,7 +61,24 @@ public class StructDeclaration implements IDeclaration {
      *            bit aligned.
      */
     public StructDeclaration(long align) {
-        this.maxAlign = Math.max(align, 1);
+        fMaxAlign = Math.max(align, 1);
+    }
+
+    /**
+     * Struct declaration constructor
+     *
+     * @param names
+     *            the names of all the fields
+     * @param declarations
+     *            all the fields
+     * @since 3.0
+     */
+    public StructDeclaration(String[] names, Declaration[] declarations) {
+        fMaxAlign = 1;
+
+        for (int i = 0; i < names.length; i++) {
+            addField(names[i], declarations[i]);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -60,62 +87,150 @@ public class StructDeclaration implements IDeclaration {
 
     /**
      * Get current alignment
+     *
      * @return the alignment of the struct and all its fields
      */
     public long getMaxAlign() {
-        return maxAlign;
+        return fMaxAlign;
     }
 
     /**
      * Query if the struct has a given field
-     * @param name the name of the field, scopeless please
+     *
+     * @param name
+     *            the name of the field, scopeless please
      * @return does the field exist?
      */
     public boolean hasField(String name) {
-        return this.fields.containsKey(name);
+        return fFieldMap.containsKey(name);
     }
 
     /**
-     * get the fields of the struct in a map. Faster access time than a list.
-     * @return a HashMap of the fields (key is the name)
+     * Get the fields of the struct as a map.
+     *
+     * @return a Map of the fields (key is the name)
      * @since 2.0
      */
     public Map<String, IDeclaration> getFields() {
-        return this.fields;
+        return fFieldMap;
     }
 
     /**
-     * Gets the field list. Very important since the map of fields does not retain the order of the fields.
-     * @return the field list.
+     * Get the field declaration corresponding to a field name.
+     *
+     * @param fieldName
+     *            The field name
+     * @return The declaration of the field, or null if there is no such field.
+     * @since 3.1
      */
-    public List<String> getFieldsList() {
-        return this.fieldsList;
+    @Nullable
+    public IDeclaration getField(String fieldName) {
+        return fFieldMap.get(fieldName);
+    }
+
+    /**
+     * Gets the field list. Very important since the map of fields does not
+     * retain the order of the fields.
+     *
+     * @return the field list.
+     * @since 3.0
+     */
+    public Iterable<String> getFieldsList() {
+        return fFieldMap.keySet();
     }
 
     @Override
     public long getAlignment() {
-        return this.maxAlign;
+        return this.fMaxAlign;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int getMaximumSize() {
+        int maxSize = 0;
+        for (IDeclaration field : fFieldMap.values()) {
+            maxSize += field.getMaximumSize();
+        }
+        return Math.min(maxSize, Integer.MAX_VALUE);
     }
 
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+    /**
+     * @since 3.0
+     */
     @Override
     public StructDefinition createDefinition(IDefinitionScope definitionScope,
-            String fieldName) {
-        return new StructDefinition(this, definitionScope, fieldName);
+            String fieldName, BitBuffer input) throws CTFReaderException {
+        alignRead(input);
+        final Definition[] myFields = new Definition[fFieldMap.size()];
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldName, fFieldMap.keySet(), myFields);
+
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String name = entry.getKey();
+            if (name == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, name, input);
+        }
+        return structDefinition;
+    }
+
+    /**
+     * Accelerated create definition
+     *
+     * @param definitionScope
+     *            the definition scope
+     * @param fieldScope
+     *            the lexical scope of this element
+     * @param input
+     *            the {@Link BitBuffer} to read
+     * @return the Struct definition
+     * @throws CTFReaderException
+     *             read error and such
+     * @since 3.1
+     */
+    public StructDefinition createDefinition(IDefinitionScope definitionScope,
+            LexicalScope fieldScope, @NonNull BitBuffer input) throws CTFReaderException {
+        alignRead(input);
+        final Definition[] myFields = new Definition[fFieldMap.size()];
+        Set<String> keySet = fFieldMap.keySet();
+        if (keySet == null) {
+            keySet = Collections.EMPTY_SET;
+            if( keySet == null ) {
+                throw new IllegalStateException();
+            }
+        }
+        StructDefinition structDefinition = new StructDefinition(this, definitionScope, fieldScope, fieldScope.getName(), keySet, myFields);
+        Iterator<Map.Entry<String, IDeclaration>> iter = fFieldMap.entrySet().iterator();
+        for (int i = 0; i < fFieldMap.size(); i++) {
+            Map.Entry<String, IDeclaration> entry = iter.next();
+            String fieldName = entry.getKey();
+            if (fieldName == null) {
+                throw new IllegalStateException();
+            }
+            myFields[i] = entry.getValue().createDefinition(structDefinition, fieldName, input);
+        }
+        return structDefinition;
     }
 
     /**
      * Add a field to the struct
-     * @param name the name of the field, scopeless
-     * @param declaration the declaration of the field
+     *
+     * @param name
+     *            the name of the field, scopeless
+     * @param declaration
+     *            the declaration of the field
      */
     public void addField(String name, IDeclaration declaration) {
-        this.fields.put(name, declaration);
-        this.fieldsList.add(name);
-        maxAlign = Math.max(maxAlign, declaration.getAlignment());
+        fFieldMap.put(name, declaration);
+        fMaxAlign = Math.max(fMaxAlign, declaration.getAlignment());
     }
 
     @Override
@@ -128,8 +243,8 @@ public class StructDeclaration implements IDeclaration {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + fieldsList.hashCode();
-        result = (prime * result) + (int) (maxAlign ^ (maxAlign >>> 32));
+        result = (prime * result) + fFieldMap.entrySet().hashCode();
+        result = (prime * result) + (int) (fMaxAlign ^ (fMaxAlign >>> 32));
         return result;
     }
 
@@ -145,10 +260,10 @@ public class StructDeclaration implements IDeclaration {
             return false;
         }
         StructDeclaration other = (StructDeclaration) obj;
-        if (!fieldsList.equals(other.fieldsList)) {
+        if (!fFieldMap.entrySet().equals(other.fFieldMap.entrySet())) {
             return false;
         }
-        if (maxAlign != other.maxAlign) {
+        if (fMaxAlign != other.fMaxAlign) {
             return false;
         }
         return true;

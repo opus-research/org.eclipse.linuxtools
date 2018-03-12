@@ -63,19 +63,19 @@ public class STDataViewersCSVExporter {
 
     private String filePath = null;
 
-    private String CSVSeparator = null;
+    private String csvSeparator = null;
 
-    private String CSVChildMarker = null;
+    private String csvChildMarker = null;
 
-    private String CSVLastChildMarker = null;
+    private String csvLastChildMarker = null;
 
-    private String CSVChildLink = null;
+    private String csvChildLink = null;
 
-    private String CSVNoChildLink = null;
+    private String csvNoChildLink = null;
 
-    private String CSVLeafMarker = null;
+    private String csvLeafMarker = null;
 
-    private String CSVNodeMarker = null;
+    private String csvNodeMarker = null;
 
     private boolean expandAll = false;
 
@@ -83,7 +83,7 @@ public class STDataViewersCSVExporter {
 
     private boolean exportTreePrefix = false;
 
-    /*
+    /**
      * It creates a new instance of exporter
      *
      * @param stViewer
@@ -96,7 +96,7 @@ public class STDataViewersCSVExporter {
         restoreState();
     }
 
-    /*
+    /**
      * Gets from the .setting the export parameters
      */
     public void restoreState() {
@@ -112,44 +112,44 @@ public class STDataViewersCSVExporter {
                 return;
             }
 
-            CSVSeparator = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_SEPARATOR);
-            if (CSVSeparator == null) {
+            csvSeparator = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_SEPARATOR);
+            if (csvSeparator == null) {
                 resetState();
                 return;
             }
 
-            CSVChildMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_MARKER);
-            if (CSVChildMarker == null) {
+            csvChildMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_MARKER);
+            if (csvChildMarker == null) {
                 resetState();
                 return;
             }
 
-            CSVLastChildMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_LAST_CHILD_MARKER);
-            if (CSVLastChildMarker == null) {
+            csvLastChildMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_LAST_CHILD_MARKER);
+            if (csvLastChildMarker == null) {
                 resetState();
                 return;
             }
 
-            CSVChildLink = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_LINK);
-            if (CSVChildLink == null) {
+            csvChildLink = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_LINK);
+            if (csvChildLink == null) {
                 resetState();
                 return;
             }
 
-            CSVNoChildLink = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_NO_CHILD_LINK);
-            if (CSVNoChildLink == null) {
+            csvNoChildLink = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_NO_CHILD_LINK);
+            if (csvNoChildLink == null) {
                 resetState();
                 return;
             }
 
-            CSVLeafMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_LEAF_MARKER);
-            if (CSVLeafMarker == null) {
+            csvLeafMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_LEAF_MARKER);
+            if (csvLeafMarker == null) {
                 resetState();
                 return;
             }
 
-            CSVNodeMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_NODE_MARKER);
-            if (CSVNodeMarker == null) {
+            csvNodeMarker = state.get(STDataViewersCSVExporterConstants.TAG_EXPORTER_NODE_MARKER);
+            if (csvNodeMarker == null) {
                 resetState();
                 return;
             }
@@ -191,7 +191,7 @@ public class STDataViewersCSVExporter {
 
     }
 
-    /*
+    /**
      * Save into the .setting the export parameters
      */
     public void saveState() {
@@ -201,13 +201,13 @@ public class STDataViewersCSVExporter {
         }
 
         state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_OUTPUT_FILE_PATH, filePath);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_SEPARATOR, CSVSeparator);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_MARKER, CSVChildMarker);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_LAST_CHILD_MARKER, CSVLastChildMarker);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_LINK, CSVChildLink);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_NO_CHILD_LINK, CSVNoChildLink);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_LEAF_MARKER, CSVLeafMarker);
-        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_NODE_MARKER, CSVNodeMarker);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_SEPARATOR, csvSeparator);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_MARKER, csvChildMarker);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_LAST_CHILD_MARKER, csvLastChildMarker);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_CHILD_LINK, csvChildLink);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_NO_CHILD_LINK, csvNoChildLink);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_LEAF_MARKER, csvLeafMarker);
+        state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_NODE_MARKER, csvNodeMarker);
         state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_EXPAND_ALL, expandAll);
         state.put(STDataViewersCSVExporterConstants.TAG_EXPORTER_SHOW_HIDDEN_COLUMNS, showHiddenColumns);
         if (isTreeViewerExporter()) {
@@ -217,18 +217,18 @@ public class STDataViewersCSVExporter {
         }
     }
 
-    /*
+    /**
      * Sets to default the parameters used during the export
      */
     public void resetState() {
         filePath = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_OUTPUT_FILE_PATH;
-        CSVSeparator = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_SEPARATOR;
-        CSVChildMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_CHILD_MARKER;
-        CSVLastChildMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_LAST_CHILD_MARKER;
-        CSVChildLink = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_CHILD_LINK;
-        CSVNoChildLink = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_NO_CHILD_LINK;
-        CSVLeafMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_LEAF_MARKER;
-        CSVNodeMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_NODE_MARKER;
+        csvSeparator = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_SEPARATOR;
+        csvChildMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_CHILD_MARKER;
+        csvLastChildMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_LAST_CHILD_MARKER;
+        csvChildLink = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_CHILD_LINK;
+        csvNoChildLink = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_NO_CHILD_LINK;
+        csvLeafMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_LEAF_MARKER;
+        csvNodeMarker = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_NODE_MARKER;
         expandAll = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_EXPAND_ALL;
         showHiddenColumns = STDataViewersCSVExporterConstants.DEFAULT_EXPORTER_SHOW_HIDDEN_COLUMNS;
 
@@ -343,9 +343,9 @@ public class STDataViewersCSVExporter {
                     Arrays.sort(topElements, comparator);
                     for (int n = 0; n < topElements.length; n++) {
                         if (n < topElements.length - 1) {
-                            dumpNodeData(topElements[n], CSVChildMarker);
+                            dumpNodeData(topElements[n], csvChildMarker);
                         } else {
-                            dumpNodeData(topElements[n], CSVLastChildMarker);
+                            dumpNodeData(topElements[n], csvLastChildMarker);
                         }
 
                         // monitoring
@@ -410,7 +410,7 @@ public class STDataViewersCSVExporter {
     private void collectViewerParameters() {
         Display.getDefault().syncExec(new Runnable() {
             @Override
-			public void run() {
+            public void run() {
                 // getting columns with the right order
                 Item[] unOrdColumns = stViewer.getColumns();
                 Item[] columns = new Item[unOrdColumns.length];
@@ -421,7 +421,7 @@ public class STDataViewersCSVExporter {
 
                 // getting fields mapping
                 // (before removing hidden columns)
-                Map<Item, ISTDataViewersField> fieldsMap = new HashMap<Item, ISTDataViewersField>();
+                Map<Item, ISTDataViewersField> fieldsMap = new HashMap<>();
                 for (Item column : columns) {
                     fieldsMap.put(column, (ISTDataViewersField) column.getData());
                 }
@@ -432,7 +432,7 @@ public class STDataViewersCSVExporter {
                 // getting only visible columns, using the column order
                 if (!showHiddenColumns) {
                     int[] columnsState = stViewer.getHideShowManager().getColumnsState();
-                    List<Item> enabledColumns = new ArrayList<Item>();
+                    List<Item> enabledColumns = new ArrayList<>();
                     for (int i = 0; i < columnsState.length; i++) {
                         if (columnsState[columnOrder[i]] == STDataViewersHideShowManager.STATE_SHOWN) {
                             enabledColumns.add(columns[i]);
@@ -454,7 +454,7 @@ public class STDataViewersCSVExporter {
                 contentProvider = stViewer.getViewer().getContentProvider();
 
                 // getting expanded elements if necessary
-                expandedElts = new ArrayList<Object>();
+                expandedElts = new ArrayList<>();
                 if (!expandAll && stViewer.getViewer() instanceof TreeViewer) {
                     TreeViewer tv = (TreeViewer) stViewer.getViewer();
                     expandedElts = Arrays.asList(tv.getExpandedElements());
@@ -473,10 +473,10 @@ public class STDataViewersCSVExporter {
 
     private void dumpTreeData(ITreeContentProvider tcp, Object element, String prefix, boolean isLastChild,
             boolean monitoring) {
-        String childMarker = isLastChild ? CSVLastChildMarker : CSVChildMarker;
+        String childMarker = isLastChild ? csvLastChildMarker : csvChildMarker;
 
         boolean isLeaf = !tcp.hasChildren(element);
-        String leafMarker = (isLeaf ? CSVLeafMarker : CSVNodeMarker);
+        String leafMarker = (isLeaf ? csvLeafMarker : csvNodeMarker);
         dumpNodeData(element, prefix + childMarker + leafMarker);
 
         if ((expandAll || expandedElts.contains(element)) && !isLeaf) {
@@ -493,7 +493,7 @@ public class STDataViewersCSVExporter {
                 // exporting children
                 Arrays.sort(children, comparator);
                 for (int i = 0; i < children.length; i++) {
-                    String prefixAdd = isLastChild ? CSVNoChildLink : CSVChildLink;
+                    String prefixAdd = isLastChild ? csvNoChildLink : csvChildLink;
                     dumpTreeData(tcp, children[i], prefix + prefixAdd, i == children.length - 1, false);
 
                     // monitoring
@@ -531,7 +531,7 @@ public class STDataViewersCSVExporter {
     private void printPrefix(String prefix) {
         if (exportTreePrefix) {
             ps.print(prefix);
-            ps.print(CSVSeparator);
+            ps.print(csvSeparator);
         }
     }
 
@@ -539,7 +539,7 @@ public class STDataViewersCSVExporter {
         if (i == length - 1) {
             ps.print("\n");
         } else {
-            ps.print(CSVSeparator);
+            ps.print(csvSeparator);
         }
     }
 
@@ -552,31 +552,31 @@ public class STDataViewersCSVExporter {
     }
 
     public String getCSVSeparator() {
-        return CSVSeparator;
+        return csvSeparator;
     }
 
     public String getCSVChildMarker() {
-        return CSVChildMarker;
+        return csvChildMarker;
     }
 
     public String getCSVLastChildMarker() {
-        return CSVLastChildMarker;
+        return csvLastChildMarker;
     }
 
     public String getCSVChildLink() {
-        return CSVChildLink;
+        return csvChildLink;
     }
 
     public String getCSVNoChildLink() {
-        return CSVNoChildLink;
+        return csvNoChildLink;
     }
 
     public String getCSVLeafMarker() {
-        return CSVLeafMarker;
+        return csvLeafMarker;
     }
 
     public String getCSVNodeMarker() {
-        return CSVNodeMarker;
+        return csvNodeMarker;
     }
 
     public boolean getExpandAll() {
@@ -596,31 +596,31 @@ public class STDataViewersCSVExporter {
     }
 
     public void setCSVSeparator(String separator) {
-        CSVSeparator = separator;
+        csvSeparator = separator;
     }
 
     public void setCSVChildMarker(String childMarker) {
-        CSVChildMarker = childMarker;
+        csvChildMarker = childMarker;
     }
 
     public void setCSVLastChildMarker(String lastChildMarker) {
-        CSVLastChildMarker = lastChildMarker;
+        csvLastChildMarker = lastChildMarker;
     }
 
     public void setCSVChildLink(String childLink) {
-        CSVChildLink = childLink;
+        csvChildLink = childLink;
     }
 
     public void setCSVNoChildLink(String noChildLink) {
-        CSVNoChildLink = noChildLink;
+        csvNoChildLink = noChildLink;
     }
 
     public void setCSVLeafMarker(String leafMarker) {
-        CSVLeafMarker = leafMarker;
+        csvLeafMarker = leafMarker;
     }
 
     public void setCSVNodeMarker(String nodeMarker) {
-        CSVNodeMarker = nodeMarker;
+        csvNodeMarker = nodeMarker;
     }
 
     public void setExpandAll(boolean expandAll) {
@@ -649,7 +649,7 @@ public class STDataViewersCSVExporter {
         }
 
         @Override
-		protected ISTDataViewersField getField(Item column) {
+        protected ISTDataViewersField getField(Item column) {
             return fieldsMap.get(column);
         }
 

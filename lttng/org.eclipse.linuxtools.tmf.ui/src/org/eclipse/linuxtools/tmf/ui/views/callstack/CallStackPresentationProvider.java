@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -13,12 +13,11 @@
 package org.eclipse.linuxtools.tmf.ui.views.callstack;
 
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
-import org.eclipse.linuxtools.tmf.core.callstack.CallStackStateProvider;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystem;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.StateItem;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.TimeGraphPresentationProvider;
 import org.eclipse.linuxtools.tmf.ui.widgets.timegraph.model.ITimeEvent;
@@ -105,7 +104,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
     public String getEventName(ITimeEvent event) {
         if (event instanceof CallStackEvent) {
             CallStackEntry entry = (CallStackEntry) event.getEntry();
-            ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
+            ITmfStateSystem ss = entry.getStateSystem();
             try {
                 ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
                 if (!value.isNull()) {
@@ -133,7 +132,7 @@ public class CallStackPresentationProvider extends TimeGraphPresentationProvider
             return;
         }
         CallStackEntry entry = (CallStackEntry) event.getEntry();
-        ITmfStateSystem ss = entry.getTrace().getStateSystems().get(CallStackStateProvider.ID);
+        ITmfStateSystem ss = entry.getStateSystem();
         try {
             ITmfStateValue value = ss.querySingleState(event.getTime(), entry.getQuark()).getStateValue();
             if (!value.isNull()) {

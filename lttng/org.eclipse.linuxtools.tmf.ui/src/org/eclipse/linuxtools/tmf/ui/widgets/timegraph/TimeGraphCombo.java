@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Ericsson, others
+ * Copyright (c) 2012, 2014 Ericsson, others
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -17,10 +17,13 @@ package org.eclipse.linuxtools.tmf.ui.widgets.timegraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,6 +55,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -75,6 +79,10 @@ public class TimeGraphCombo extends Composite {
     // Constants
     // ------------------------------------------------------------------------
 
+    /** Constant indicating that all levels of the time graph should be expanded
+     * @since 3.1 */
+    public static final int ALL_LEVELS = AbstractTreeViewer.ALL_LEVELS;
+
     private static final Object FILLER = new Object();
 
     private static final String ITEM_HEIGHT = "$height$"; //$NON-NLS-1$
@@ -89,14 +97,11 @@ public class TimeGraphCombo extends Composite {
     /** The time viewer */
     private TimeGraphViewer fTimeGraphViewer;
 
-    /** The top-level input (children excluded) */
-    private List<? extends ITimeGraphEntry> fTopInput;
-
     /** The selection listener map */
-    private final Map<ITimeGraphSelectionListener, SelectionListenerWrapper> fSelectionListenerMap = new HashMap<ITimeGraphSelectionListener, SelectionListenerWrapper>();
+    private final Map<ITimeGraphSelectionListener, SelectionListenerWrapper> fSelectionListenerMap = new HashMap<>();
 
     /** The map of viewer filters */
-    private final Map<ViewerFilter, ViewerFilter> fViewerFilterMap = new HashMap<ViewerFilter, ViewerFilter>();
+    private final Map<ViewerFilter, ViewerFilter> fViewerFilterMap = new HashMap<>();
 
     /**
      * Flag to block the tree selection changed listener when triggered by the
@@ -121,6 +126,9 @@ public class TimeGraphCombo extends Composite {
 
     /** Default weight of each part of the sash */
     private static final int[] DEFAULT_WEIGHTS = { 1, 1 };
+
+    /** List of all expanded items whose parents are also expanded */
+    private List<TreeItem> fVisibleExpandedItems = null;
 
     // ------------------------------------------------------------------------
     // Classes
@@ -359,6 +367,7 @@ public class TimeGraphCombo extends Composite {
         final SashForm sash = new SashForm(this, SWT.NONE);
 
         fTreeViewer = new TreeViewer(sash, SWT.FULL_SELECTION | SWT.H_SCROLL);
+        fTreeViewer.setAutoExpandLevel(AbstractTreeViewer.ALL_LEVELS);
         final Tree tree = fTreeViewer.getTree();
         tree.setHeaderVisible(true);
         tree.setLinesVisible(true);
@@ -398,35 +407,34 @@ public class TimeGraphCombo extends Composite {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
                 fTimeGraphViewer.setExpandedState((ITimeGraphEntry) event.getElement(), false);
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                // queue the alignment update because the tree items may only be
+                // actually collapsed after the listeners have been notified
+                fVisibleExpandedItems = null; // invalidate the cache
+                getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        alignTreeItems(true);
+                    }});
             }
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
                 ITimeGraphEntry entry = (ITimeGraphEntry) event.getElement();
                 fTimeGraphViewer.setExpandedState(entry, true);
+                Set<Object> expandedElements = new HashSet<>(Arrays.asList(fTreeViewer.getExpandedElements()));
                 for (ITimeGraphEntry child : entry.getChildren()) {
-                    boolean expanded = fTreeViewer.getExpandedState(child);
-                    fTimeGraphViewer.setExpandedState(child, expanded);
+                    if (child.hasChildren()) {
+                        boolean expanded = expandedElements.contains(child);
+                        fTimeGraphViewer.setExpandedState(child, expanded);
+                    }
                 }
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                final TreeItem treeItem = treeItems.get(topIndex);
-                // queue the top item update because the tree can change its top item
-                // autonomously immediately after the listeners have been notified
+                // queue the alignment update because the tree items may only be
+                // actually expanded after the listeners have been notified
+                fVisibleExpandedItems = null; // invalidate the cache
                 getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        tree.setTopItem(treeItem);
+                        alignTreeItems(true);
                     }});
             }
         });
@@ -436,16 +444,21 @@ public class TimeGraphCombo extends Composite {
             @Override
             public void treeCollapsed(TimeGraphTreeExpansionEvent event) {
                 fTreeViewer.setExpandedState(event.getEntry(), false);
+                alignTreeItems(true);
             }
 
             @Override
             public void treeExpanded(TimeGraphTreeExpansionEvent event) {
                 ITimeGraphEntry entry = event.getEntry();
                 fTreeViewer.setExpandedState(entry, true);
+                Set<Object> expandedElements = new HashSet<>(Arrays.asList(fTreeViewer.getExpandedElements()));
                 for (ITimeGraphEntry child : entry.getChildren()) {
-                    boolean expanded = fTreeViewer.getExpandedState(child);
-                    fTimeGraphViewer.setExpandedState(child, expanded);
+                    if (child.hasChildren()) {
+                        boolean expanded = expandedElements.contains(child);
+                        fTimeGraphViewer.setExpandedState(child, expanded);
+                    }
                 }
+                alignTreeItems(true);
             }
         });
 
@@ -456,7 +469,7 @@ public class TimeGraphCombo extends Composite {
                 TreeItem treeItem = tree.getItem(new Point(event.x, event.y));
                 if (treeItem == null || treeItem.getData() == FILLER) {
                     event.doit = false;
-                    List<TreeItem> treeItems = getVisibleExpandedItems(tree);
+                    List<TreeItem> treeItems = getVisibleExpandedItems(tree, false);
                     if (treeItems.size() == 0) {
                         fTreeViewer.setSelection(new StructuredSelection());
                         fTimeGraphViewer.setSelection(null);
@@ -478,13 +491,7 @@ public class TimeGraphCombo extends Composite {
                 event.doit = false;
                 Slider scrollBar = fTimeGraphViewer.getVerticalBar();
                 fTimeGraphViewer.setTopIndex(scrollBar.getSelection() - event.count);
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                alignTreeItems(false);
             }
         });
 
@@ -492,7 +499,7 @@ public class TimeGraphCombo extends Composite {
         tree.addListener(SWT.KeyDown, new Listener() {
             @Override
             public void handleEvent(Event event) {
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
+                List<TreeItem> treeItems = getVisibleExpandedItems(tree, false);
                 if (treeItems.size() == 0) {
                     fTreeViewer.setSelection(new StructuredSelection());
                     event.doit = false;
@@ -512,13 +519,12 @@ public class TimeGraphCombo extends Composite {
                     fTimeGraphViewer.setSelection((ITimeGraphEntry) treeItems.get(treeItems.size() - 1).getData());
                     event.doit = false;
                 }
-                TreeItem treeItem = treeItems.get(fTimeGraphViewer.getTopIndex());
-                tree.setTopItem(treeItem);
                 if (fTimeGraphViewer.getSelectionIndex() >= 0) {
                     fTreeViewer.setSelection(new StructuredSelection(fTimeGraphViewer.getSelection()));
                 } else {
                     fTreeViewer.setSelection(new StructuredSelection());
                 }
+                alignTreeItems(false);
             }
         });
 
@@ -526,13 +532,7 @@ public class TimeGraphCombo extends Composite {
         fTimeGraphViewer.getTimeGraphControl().addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                alignTreeItems(false);
             }
         });
 
@@ -548,13 +548,7 @@ public class TimeGraphCombo extends Composite {
                     if (selection instanceof ITimeGraphEntry) {
                         fTimeGraphViewer.setSelection((ITimeGraphEntry) selection);
                     }
-                    List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                    int topIndex = fTimeGraphViewer.getTopIndex();
-                    if (topIndex >= treeItems.size()) {
-                        return;
-                    }
-                    TreeItem treeItem = treeItems.get(topIndex);
-                    tree.setTopItem(treeItem);
+                    alignTreeItems(false);
                 }
             }
         });
@@ -572,13 +566,7 @@ public class TimeGraphCombo extends Composite {
                     fTreeViewer.setSelection(new StructuredSelection());
                 }
                 fInhibitTreeSelection = false;
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                alignTreeItems(false);
             }
         });
 
@@ -586,13 +574,7 @@ public class TimeGraphCombo extends Composite {
         fTimeGraphViewer.getVerticalBar().addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                alignTreeItems(false);
             }
         });
 
@@ -600,13 +582,7 @@ public class TimeGraphCombo extends Composite {
         fTimeGraphViewer.getTimeGraphControl().addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseScrolled(MouseEvent e) {
-                List<TreeItem> treeItems = getVisibleExpandedItems(tree);
-                int topIndex = fTimeGraphViewer.getTopIndex();
-                if (topIndex >= treeItems.size()) {
-                    return;
-                }
-                TreeItem treeItem = treeItems.get(topIndex);
-                tree.setTopItem(treeItem);
+                alignTreeItems(false);
             }
         });
 
@@ -634,28 +610,6 @@ public class TimeGraphCombo extends Composite {
             public void mouseEnter(MouseEvent e) {
                 if (fTreeViewer.getControl().isFocusControl()) {
                     fTimeGraphViewer.getTimeGraphControl().setFocus();
-                }
-            }
-        });
-
-        // ensure the time graph item heights are equal to the tree item heights
-        tree.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                List<TreeItem> items = getVisibleExpandedItems(tree);
-                for (int i = 0; i < items.size() - 1; i++) {
-                    TreeItem item = items.get(i);
-                    /*
-                     * Bug in Linux. The method getBounds doesn't always return the correct height.
-                     * Use the difference of y position between items to calculate the height.
-                     */
-                    Integer itemHeight = items.get(i + 1).getBounds().y - item.getBounds().y;
-                    if (!itemHeight.equals(item.getData(ITEM_HEIGHT))) {
-                        ITimeGraphEntry entry = (ITimeGraphEntry) item.getData();
-                        if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, itemHeight)) {
-                            item.setData(ITEM_HEIGHT, itemHeight);
-                        }
-                    }
                 }
             }
         });
@@ -696,14 +650,15 @@ public class TimeGraphCombo extends Composite {
      * @since 2.0
      */
     public void showFilterDialog() {
-        if(fTopInput != null) {
-            List<? extends ITimeGraphEntry> allElements = listAllInputs(fTopInput);
-            fFilterDialog.setInput(fTopInput.toArray(new ITimeGraphEntry[0]));
+        ITimeGraphEntry[] topInput = fTimeGraphViewer.getTimeGraphContentProvider().getElements(fTimeGraphViewer.getInput());
+        if (topInput != null) {
+            List<? extends ITimeGraphEntry> allElements = listAllInputs(Arrays.asList(topInput));
+            fFilterDialog.setInput(fTimeGraphViewer.getInput());
             fFilterDialog.setTitle(Messages.TmfTimeFilterDialog_WINDOW_TITLE);
             fFilterDialog.setMessage(Messages.TmfTimeFilterDialog_MESSAGE);
             fFilterDialog.setExpandedElements(allElements.toArray());
             if (fFilter.getFiltered() != null) {
-                ArrayList<? extends ITimeGraphEntry> nonFilteredElements = new ArrayList<ITimeGraphEntry>(allElements);
+                ArrayList<? extends ITimeGraphEntry> nonFilteredElements = new ArrayList<>(allElements);
                 nonFilteredElements.removeAll(fFilter.getFiltered());
                 fFilterDialog.setInitialElementSelections(nonFilteredElements);
             } else {
@@ -725,6 +680,7 @@ public class TimeGraphCombo extends Composite {
                 fTreeViewer.expandAll();
                 fTimeGraphViewer.refresh();
                 fInhibitTreeSelection = false;
+                alignTreeItems(true);
                 // Reset selection to first entry
                 if (fFilterDialog.getResult().length > 0) {
                     setSelection((ITimeGraphEntry) fFilterDialog.getResult()[0]);
@@ -834,7 +790,19 @@ public class TimeGraphCombo extends Composite {
     }
 
     /**
-     * Sets the time graph provider used by this time graph combo.
+     * Sets the time graph content provider used by this time graph combo.
+     *
+     * @param timeGraphContentProvider
+     *            the time graph content provider
+     *
+     * @since 3.0
+     */
+    public void setTimeGraphContentProvider(ITimeGraphContentProvider timeGraphContentProvider) {
+        fTimeGraphViewer.setTimeGraphContentProvider(timeGraphContentProvider);
+    }
+
+    /**
+     * Sets the time graph presentation provider used by this time graph combo.
      *
      * @param timeGraphProvider the time graph provider
      */
@@ -844,12 +812,12 @@ public class TimeGraphCombo extends Composite {
 
     /**
      * Sets or clears the input for this time graph combo.
-     * The input array should only contain top-level elements.
      *
      * @param input the input of this time graph combo, or <code>null</code> if none
+     *
+     * @since 3.0
      */
-    public void setInput(ITimeGraphEntry[] input) {
-        fTopInput = new ArrayList<ITimeGraphEntry>(Arrays.asList(input));
+    public void setInput(Object input) {
         fFilter.setFiltered(null);
         fInhibitTreeSelection = true;
         fTreeViewer.setInput(input);
@@ -857,11 +825,29 @@ public class TimeGraphCombo extends Composite {
             listenerWrapper.selection = null;
         }
         fInhibitTreeSelection = false;
-        fTreeViewer.expandAll();
         fTreeViewer.getTree().getVerticalBar().setEnabled(false);
         fTreeViewer.getTree().getVerticalBar().setVisible(false);
         fTimeGraphViewer.setItemHeight(getItemHeight(fTreeViewer.getTree()));
         fTimeGraphViewer.setInput(input);
+        // queue the alignment update because in Linux the item bounds are not
+        // set properly until the tree has been painted at least once
+        fVisibleExpandedItems = null; // invalidate the cache
+        getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                alignTreeItems(true);
+            }});
+    }
+
+    /**
+     * Gets the input for this time graph combo.
+     *
+     * @return The input of this time graph combo, or <code>null</code> if none
+     *
+     * @since 3.0
+     */
+    public Object getInput() {
+        return fTreeViewer.getInput();
     }
 
     /**
@@ -883,6 +869,7 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.addFilter(wrapper);
         fTimeGraphViewer.addFilter(wrapper);
         fViewerFilterMap.put(filter, wrapper);
+        alignTreeItems(true);
     }
 
     /**
@@ -894,6 +881,7 @@ public class TimeGraphCombo extends Composite {
         fTreeViewer.removeFilter(wrapper);
         fTimeGraphViewer.removeFilter(wrapper);
         fViewerFilterMap.remove(filter);
+        alignTreeItems(true);
     }
 
     /**
@@ -901,8 +889,13 @@ public class TimeGraphCombo extends Composite {
      */
     public void refresh() {
         fInhibitTreeSelection = true;
+        Tree tree = fTreeViewer.getTree();
+        tree.setRedraw(false);
         fTreeViewer.refresh();
+        fTreeViewer.expandAll();
+        tree.setRedraw(true);
         fTimeGraphViewer.refresh();
+        alignTreeItems(true);
         fInhibitTreeSelection = false;
     }
 
@@ -944,13 +937,42 @@ public class TimeGraphCombo extends Composite {
             fTreeViewer.setSelection(new StructuredSelection());
         }
         fInhibitTreeSelection = false;
-        List<TreeItem> treeItems = getVisibleExpandedItems(fTreeViewer.getTree());
-        int topIndex = fTimeGraphViewer.getTopIndex();
-        if (topIndex >= treeItems.size()) {
-            return;
+        alignTreeItems(false);
+    }
+
+    /**
+     * Sets the auto-expand level to be used when the input of the viewer is set
+     * using {@link #setInput(Object)}. The value 0 means that there is no
+     * auto-expand; 1 means that top-level elements are expanded, but not their
+     * children; 2 means that top-level elements are expanded, and their
+     * children, but not grand-children; and so on.
+     * <p>
+     * The value {@link #ALL_LEVELS} means that all subtrees should be expanded.
+     * </p>
+     * @param level
+     *            non-negative level, or <code>ALL_LEVELS</code> to expand all
+     *            levels of the tree
+     * @since 3.1
+     */
+    public void setAutoExpandLevel(int level) {
+        fTimeGraphViewer.setAutoExpandLevel(level);
+        if (level <= 0) {
+            fTreeViewer.setAutoExpandLevel(level);
+        } else {
+            fTreeViewer.setAutoExpandLevel(level + 1);
         }
-        TreeItem treeItem = treeItems.get(topIndex);
-        fTreeViewer.getTree().setTopItem(treeItem);
+    }
+
+    /**
+     * Returns the auto-expand level.
+     *
+     * @return non-negative level, or <code>ALL_LEVELS</code> if all levels of
+     *         the tree are expanded automatically
+     * @see #setAutoExpandLevel
+     * @since 3.1
+     */
+    public int getAutoExpandLevel() {
+        return fTimeGraphViewer.getAutoExpandLevel();
     }
 
     /**
@@ -966,6 +988,7 @@ public class TimeGraphCombo extends Composite {
     public void setExpandedState(ITimeGraphEntry entry, boolean expanded) {
         fTimeGraphViewer.setExpandedState(entry, expanded);
         fTreeViewer.setExpandedState(entry, expanded);
+        alignTreeItems(true);
     }
 
     /**
@@ -976,6 +999,7 @@ public class TimeGraphCombo extends Composite {
     public void collapseAll() {
         fTimeGraphViewer.collapseAll();
         fTreeViewer.collapseAll();
+        alignTreeItems(true);
     }
 
     /**
@@ -986,35 +1010,37 @@ public class TimeGraphCombo extends Composite {
     public void expandAll() {
         fTimeGraphViewer.expandAll();
         fTreeViewer.expandAll();
+        alignTreeItems(true);
     }
 
     // ------------------------------------------------------------------------
     // Internal
     // ------------------------------------------------------------------------
 
-    private List<TreeItem> getVisibleExpandedItems(Tree tree) {
-        ArrayList<TreeItem> items = new ArrayList<TreeItem>();
-        for (TreeItem item : tree.getItems()) {
-            if (item.getData() == FILLER) {
-                break;
+    private List<TreeItem> getVisibleExpandedItems(Tree tree, boolean refresh) {
+        if (fVisibleExpandedItems == null || refresh) {
+            ArrayList<TreeItem> items = new ArrayList<>();
+            for (TreeItem item : tree.getItems()) {
+                if (item.getData() == FILLER) {
+                    break;
+                }
+                items.add(item);
+                if (item.getExpanded()) {
+                    addVisibleExpandedItems(items, item);
+                }
             }
-            items.add(item);
-            if (item.getExpanded()) {
-                items.addAll(getVisibleExpandedItems(item));
-            }
+            fVisibleExpandedItems = items;
         }
-        return items;
+        return fVisibleExpandedItems;
     }
 
-    private List<TreeItem> getVisibleExpandedItems(TreeItem treeItem) {
-        ArrayList<TreeItem> items = new ArrayList<TreeItem>();
+    private void addVisibleExpandedItems(List<TreeItem> items, TreeItem treeItem) {
         for (TreeItem item : treeItem.getItems()) {
             items.add(item);
             if (item.getExpanded()) {
-                items.addAll(getVisibleExpandedItems(item));
+                addVisibleExpandedItems(items, item);
             }
         }
-        return items;
     }
 
     /**
@@ -1024,7 +1050,7 @@ public class TimeGraphCombo extends Composite {
      * @return All the inputs
      */
     private List<? extends ITimeGraphEntry> listAllInputs(List<? extends ITimeGraphEntry> inputs) {
-        ArrayList<ITimeGraphEntry> items = new ArrayList<ITimeGraphEntry>();
+        ArrayList<ITimeGraphEntry> items = new ArrayList<>();
         for (ITimeGraphEntry entry : inputs) {
             items.add(entry);
             if (entry.hasChildren()) {
@@ -1042,7 +1068,7 @@ public class TimeGraphCombo extends Composite {
             if (fLinuxItemHeight != 0) {
                 return fLinuxItemHeight;
             }
-            List<TreeItem> treeItems = getVisibleExpandedItems(tree);
+            List<TreeItem> treeItems = getVisibleExpandedItems(tree, true);
             if (treeItems.size() > 1) {
                 final TreeItem treeItem0 = treeItems.get(0);
                 final TreeItem treeItem1 = treeItems.get(1);
@@ -1065,6 +1091,44 @@ public class TimeGraphCombo extends Composite {
             fLinuxItemHeight = -1; // Not Linux, don't perform os.name check anymore
         }
         return tree.getItemHeight();
+    }
+
+    private void alignTreeItems(boolean refreshExpandedItems) {
+        // align the tree top item with the time graph top item
+        Tree tree = fTreeViewer.getTree();
+        List<TreeItem> treeItems = getVisibleExpandedItems(tree, refreshExpandedItems);
+        int topIndex = fTimeGraphViewer.getTopIndex();
+        if (topIndex >= treeItems.size()) {
+            return;
+        }
+        TreeItem item = treeItems.get(topIndex);
+        tree.setTopItem(item);
+
+        // ensure the time graph item heights are equal to the tree item heights
+        int treeHeight = fTreeViewer.getTree().getBounds().height;
+        int index = topIndex;
+        Rectangle bounds = item.getBounds();
+        while (index < treeItems.size() - 1) {
+            if (bounds.y > treeHeight) {
+                break;
+            }
+            /*
+             * Bug in Linux. The method getBounds doesn't always return the correct height.
+             * Use the difference of y position between items to calculate the height.
+             */
+            TreeItem nextItem = treeItems.get(index + 1);
+            Rectangle nextBounds = nextItem.getBounds();
+            Integer itemHeight = nextBounds.y - bounds.y;
+            if (itemHeight > 0 && !itemHeight.equals(item.getData(ITEM_HEIGHT))) {
+                ITimeGraphEntry entry = (ITimeGraphEntry) item.getData();
+                if (fTimeGraphViewer.getTimeGraphControl().setItemHeight(entry, itemHeight)) {
+                    item.setData(ITEM_HEIGHT, itemHeight);
+                }
+            }
+            index++;
+            item = nextItem;
+            bounds = nextBounds;
+        }
     }
 
 }

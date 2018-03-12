@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2013 Ericsson
+ * Copyright (c) 2009, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -12,6 +12,8 @@
 
 package org.eclipse.linuxtools.tmf.tests.stubs.component;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.linuxtools.internal.tmf.core.component.TmfProviderManager;
@@ -36,6 +38,8 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
 
     public static final int NB_EVENTS  = 1000;
 
+    private final BlockingQueue<ITmfEvent> fDataQueue = new LinkedBlockingQueue<>(1000);
+
     public TmfSyntheticEventProviderStub() {
         super("TmfSyntheticEventProviderStub", TmfSyntheticEventStub.class);
     }
@@ -50,16 +54,12 @@ public class TmfSyntheticEventProviderStub extends TmfEventProvider {
         final TmfTimeRange range = request.getRange();
         final TmfEventRequest subRequest =
                 new TmfEventRequest(ITmfEvent.class, range, 0, NB_EVENTS, ExecutionType.FOREGROUND) {
-            @Override
-            public void handleData(final ITmfEvent event) {
-                super.handleData(event);
-                if (event != null) {
-                    handleIncomingData(event);
-                } else {
-                    request.done();
-                }
-            }
-        };
+                    @Override
+                    public void handleData(final ITmfEvent event) {
+                        super.handleData(event);
+                        handleIncomingData(event);
+                    }
+                };
         provider.sendRequest(subRequest);
 
         // Return a dummy context

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -48,7 +48,7 @@ import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePack
 import org.eclipse.linuxtools.internal.tmf.ui.project.wizards.tracepkg.TracePackageTraceElement;
 import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceElement;
-import org.eclipse.linuxtools.tmf.ui.project.model.TmfTraceFolder;
+import org.eclipse.linuxtools.tmf.ui.project.model.TraceUtils;
 import org.eclipse.ui.internal.wizards.datatransfer.ArchiveFileExportOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -87,7 +87,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
         fTraceExportElements = traceExportElements;
         fUseCompression = useCompression;
         fUseTar = useTar;
-        fResources = new HashSet<IResource>();
+        fResources = new HashSet<>();
     }
 
     /**
@@ -184,47 +184,55 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     private void exportSupplementaryFiles(IProgressMonitor monitor, Node traceNode, TmfTraceElement traceElement, TracePackageSupplFilesElement element) throws InterruptedException, CoreException {
         Document doc = traceNode.getOwnerDocument();
         if (element.getChildren().length > 0) {
-            IFolder suppFilesFolder = fExportFolder.getFolder(TmfCommonConstants.TRACE_SUPPLEMENATARY_FOLDER_NAME);
-            if (!suppFilesFolder.exists()) {
-                suppFilesFolder.create(IResource.FORCE, true, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
-            }
-            IFolder traceSuppFilesFolder = suppFilesFolder.getFolder(traceElement.getResource().getName());
-            traceSuppFilesFolder.create(IResource.FORCE, true, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+
+            IPath projectPath = traceElement.getProject().getPath();
 
             for (TracePackageElement child : element.getChildren()) {
                 TracePackageSupplFileElement supplFile = (TracePackageSupplFileElement) child;
                 ModalContext.checkCanceled(monitor);
                 IResource res = supplFile.getResource();
+                // project/.tracing/A/B/statistics.ht -> .tracing/A/B/statistics.ht
+                IPath relativeToExportFolder = res.getFullPath().makeRelativeTo(projectPath);
+
+                // project/.traceExport/.tracing/A/B
+                IFolder folder = fExportFolder.getFolder(relativeToExportFolder.removeLastSegments(1));
+                TraceUtils.createFolder(folder, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+
                 res.refreshLocal(0, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
-                IResource link = createExportResource(traceSuppFilesFolder, res);
+                createExportResource(folder, res);
                 Element suppFileElement = doc.createElement(ITracePackageConstants.SUPPLEMENTARY_FILE_ELEMENT);
 
-                // project/.traceExport/.tracing/kernel/statistics.ht -> .tracing/kernel/statistics.ht
-                IPath archiveRelativePath = link.getFullPath().makeRelativeTo(fExportFolder.getFullPath());
-
-                suppFileElement.setAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB, archiveRelativePath.toString());
+                suppFileElement.setAttribute(ITracePackageConstants.SUPPLEMENTARY_FILE_NAME_ATTRIB, relativeToExportFolder.toString());
                 traceNode.appendChild(suppFileElement);
             }
 
+            IFolder suppFilesFolder = fExportFolder.getFolder(TmfCommonConstants.TRACE_SUPPLEMENTARY_FOLDER_NAME);
             fResources.add(suppFilesFolder);
         }
     }
 
     private void exportTraceFiles(IProgressMonitor monitor, Node traceNode, TracePackageFilesElement element) throws CoreException {
         Document doc = traceNode.getOwnerDocument();
-        IResource resource = ((TracePackageTraceElement) element.getParent()).getTraceElement().getResource();
-        IFolder folder = fExportFolder.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
-        if (!folder.exists()) {
-            folder.create(IResource.FORCE, true, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
-        }
+        TmfTraceElement traceElement = ((TracePackageTraceElement) element.getParent()).getTraceElement();
+        IResource resource = traceElement.getResource();
+        IPath traceFolderPath = traceElement.getProject().getTracesFolder().getPath();
 
-        IResource link = createExportResource(folder, resource);
+        // project/Traces/A/B/Kernel -> A/B/Kernel
+        IPath relativeToExportFolder = resource.getFullPath().makeRelativeTo(traceFolderPath);
+
+        // project/.traceExport/A/B
+        IFolder folder = fExportFolder.getFolder(relativeToExportFolder.removeLastSegments(1));
+        TraceUtils.createFolder(folder, new SubProgressMonitor(monitor, 1, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK));
+
+        createExportResource(folder, resource);
         Element fileElement = doc.createElement(ITracePackageConstants.TRACE_FILE_ELEMENT);
-        // project/.traceExport/Traces/kernel -> Traces/kernel
-        IPath archiveRelativePath = link.getFullPath().makeRelativeTo(fExportFolder.getFullPath());
-        fileElement.setAttribute(ITracePackageConstants.TRACE_FILE_NAME_ATTRIB, archiveRelativePath.toString());
+
+        fileElement.setAttribute(ITracePackageConstants.TRACE_FILE_NAME_ATTRIB, relativeToExportFolder.toString());
         traceNode.appendChild(fileElement);
-        fResources.add(folder);
+
+        // Always export the top-most folder containing the trace or the trace itself
+        IResource exportedResource = fExportFolder.findMember(relativeToExportFolder.segment(0));
+        fResources.add(exportedResource);
     }
 
     /**
@@ -285,7 +293,7 @@ public class TracePackageExportOperation extends AbstractTracePackageOperation {
     }
 
     private IStatus exportToArchive(IProgressMonitor monitor, int totalWork) throws InvocationTargetException, InterruptedException {
-        ArchiveFileExportOperation op = new ArchiveFileExportOperation(new ArrayList<IResource>(fResources), getFileName());
+        ArchiveFileExportOperation op = new ArchiveFileExportOperation(new ArrayList<>(fResources), getFileName());
         op.setCreateLeadupStructure(false);
         op.setUseCompression(fUseCompression);
         op.setUseTarFormat(fUseTar);

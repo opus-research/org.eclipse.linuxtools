@@ -12,9 +12,9 @@
 
 package org.eclipse.linuxtools.internal.lttng2.kernel.ui.views;
 
+import org.eclipse.linuxtools.internal.lttng2.control.ui.views.ControlView;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.controlflow.ControlFlowView;
 import org.eclipse.linuxtools.internal.lttng2.kernel.ui.views.resources.ResourcesView;
-import org.eclipse.linuxtools.internal.lttng2.ui.views.control.ControlView;
 import org.eclipse.linuxtools.tmf.ui.project.wizards.NewTmfProjectWizard;
 import org.eclipse.linuxtools.tmf.ui.views.histogram.HistogramView;
 import org.eclipse.linuxtools.tmf.ui.views.statistics.TmfStatisticsView;
@@ -28,7 +28,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 public class PerspectiveFactory implements IPerspectiveFactory {
 
     /** Perspective ID */
-    public static final String ID = "org.eclipse.linuxtools.lttng2.ui.perspective"; //$NON-NLS-1$
+    public static final String ID = "org.eclipse.linuxtools.lttng2.kernel.ui.perspective"; //$NON-NLS-1$
 
     // LTTng views
     private static final String HISTOGRAM_VIEW_ID = HistogramView.ID;

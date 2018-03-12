@@ -20,15 +20,15 @@
   <parent>
     <groupId>org.eclipse.linuxtools</groupId>
     <artifactId>linuxtools-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.linuxtools.lttng</groupId>
   <artifactId>linuxtools-lttng-parent</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Eclipse Linux Tools LTTng Parent</name>
+  <name>Linux Tools LTTng Parent</name>
 
   <licenses>
     <license>
@@ -58,7 +58,7 @@
   <profile>
     <id>lttngPackage</id>
       <properties>
-          <lttngPackageDestination>/var/www/technology/linuxtools/lttng/update-nightly/</lttngPackageDestination>
+          <lttngPackageDestination>/var/www/tools/linuxtools/lttng/update-nightly/</lttngPackageDestination>
       </properties>
       <modules>
         <module>org.eclipse.linuxtools.lttng.releng-site</module>
@@ -83,42 +83,58 @@
       </os>
     </activation>
     <properties>
-      <base.ui.test.vmargs>${base.test.vmargs}</base.ui.test.vmargs>
+      <!-- Disable webkit integration, especially unstable on Linux -->
+      <base.ui.test.vmargs>${base.test.vmargs} -Dorg.eclipse.swt.browser.DefaultType=mozilla</base.ui.test.vmargs>
     </properties>
   </profile>
 </profiles>
 
   <modules>
+    <module>org.eclipse.linuxtools.btf.core</module>
+    <module>org.eclipse.linuxtools.btf.core.tests</module>
+    <module>org.eclipse.linuxtools.btf.ui</module>
+
     <module>org.eclipse.linuxtools.ctf</module>
     <module>org.eclipse.linuxtools.ctf.core</module>
     <module>org.eclipse.linuxtools.ctf.core.tests</module>
     <module>org.eclipse.linuxtools.ctf.parser</module>
     <module>org.eclipse.linuxtools.ctf.parser.tests</module>
 
+    <module>org.eclipse.linuxtools.statesystem.core</module>
+    <module>org.eclipse.linuxtools.statesystem.core.tests</module>
+
     <module>org.eclipse.linuxtools.tmf</module>
     <module>org.eclipse.linuxtools.tmf.core</module>
     <module>org.eclipse.linuxtools.tmf.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.ui</module>
     <module>org.eclipse.linuxtools.tmf.ui.tests</module>
+    <module>org.eclipse.linuxtools.tmf.ui.swtbot.tests</module>
     <module>org.eclipse.linuxtools.tmf.help</module>
+
+    <module>org.eclipse.linuxtools.tmf.ctf</module>
+    <module>org.eclipse.linuxtools.tmf.ctf.core</module>
+    <module>org.eclipse.linuxtools.tmf.ctf.core.tests</module>
+    <module>org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests</module>
 
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core</module>
     <module>org.eclipse.linuxtools.tmf.analysis.xml.core.tests</module>
     <module>org.eclipse.linuxtools.tmf.analysis.xml.ui</module>
     <module>org.eclipse.linuxtools.tmf.analysis.xml.ui.tests</module>
 
-    <module>org.eclipse.linuxtools.lttng2</module>
-    <module>org.eclipse.linuxtools.lttng2.core</module>
-    <module>org.eclipse.linuxtools.lttng2.core.tests</module>
-    <module>org.eclipse.linuxtools.lttng2.ui</module>
-    <module>org.eclipse.linuxtools.lttng2.ui.tests</module>
     <module>org.eclipse.linuxtools.lttng.help</module>
+
+    <module>org.eclipse.linuxtools.lttng2.control</module>
+    <module>org.eclipse.linuxtools.lttng2.control.core</module>
+    <module>org.eclipse.linuxtools.lttng2.control.core.tests</module>
+    <module>org.eclipse.linuxtools.lttng2.control.ui</module>
+    <module>org.eclipse.linuxtools.lttng2.control.ui.tests</module>
 
     <module>org.eclipse.linuxtools.lttng2.kernel</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.core</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.core.tests</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui</module>
     <module>org.eclipse.linuxtools.lttng2.kernel.ui.tests</module>
+    <module>org.eclipse.linuxtools.lttng2.kernel.ui.swtbot.tests</module>
 
     <module>org.eclipse.linuxtools.lttng2.ust</module>
     <module>org.eclipse.linuxtools.lttng2.ust.core</module>
@@ -139,6 +155,7 @@
     <module>org.eclipse.linuxtools.tracing.rcp.help</module>
     <module>org.eclipse.linuxtools.tracing.rcp.ui</module>
 
+    <module>org.eclipse.linuxtools.tracing.examples</module>
   </modules>
 
     <build>
@@ -175,6 +192,15 @@
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
+                    <filters>
+                      <filter>
+                        <type>eclipse-plugin</type>
+                        <id>org.eclipse.jdt.annotation</id>
+                        <restrictTo>
+                          <versionRange>[1.0,2.0)</versionRange>
+                        </restrictTo>
+                      </filter>
+                    </filters>
                 </configuration>
             </plugin>
             <plugin>

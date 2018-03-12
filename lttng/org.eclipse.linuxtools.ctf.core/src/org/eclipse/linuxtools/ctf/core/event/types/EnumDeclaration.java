@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011-2012 Ericsson, Ecole Polytechnique de Montreal and others
+ * Copyright (c) 2011, 2014 Ericsson, Ecole Polytechnique de Montreal and others
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -18,6 +18,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
+import org.eclipse.linuxtools.ctf.core.event.scope.IDefinitionScope;
+import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
+
 /**
  * A CTF enum declaration.
  *
@@ -28,7 +32,7 @@ import java.util.Set;
  * @author Matthew Khouzam
  * @author Simon Marchi
  */
-public class EnumDeclaration implements IDeclaration {
+public final class EnumDeclaration extends Declaration implements ISimpleDatatypeDeclaration {
 
     // ------------------------------------------------------------------------
     // Attributes
@@ -36,7 +40,7 @@ public class EnumDeclaration implements IDeclaration {
 
     private final EnumTable fTable = new EnumTable();
     private final IntegerDeclaration fContainerType;
-    private final Set<String> fLabels = new HashSet<String>();
+    private final Set<String> fLabels = new HashSet<>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -72,19 +76,31 @@ public class EnumDeclaration implements IDeclaration {
         return this.getContainerType().getAlignment();
     }
 
+    /**
+     * @since 3.0
+     */
+    @Override
+    public int getMaximumSize() {
+        return fContainerType.getMaximumSize();
+    }
+
     // ------------------------------------------------------------------------
     // Operations
     // ------------------------------------------------------------------------
 
+    /**
+     * @since 3.0
+     */
     @Override
-    public EnumDefinition createDefinition(IDefinitionScope definitionScope,
-            String fieldName) {
-        return new EnumDefinition(this, definitionScope, fieldName);
+    public EnumDefinition createDefinition(IDefinitionScope definitionScope, String fieldName, BitBuffer input) throws CTFReaderException {
+        alignRead(input);
+        IntegerDefinition value = getContainerType().createDefinition(definitionScope, fieldName, input);
+        return new EnumDefinition(this, definitionScope, fieldName, value);
     }
 
     /**
-     * Add a value. Do not overlap, this is <i><u><b>not</i></u></b> an interval
-     * tree.
+     * Add a value. Do not overlap, this is <em><strong>not</strong></em> an
+     * interval tree.
      *
      * @param low
      *            lowest value that this int can be to have label as a return
@@ -129,7 +145,7 @@ public class EnumDeclaration implements IDeclaration {
      */
     private class EnumTable {
 
-        private final List<LabelAndRange> ranges = new LinkedList<LabelAndRange>();
+        private final List<LabelAndRange> ranges = new LinkedList<>();
 
         public EnumTable() {
         }

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.ctf.core.event.io.BitBuffer;
 import org.eclipse.linuxtools.ctf.core.event.types.Encoding;
 import org.eclipse.linuxtools.ctf.core.event.types.IntegerDeclaration;
@@ -34,11 +35,12 @@ import org.junit.Test;
  */
 public class IntegerEndiannessTest {
 
-    private static String name = "testInt";
-    private static String clockName = "clock";
+    private static final @NonNull String name = "testInt";
+    private static final @NonNull String clockName = "clock";
 
     private ByteBuffer bb;
-    private BitBuffer input;
+
+    private @NonNull BitBuffer input = new BitBuffer();
 
     /**
      * Set up the bit-buffer to be used
@@ -46,6 +48,10 @@ public class IntegerEndiannessTest {
     @Before
     public void setUp() {
         bb = java.nio.ByteBuffer.allocateDirect(8);
+        final ByteBuffer byb = bb;
+        if (byb == null) {
+            throw new IllegalStateException("Failed to allocate memory");
+        }
         bb.put((byte) 0xab);
         bb.put((byte) 0xcd);
         bb.put((byte) 0xef);
@@ -54,7 +60,8 @@ public class IntegerEndiannessTest {
         bb.put((byte) 0x56);
         bb.put((byte) 0x78);
         bb.put((byte) 0x9a);
-        input = new BitBuffer(bb);
+
+        input = new BitBuffer(byb);
     }
 
     /**
@@ -65,9 +72,8 @@ public class IntegerEndiannessTest {
      */
     @Test
     public void test32BE() throws CTFReaderException {
-        IntegerDeclaration be = new IntegerDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_be = be.createDefinition(null, name);
-        fixture_be.read(input);
+        IntegerDeclaration be = IntegerDeclaration.createDeclaration(32, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_be = be.createDefinition(null, name, input);
         assertEquals(0xabcdef12, fixture_be.getValue());
     }
 
@@ -79,9 +85,8 @@ public class IntegerEndiannessTest {
      */
     @Test
     public void test64BE() throws CTFReaderException {
-        IntegerDeclaration be = new IntegerDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_be = be.createDefinition(null, name);
-        fixture_be.read(input);
+        IntegerDeclaration be = IntegerDeclaration.createDeclaration(64, true, 1, ByteOrder.BIG_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_be = be.createDefinition(null, name, input);
         assertEquals(0xabcdef123456789aL, fixture_be.getValue());
     }
 
@@ -93,9 +98,8 @@ public class IntegerEndiannessTest {
      */
     @Test
     public void test32LE() throws CTFReaderException {
-        IntegerDeclaration le = new IntegerDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_le = le.createDefinition(null, name);
-        fixture_le.read(input);
+        IntegerDeclaration le = IntegerDeclaration.createDeclaration(32, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_le = le.createDefinition(null, name, input);
         assertEquals(0x12efcdab, fixture_le.getValue());
     }
 
@@ -107,9 +111,8 @@ public class IntegerEndiannessTest {
      */
     @Test
     public void test64LE() throws CTFReaderException {
-        IntegerDeclaration le = new IntegerDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
-        IntegerDefinition fixture_le = le.createDefinition(null, name);
-        fixture_le.read(input);
+        IntegerDeclaration le = IntegerDeclaration.createDeclaration(64, true, 1, ByteOrder.LITTLE_ENDIAN, Encoding.NONE, clockName, 8);
+        IntegerDefinition fixture_le = le.createDefinition(null, name, input);
         assertEquals(0x9a78563412efcdabL, fixture_le.getValue());
     }
 }

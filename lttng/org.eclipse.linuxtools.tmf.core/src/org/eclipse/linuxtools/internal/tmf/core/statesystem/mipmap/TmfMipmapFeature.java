@@ -15,14 +15,14 @@ package org.eclipse.linuxtools.internal.tmf.core.statesystem.mipmap;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateSystemBuilder;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
-import org.eclipse.linuxtools.tmf.core.statevalue.TmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.interval.TmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
+import org.eclipse.linuxtools.statesystem.core.statevalue.TmfStateValue;
 
 /**
  * The mipmap feature base implementation.
@@ -38,13 +38,13 @@ public abstract class TmfMipmapFeature implements ITmfMipmapFeature {
     /** The current start time for the state value */
     protected long currentStartTime;
     /** The list of ongoing state intervals per mipmap level */
-    protected List<List<ITmfStateInterval>> intervals = new ArrayList<List<ITmfStateInterval>>();
+    protected List<List<ITmfStateInterval>> intervals = new ArrayList<>();
     /** The state system used to store the mipmap attributes */
     protected ITmfStateSystemBuilder ss;
 
     private int mipmapResolution;
     private int mipmapQuark;
-    private List<Integer> levelQuarks = new ArrayList<Integer>();
+    private List<Integer> levelQuarks = new ArrayList<>();
 
     /**
      * Constructor

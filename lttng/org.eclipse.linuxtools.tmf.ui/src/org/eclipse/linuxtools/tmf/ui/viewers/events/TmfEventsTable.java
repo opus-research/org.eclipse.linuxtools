@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2013 Ericsson
+ * Copyright (c) 2010, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -20,9 +20,9 @@ package org.eclipse.linuxtools.tmf.ui.viewers.events;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -78,8 +78,6 @@ import org.eclipse.linuxtools.internal.tmf.ui.dialogs.MultiLineInputDialog;
 import org.eclipse.linuxtools.tmf.core.component.ITmfEventProvider;
 import org.eclipse.linuxtools.tmf.core.component.TmfComponent;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
-import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfCallsite;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfModelLookup;
 import org.eclipse.linuxtools.tmf.core.event.lookup.ITmfSourceLookup;
@@ -148,6 +146,10 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.themes.ColorUtil;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * The generic TMF Events table
  *
@@ -159,6 +161,12 @@ import org.eclipse.ui.themes.ColorUtil;
  * @since 2.0
  */
 public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorSettingsListener, ISelectionProvider {
+
+    /**
+     * Empty string array, used by {@link #getItemStrings}.
+     * @since 3.0
+     */
+    protected static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final Image BOOKMARK_IMAGE = Activator.getDefault().getImageFromPath(
             "icons/elcl16/bookmark_obj.gif"); //$NON-NLS-1$
@@ -173,11 +181,6 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private static final String SEARCH_HINT = Messages.TmfEventsTable_SearchHint;
     private static final String FILTER_HINT = Messages.TmfEventsTable_FilterHint;
     private static final int MAX_CACHE_SIZE = 1000;
-    /**
-     * Empty ITmfEventField array, used by {@link #extractItemFields(ITmfEvent)}
-     * @since 2.2
-     */
-    public static final ITmfEventField[] EMPTY_FIELD_ARRAY = new TmfEventField[0];
 
     /**
      * The events table search/filter keys
@@ -264,7 +267,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     private ListenerList selectionChangedListeners = new ListenerList();
 
     // Bookmark map <Rank, MarkerId>
-    private Map<Long, Long> fBookmarksMap = new HashMap<Long, Long>();
+    private Multimap<Long, Long> fBookmarksMap = HashMultimap.create();
     private IFile fBookmarksFile;
     private long fPendingGotoRank = -1;
 
@@ -645,7 +648,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                     try {
                         String fileName = cs.getFileName();
                         final String trimmedPath = fileName.replaceAll("\\.\\./", ""); //$NON-NLS-1$ //$NON-NLS-2$
-                        final ArrayList<IFile> files = new ArrayList<IFile>();
+                        final ArrayList<IFile> files = new ArrayList<>();
                         ResourcesPlugin.getWorkspace().getRoot().accept(new IResourceVisitor() {
                             @Override
                             public boolean visit(IResource resource) throws CoreException {
@@ -751,7 +754,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                 IHandlerService handlerService = (IHandlerService) activePage.getActiveEditor().getSite().getService(IHandlerService.class);
                 ICommandService cmdService = (ICommandService) activePage.getActiveEditor().getSite().getService(ICommandService.class);
                 try {
-                    HashMap<String, Object> parameters = new HashMap<String, Object>();
+                    HashMap<String, Object> parameters = new HashMap<>();
                     StringBuilder header = new StringBuilder();
                     boolean needTab = false;
                     for (TableColumn tc: fTable.getColumns()) {
@@ -803,9 +806,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         };
 
         class ToggleBookmarkAction extends Action {
-            long fRank;
+            Long fRank;
 
-            public ToggleBookmarkAction(final String text, final long rank) {
+            public ToggleBookmarkAction(final String text, final Long rank) {
                 super(text);
                 fRank = rank;
             }
@@ -965,6 +968,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
             fTrace.dispose();
         }
         fResourceManager.dispose();
+        fRawViewer.dispose();
         super.dispose();
     }
 
@@ -1007,26 +1011,27 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            Which rank this event has in the trace/experiment
      */
     protected void setItemData(final TableItem item, final ITmfEvent event, final long rank) {
-        final ITmfEventField[] fields = extractItemFields(event);
-        final String[] content = new String[fields.length];
-        for (int i = 0; i < fields.length; i++) {
-            content[i] = fields[i].getValue() != null ? fields[i].getValue().toString() : ""; //$NON-NLS-1$
-        }
-        item.setText(content);
+        item.setText(getItemStrings(event));
         item.setData(event);
         item.setData(Key.TIMESTAMP, new TmfTimestamp(event.getTimestamp()));
         item.setData(Key.RANK, rank);
 
-        boolean bookmark = false;
-        final Long markerId = fBookmarksMap.get(rank);
-        if (markerId != null) {
-            bookmark = true;
+        final Collection<Long> markerIds = fBookmarksMap.get(rank);
+        if (!markerIds.isEmpty()) {
+            Joiner joiner = Joiner.on("\n -").skipNulls(); //$NON-NLS-1$
+            List<Object> parts = new ArrayList<>();
+            if (markerIds.size() > 1) {
+                parts.add(Messages.TmfEventsTable_MultipleBookmarksToolTip);
+            }
             try {
-                final IMarker marker = fBookmarksFile.findMarker(markerId);
-                item.setData(Key.BOOKMARK, marker.getAttribute(IMarker.MESSAGE));
-            } catch (final CoreException e) {
+                for (long markerId : markerIds) {
+                    final IMarker marker = fBookmarksFile.findMarker(markerId);
+                    parts.add(marker.getAttribute(IMarker.MESSAGE));
+                }
+            } catch (CoreException e) {
                 displayException(e);
             }
+            item.setData(Key.BOOKMARK, joiner.join(parts));
         } else {
             item.setData(Key.BOOKMARK, null);
         }
@@ -1052,12 +1057,12 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         }
 
         if (searchMatch) {
-            if (bookmark) {
+            if (!markerIds.isEmpty()) {
                 item.setImage(SEARCH_MATCH_BOOKMARK_IMAGE);
             } else {
                 item.setImage(SEARCH_MATCH_IMAGE);
             }
-        } else if (bookmark) {
+        } else if (!markerIds.isEmpty()) {
             item.setImage(BOOKMARK_IMAGE);
         } else {
             item.setImage((Image) null);
@@ -1209,6 +1214,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                             if (e.character == SWT.CR) {
                                 updateHeader(newEditor.getText());
                                 applyHeader();
+
+                                // Set focus on the table so that the next carriage return goes to the next result
+                                TmfEventsTable.this.getTable().setFocus();
                             } else if (e.character == SWT.ESC) {
                                 tableEditor.getEditor().dispose();
                             }
@@ -1850,43 +1858,28 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
     }
 
     /**
-     * Extract the fields of an event (item in the table).
+     * Get the contents of the row in the events table corresponding to an
+     * event. The order of the elements corresponds to the order of the columns.
+     *
+     * TODO Use column IDs, not indexes, so that the column order can be
+     * re-arranged.
      *
      * @param event
-     *            The event to extract from
-     * @return The array of fields
-     * @since 2.2
+     *            The event printed in this row
+     * @return The event row entries
+     * @since 3.0
      */
-    public final ITmfEventField[] getItemFields(final ITmfEvent event) {
-        return extractItemFields(event);
-    }
-
-    /**
-     * Extract the fields of an event (item in the table).
-     *
-     * @param event
-     *            The event to extract from
-     * @return The array of fields
-     *
-     *         FIXME: Add support for column selection
-     */
-    protected ITmfEventField[] extractItemFields(final ITmfEvent event) {
-        ITmfEventField[] fields = EMPTY_FIELD_ARRAY;
-        if (event != null) {
-            final String timestamp = event.getTimestamp().toString();
-            final String source = event.getSource();
-            final String type = event.getType().getName();
-            final String reference = event.getReference();
-            final String content = event.getContent().toString();
-            fields = new TmfEventField[] {
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TIMESTAMP, timestamp, null),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_SOURCE, source, null),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_TYPE, type, null),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_REFERENCE, reference, null),
-                    new TmfEventField(ITmfEvent.EVENT_FIELD_CONTENT, content, null)
-            };
+    public String[] getItemStrings(ITmfEvent event) {
+        if (event == null) {
+            return EMPTY_STRING_ARRAY;
         }
-        return fields;
+        return new String[] {
+                event.getTimestamp().toString(),
+                event.getSource(),
+                event.getType().getName(),
+                event.getReference(),
+                event.getContent().toString()
+        };
     }
 
     /**
@@ -2033,7 +2026,7 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
         if (fTable == null || fTable.isDisposed()) {
             return StructuredSelection.EMPTY;
         }
-        List<Object> list = new ArrayList<Object>(fTable.getSelection().length);
+        List<Object> list = new ArrayList<>(fTable.getSelection().length);
         for (TableItem item : fTable.getSelection()) {
             if (item.getData() != null) {
                 list.add(item.getData());
@@ -2114,9 +2107,9 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
                         final IMarker bookmark = bookmarksFile.createMarker(IMarker.BOOKMARK);
                         if (bookmark.exists()) {
                             bookmark.setAttribute(IMarker.MESSAGE, message.toString());
-                            final long rank = (Long) tableItem.getData(Key.RANK);
-                            final int location = (int) rank;
-                            bookmark.setAttribute(IMarker.LOCATION, (Integer) location);
+                            final Long rank = (Long) tableItem.getData(Key.RANK);
+                            final int location = rank.intValue();
+                            bookmark.setAttribute(IMarker.LOCATION, Integer.valueOf(location));
                             fBookmarksMap.put(rank, bookmark.getId());
                             fTable.refresh();
                         }
@@ -2136,26 +2129,28 @@ public class TmfEventsTable extends TmfComponent implements IGotoMarker, IColorS
      *            The bookmark to remove
      */
     public void removeBookmark(final IMarker bookmark) {
-        for (final Entry<Long, Long> entry : fBookmarksMap.entrySet()) {
+        for (final Entry<Long, Long> entry : fBookmarksMap.entries()) {
             if (entry.getValue().equals(bookmark.getId())) {
-                fBookmarksMap.remove(entry.getKey());
+                fBookmarksMap.remove(entry.getKey(), entry.getValue());
                 fTable.refresh();
                 return;
             }
         }
     }
 
-    private void toggleBookmark(final long rank) {
+    private void toggleBookmark(final Long rank) {
         if (fBookmarksFile == null) {
             return;
         }
         if (fBookmarksMap.containsKey(rank)) {
-            final Long markerId = fBookmarksMap.remove(rank);
+            final Collection<Long> markerIds = fBookmarksMap.removeAll(rank);
             fTable.refresh();
             try {
-                final IMarker bookmark = fBookmarksFile.findMarker(markerId);
-                if (bookmark != null) {
-                    bookmark.delete();
+                for (long markerId : markerIds) {
+                    final IMarker bookmark = fBookmarksFile.findMarker(markerId);
+                    if (bookmark != null) {
+                        bookmark.delete();
+                    }
                 }
             } catch (final CoreException e) {
                 displayException(e);

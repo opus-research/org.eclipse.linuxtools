@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -54,7 +54,7 @@ public class BTreeTest extends AbstractCheckpointCollectionTest {
     @Test
     public void testAccept() {
         for (int i = 0; i < CHECKPOINTS_INSERT_NUM; i++) {
-            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(i), new TmfLongLocation((long) i), 0);
+            TmfCheckpoint checkpoint = new TmfCheckpoint(new TmfTimestamp(i), new TmfLongLocation(i), 0);
             fBTree.insert(checkpoint);
         }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -21,18 +21,20 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.Random;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.StateSystem;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.InMemoryBackend;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.linuxtools.internal.tmf.core.statesystem.mipmap.AbstractTmfMipmapStateProvider;
+import org.eclipse.linuxtools.internal.tmf.core.statesystem.mipmap.TmfStateSystemOperations;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystemBuilder;
+import org.eclipse.linuxtools.statesystem.core.StateSystemFactory;
+import org.eclipse.linuxtools.statesystem.core.backend.IStateHistoryBackend;
+import org.eclipse.linuxtools.statesystem.core.backend.InMemoryBackend;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue.Type;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateValueTypeException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.statesystem.TmfStateSystemOperations;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue.Type;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,6 +43,8 @@ import org.junit.Test;
  *
  */
 public class TmfMipmapStateProviderTest {
+
+    @NonNull private static final String SSID = "mimap-test";
     private static final String TEST_ATTRIBUTE_NAME = TmfMipmapStateProviderStub.TEST_ATTRIBUTE_NAME;
     private static final int NB_LEVELS = 4;
     private static final long START_TIME = 1000L;
@@ -49,7 +53,7 @@ public class TmfMipmapStateProviderTest {
     private static final int RESOLUTION = 16;
     private static final double DELTA = 0.0001;
     private static final long TEST_TIMESTAMP = 12345000L;
-    private static StateSystem ssq;
+    private static ITmfStateSystemBuilder ssq;
 
     /**
      * Startup code, build a state system with n attributes always going up
@@ -59,7 +63,7 @@ public class TmfMipmapStateProviderTest {
     public static void init() {
         TmfMipmapStateProviderStub mmp = new TmfMipmapStateProviderStub(RESOLUTION, Type.LONG);
         IStateHistoryBackend be = new InMemoryBackend(0);
-        ssq = new StateSystem(be);
+        ssq = StateSystemFactory.newStateSystem(SSID, be);
         mmp.assignTargetStateSystem(ssq);
 
         for (long time = START_TIME; time <= END_TIME; time += INTERVAL) {

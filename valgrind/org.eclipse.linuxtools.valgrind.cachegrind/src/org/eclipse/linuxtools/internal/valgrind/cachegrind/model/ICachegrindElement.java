@@ -13,11 +13,9 @@ package org.eclipse.linuxtools.internal.valgrind.cachegrind.model;
 import org.eclipse.core.runtime.IAdaptable;
 
 public interface ICachegrindElement extends Comparable<ICachegrindElement> {
-	
-	public ICachegrindElement getParent();
-	
-	public ICachegrindElement[] getChildren();
-	
-	public IAdaptable getModel();
-		
+
+    ICachegrindElement getParent();
+    ICachegrindElement[] getChildren();
+    IAdaptable getModel();
+
 }

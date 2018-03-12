@@ -403,7 +403,7 @@ This tutorial will cover concepts like:
 
 === Prerequisites ===
 
-The tutorial is based on Eclipse 4.3 (Eclipse Kepler), TMF 2.0.0 and SWTChart 0.7.0. You can install SWTChart by using the Orbit update site. http://download.eclipse.org/tools/orbit/downloads/
+The tutorial is based on Eclipse 4.4 (Eclipse Luna), TMF 3.0.0 and SWTChart 0.7.0. If you are using TMF from the source repository, SWTChart is already included in the target definition file (see org.eclipse.linuxtools.lttng.target). You can also install it manually by using the Orbit update site. http://download.eclipse.org/tools/orbit/downloads/
 
 === Creating an Eclipse UI Plug-in ===
 
@@ -537,8 +537,8 @@ Then we need to actually gather data from the trace. This is done asynchronously
         // Create the request to get data from the trace
 
         TmfEventRequest req = new TmfEventRequest(TmfEvent.class,
-                TmfTimeRange.ETERNITY, TmfEventRequest.ALL_DATA,
-                ExecutionType.BACKGROUND) {
+                TmfTimeRange.ETERNITY, 0, ITmfEventRequest.ALL_DATA,
+                ITmfEventRequest.ExecutionType.BACKGROUND) {
 
             @Override
             public void handleData(ITmfEvent data) {
@@ -569,8 +569,8 @@ The chart expects an array of doubles for both the X and Y axis values. To provi
 
 <pre>
         TmfEventRequest req = new TmfEventRequest(TmfEvent.class,
-                TmfTimeRange.ETERNITY, TmfEventRequest.ALL_DATA,
-                ExecutionType.BACKGROUND) {
+                TmfTimeRange.ETERNITY, 0, ITmfEventRequest.ALL_DATA,
+                ITmfEventRequest.ExecutionType.BACKGROUND) {
 
             ArrayList<Double> xValues = new ArrayList<Double>();
             ArrayList<Double> yValues = new ArrayList<Double>();
@@ -1954,7 +1954,7 @@ The following chapters describe the Sequence Diagram Framework as well as a refe
 In the UML2 Sequence Diagram Framework an Eclipse extension point is defined so that other plug-ins can contribute code to create sequence diagram. 
 
 '''Identifier''': org.eclipse.linuxtools.tmf.ui.uml2SDLoader<br>
-'''Since''': Since 0.3.2 (based on UML2SD of org.eclipse.tptp.common.ui)<br>
+'''Since''': 1.0<br>
 '''Description''': This extension point aims to list and connect any UML2 Sequence Diagram loader.<br>
 '''Configuration Markup''':<br>
 
@@ -2053,7 +2053,7 @@ This tutorial describes how to create a UML2 Sequence Diagram Loader extension a
 
 === Prerequisites ===
 
-The tutorial is based on Eclipse 3.7 (Eclipse Indigo) and TMF 0.3.2.   
+The tutorial is based on Eclipse 4.4 (Eclipse Luna) and TMF 3.0.0.
 
 === Creating an Eclipse UI Plug-in ===
 
@@ -2069,7 +2069,7 @@ To create a new project with name org.eclipse.linuxtools.tmf.sample.ui select ''
 To open the plug-in manifest, double-click on the MANIFEST.MF file. <br>
 [[Image:images/SelectManifest.png]]<br>
 
-Change to the Dependencies tab and select '''Add...''' of the ''Required Plug-ins'' section. A new dialog box will open. Next find plug-in ''org.eclipse.linuxtools.tmf.ui'' and press '''OK'''<br>
+Change to the Dependencies tab and select '''Add...''' of the ''Required Plug-ins'' section. A new dialog box will open. Next find plug-ins ''org.eclipse.linuxtools.tmf.ui'' and ''org.eclipse.linuxtools.tmf.core'' and then press '''OK'''<br>
 [[Image:images/AddDependencyTmfUi.png]]<br>
 
 Change to the Extensions tab and select '''Add...''' of the ''All Extension'' section. A new dialog box will open. Find the view extension ''org.eclipse.ui.views'' and press '''Finish'''.<br> 
@@ -2291,7 +2291,7 @@ public class SampleLoader implements IUml2SDLoader {
         // Get new occurrence on lifelines
         lifeLine1.getNewEventOccurrence();
         
-        EllipsisisMessage info = new EllipsisisMessage();
+        EllipsisMessage info = new EllipsisMessage();
         info.setName("Object deletion");
         info.setStartLifeline(lifeLine2);
         testFrame.addNode(info);
@@ -2314,7 +2314,7 @@ Now it's time to run the example application. To launch the Example Application 
 
 === Adding time information ===
 
-To add time information in sequence diagram the timestamp has to be set for each message. The sequence diagram framework uses the ''TmfTimestamp'' class of plug-in ''org.eclipse.linuxtools.tmf''. Use ''setTime()'' on each message ''SyncMessage'' since start and end time are the same. For each ''AsyncMessage'' set start and end time separately by using methods ''setStartTime'' and ''setEndTime''. For example: <br>
+To add time information in sequence diagram the timestamp has to be set for each message. The sequence diagram framework uses the ''TmfTimestamp'' class of plug-in ''org.eclipse.linuxtools.tmf.core''. Use ''setTime()'' on each message ''SyncMessage'' since start and end time are the same. For each ''AsyncMessage'' set start and end time separately by using methods ''setStartTime'' and ''setEndTime''. For example: <br>
 
 <pre>
     private void createFrame() {
@@ -2339,7 +2339,7 @@ By hovering over a message it will show the time information in the appearing to
 [[Image:images/SampleDiagramSyncMessage.png]] <br>
 [[Image:images/SampleDiagramAsyncMessage.png]] <br>
 
-To see the time elapsed between 2 messages, select one message and hover over a second message. A tooltip will show with the delta in time. Note if the second message is before the first then a negative delta is displayed. Note that for ''AsynMessage'' the end time is used for the delta calculation.<br>
+To see the time elapsed between 2 messages, select one message and hover over a second message. A tooltip will show with the delta in time. Note if the second message is before the first then a negative delta is displayed. Note that for ''AsyncMessage'' the end time is used for the delta calculation.<br>
 [[Image:images/SampleDiagramMessageDelta.png]] <br>
 
 === Default Coolbar and Menu Items ===
@@ -2553,7 +2553,7 @@ Note that the find dialog will be opened by typing the key shortcut CRTL+F.
 
 ==== Using the Filter Provider Interface ====
 
-For filtering of sequence diagram elements two interfaces exists. One basic for filtering and one for extended filtering. The basic filtering comes with two dialog for entering filter criteria as regular expressions and one for selecting the filter to be used. Multiple filters can be active at a time. Filter criteria are persisted in the Eclipse workspace.
+For filtering of sequence diagram elements two interfaces exist. One basic for filtering and one for extended filtering. The basic filtering comes with two dialog for entering filter criteria as regular expressions and one for selecting the filter to be used. Multiple filters can be active at a time. Filter criteria are persisted in the Eclipse workspace.
 <br>
 To use the basic filter provider, first the interface method of the ''ISDFilterProvider'' has to be implemented by a class. Typically, this is implemented in the loader class. Add the ''ISDFilterProvider'' to the list of implemented interfaces, implement the method ''filter()''and set the provider in the ''setViewer()'' method as well as remove the provider in the ''dispose()'' method of the loader class. Please note that the ''ISDFindProvider'' extends the interface ''ISDGraphNodeSupporter'' which methods (''isNodeSupported()'' and ''getNodeName()'') have to be implemented, too. <br>
 Note that no example implementation of ''filter()'' is provided. 
@@ -2800,13 +2800,13 @@ A third type of event request is issued for finding specific data across pages.
 
 ==== TMF Signal Framework ====
 
-The reference loader extends the class ''TmfComponent''. By doing that the loader is register as TMF signal handler for sending and receiving TMF signals. The loader implements signal handlers for the following TMF signals:
+The reference loader extends the class ''TmfComponent''. By doing that the loader is registered as a TMF signal handler for sending and receiving TMF signals. The loader implements signal handlers for the following TMF signals:
 *''TmfTraceSelectedSignal''
 This signal indicates that a trace or experiment was selected. When receiving this signal the indexing request is initiated and the first page is displayed after receiving the relevant information.
-*''traceClosed''
+*''TmfTraceClosedSignal''
 This signal indicates that a trace or experiment was closed. When receiving this signal the loader resets its data and a blank page is loaded in the Sequence Diagram View.
 *''TmfTimeSynchSignal''
-This signal indicates that a event with a certain timestamp is selected. When receiving this signal the corresponding message is selected in the Sequence Diagram View. If necessary, the page is changed.
+This signal is used to indicate that a new time or time range has been selected. It contains a begin and end time. If a single time is selected then the begin and end time are the same. When receiving this signal the corresponding message matching the begin time is selected in the Sequence Diagram View. If necessary, the page is changed.
 *''TmfRangeSynchSignal''
 This signal indicates that a new time range is in focus. When receiving this signal the loader loads the page which corresponds to the start time of the time range signal. The message with the start time will be in focus.
 
@@ -2848,30 +2848,24 @@ The reference implementation in class ''TmfUml2SDSyncLoader'' in package ''org.e
     }
 </pre>
 
-The analysis looks for event type Strings containing ''SEND'' and ''RECEIVE''. If event type matches these key words, the analyzer will look for strings ''sender'', ''receiver'' and ''signal'' in the event fields of type ''ITmfEventField''. If all the data is found a sequence diagram event from can be created. Note that Sync Messages are assumed, which means start and end time are the same.
+The analysis looks for event type Strings containing ''SEND'' and ''RECEIVE''. If event type matches these key words, the analyzer will look for strings ''sender'', ''receiver'' and ''signal'' in the event fields of type ''ITmfEventField''. If all the data is found a sequence diagram event can be created using this information. Note that Sync Messages are assumed, which means start and end time are the same.
 
 === How to use the Reference Implementation ===
 
-An example trace visualizer is provided that uses a trace in binary format. It contains trace events with sequence diagram information. To parse the data using TMF a class is provided that implements ''ITmfTrace''. Additionally, a parser is provided that reads from the file and converts a trace event to ''TmfEvent''. This parser implements the interface ''ITmfEventParser''. To get the source code see [[#Downloading the Reference Plug-in | Download the Reference Plug-in]]
-<br>
-The plug-in structure will look like this:<br>
-[[Image:images/ReferencePlugin.png]]<br>
+An example CTF (Common Trace Format) trace is provided that contains trace events with sequence diagram information. To download the reference trace, use the following link: [https://wiki.eclipse.org/images/3/35/ReferenceTrace.zip Reference Trace].
 
-To open the plug-in manifest, double-click on the MANIFEST.MF file. <br>
-[[Image:images/SelectManifestRef.png]]<br>
-
-Run the Reference Application. To launch the Eclipse Application select the ''Overview'' tab and click on '''Launch an Eclipse Application'''<br>
-[[Image:images/RunApplicationRef.png]]<br>
-
-To open the Reference Sequence Diagram View, select '''Windows -> Show View -> Other... -> TMF -> Sequence Diagram''' <br> 
+Run an Eclipse application with TMF 3.0 or later installed. To open the Reference Sequence Diagram View, select '''Windows -> Show View -> Other... -> TMF -> Sequence Diagram''' <br>
 [[Image:images/ShowTmfSDView.png]]<br>
 
-An blank Sequence Diagram View will open. 
+A blank Sequence Diagram View will open.
 
-Select the '''Select Experiment''' button of the toolbar to load the sequence diagram from the data provided in the trace file. What this does is open the file ''tracesets/sdEvents'', parse this file through TMF and analyze all events of type ''TmfEvent'' and generates the Sequence Diagram out of it.  <br>
+Then import the reference trace to the '''Project Explorer''' using the '''Import Trace Package...''' menu option.<br>
+[[Image:images/ImportTracePackage.png]]
+
+Next, open the trace by double-clicking on the trace element in the '''Project Explorer'''. The trace will be opened and the Sequence Diagram view will be filled.
 [[Image:images/ReferenceSeqDiagram.png]]<br>
 
-Now the reference application can be explored. To demonstrate the view features try the following things:
+Now the reference implementation can be explored. To demonstrate the view features try the following things:
 *Select a message in the Sequence diagram. As result the corresponding event will be selected in the Events View.
 *Select an event in the Events View. As result the corresponding message in the Sequence Diagram View will be selected. If necessary, the page will be changed.
 *In the Events View, press key ''End''. As result, the Sequence Diagram view will jump to the last page.  
@@ -2879,14 +2873,9 @@ Now the reference application can be explored. To demonstrate the view features 
 *In the Sequence Diagram View select the find button. Enter the expression '''REGISTER.*''', select '''Search for Interaction''' and press '''Find'''. As result the corresponding message will be selected in the Sequence Diagram and the corresponding event in the Events View will be selected. Select again '''Find''' the next occurrence of will be selected. Since the second occurrence is on a different page than the first, the corresponding page will be loaded.
 * In the Sequence Diagram View, select menu item '''Hide Patterns...'''. Add the filter '''BALL.*''' for '''Interaction''' only and select '''OK'''. As result all messages with name ''BALL_REQUEST'' and ''BALL_REPLY'' will be hidden. To remove the filter, select menu item '''Hide Patterns...''', deselect the corresponding filter and press '''OK'''. All the messages will be shown again.<br> 
  
-To dispose the diagram, select the '''Dispose Experiment''' button of the toolbar. The current sequence diagram will be disposed and an empty diagram will be loaded. 
-
 === Extending the Reference Loader ===
 
 In some case it might be necessary to change the implementation of the analysis of each ''TmfEvent'' for the generation of ''Sequence Diagram Events''. For that just extend the class ''TmfUml2SDSyncLoader'' and overwrite the method ''protected ITmfSyncSequenceDiagramEvent getSequnceDiagramEvent(TmfEvent tmfEvent)'' with your own implementation.
-
-=== Downloading the Reference Plug-in ===
-To download the reference plug-in that demonstrates the reference loader, use the following link: [http://wiki.eclipse.org/images/d/d3/ReferencePlugin.zip Reference Plug-in]. Just extract the zip file and import the extracted Eclipse plug-in (plug-in name: ''org.eclipse.linuxtools.tmf.reference.ui'') to your Eclipse workspace. <br>
 
 = CTF Parser =
 
@@ -3217,3 +3206,468 @@ Here's a list of features not yet implemented that would enhance trace synchroni
 * Ability to join traces from the same host so that even if one of the traces is not synchronized with the reference trace, it will take the same timestamp transform as the one on the same machine.
 * Instead of having the timestamp transforms per trace, have the timestamp transform as part of an experiment context, so that the trace's specific analysis, like the state system, are in the original trace, but are transformed only when needed for an experiment analysis.
 * Add more views to display the synchronization information (only textual statistics are available for now)
+
+= Analysis Framework =
+
+Analysis modules are useful to tell the user exactly what can be done with a trace. The analysis framework provides an easy way to access and execute the modules and open the various outputs available.
+
+Analyses can have parameters they can use in their code. They also have outputs registered to them to display the results from their execution.
+
+== Creating a new module ==
+
+All analysis modules must implement the '''IAnalysisModule''' interface from the o.e.l.tmf.core project. An abstract class, '''TmfAbstractAnalysisModule''', provides a good base implementation. It is strongly suggested to use it as a superclass of any new analysis.
+
+=== Example ===
+
+This example shows how to add a simple analysis module for an LTTng kernel trace with two parameters.
+
+<pre>
+public class MyLttngKernelAnalysis extends TmfAbstractAnalysisModule {
+
+    public static final String PARAM1 = "myparam";
+    public static final String PARAM2 = "myotherparam";
+
+    @Override
+    public boolean canExecute(ITmfTrace trace) {
+        /* This just makes sure the trace is an Lttng kernel trace, though
+           usually that should have been done by specifying the trace type
+           this analysis module applies to */
+        if (!LttngKernelTrace.class.isAssignableFrom(trace.getClass())) {
+            return false;
+        }
+
+        /* Does the trace contain the appropriate events? */
+        String[] events = { "sched_switch", "sched_wakeup" };
+        return ((LttngKernelTrace) trace).hasAllEvents(events);
+    }
+
+    @Override
+    protected void canceling() {
+	     /* The job I am running in is being cancelled, let's clean up */
+    }
+
+    @Override
+    protected boolean executeAnalysis(final IProgressMonitor monitor) {
+        /*
+         * I am running in an Eclipse job, and I already know I can execute
+         * on a given trace.
+         *
+         * In the end, I will return true if I was successfully completed or
+         * false if I was either interrupted or something wrong occurred.
+         */
+        Object param1 = getParameter(PARAM1);
+        int param2 = (Integer) getParameter(PARAM2);
+    }
+
+    @Override
+    public Object getParameter(String name) {
+        Object value = super.getParameter(name);
+        /* Make sure the value of param2 is of the right type. For sake of
+           simplicity, the full parameter format validation is not presented
+           here */
+        if ((value != null) && name.equals(PARAM2) && (value instanceof String)) {
+            return Integer.parseInt((String) value);
+        }
+        return value;
+    }
+
+}
+</pre>
+
+=== Available base analysis classes and interfaces ===
+
+The following are available as base classes for analysis modules. They also extend the abstract '''TmfAbstractAnalysisModule'''
+
+* '''TmfStateSystemAnalysisModule''': A base analysis module that builds one state system. A module extending this class only needs to provide a state provider and the type of state system backend to use. All state systems should now use this base class as it also contains all the methods to actually create the state sytem with a given backend.
+
+The following interfaces can optionally be implemented by analysis modules if they use their functionalities. For instance, some utility views, like the State System Explorer, may have access to the module's data through these interfaces.
+
+* '''ITmfAnalysisModuleWithStateSystems''': Modules implementing this have one or more state systems included in them. For example, a module may "hide" 2 state system modules for its internal workings. By implementing this interface, it tells that it has state systems and can return them if required.
+
+=== How it works ===
+
+Analyses are managed through the '''TmfAnalysisManager'''. The analysis manager is a singleton in the application and keeps track of all available analysis modules, with the help of '''IAnalysisModuleHelper'''. It can be queried to get the available analysis modules, either all of them or only those for a given tracetype. The helpers contain the non-trace specific information on an analysis module: its id, its name, the tracetypes it applies to, etc.
+
+When a trace is opened, the helpers for the applicable analysis create new instances of the analysis modules. The analysis are then kept in a field of the trace and can be executed automatically or on demand.
+
+The analysis is executed by calling the '''IAnalysisModule#schedule()''' method. This method makes sure the analysis is executed only once and, if it is already running, it won't start again. The analysis itself is run inside an Eclipse job that can be cancelled by the user or the application. The developer must consider the progress monitor that comes as a parameter of the '''executeAnalysis()''' method, to handle the proper cancellation of the processing. The '''IAnalysisModule#waitForCompletion()''' method will block the calling thread until the analysis is completed. The method will return whether the analysis was successfully completed or if it was cancelled.
+
+A running analysis can be cancelled by calling the '''IAnalysisModule#cancel()''' method. This will set the analysis as done, so it cannot start again unless it is explicitly reset. This is done by calling the protected method '''resetAnalysis'''.
+
+== Telling TMF about the analysis module ==
+
+Now that the analysis module class exists, it is time to hook it to the rest of TMF so that it appears under the traces in the project explorer. The way to do so is to add an extension of type ''org.eclipse.linuxtools.tmf.core.analysis'' to a plugin, either through the ''Extensions'' tab of the Plug-in Manifest Editor or by editing directly the plugin.xml file.
+
+The following code shows what the resulting plugin.xml file should look like.
+
+<pre>
+<extension
+         point="org.eclipse.linuxtools.tmf.core.analysis">
+      <module
+         id="my.lttng.kernel.analysis.id"
+         name="My LTTng Kernel Analysis"
+         analysis_module="my.plugin.package.MyLttngKernelAnalysis"
+         automatic="true">
+         <parameter
+               name="myparam">
+         </parameter>
+         <parameter
+               default_value="3"
+               name="myotherparam">
+         <tracetype
+               class="org.eclipse.linuxtools.lttng2.kernel.core.trace.LttngKernelTrace">
+         </tracetype>
+      </module>
+</extension>
+</pre>
+
+This defines an analysis module where the ''analysis_module'' attribute corresponds to the module class and must implement IAnalysisModule. This module has 2 parameters: ''myparam'' and ''myotherparam'' which has default value of 3. The ''tracetype'' element tells which tracetypes this analysis applies to. There can be many tracetypes. Also, the ''automatic'' attribute of the module indicates whether this analysis should be run when the trace is opened, or wait for the user's explicit request.
+
+Note that with these extension points, it is possible to use the same module class for more than one analysis (with different ids and names). That is a desirable behavior. For instance, a third party plugin may add a new tracetype different from the one the module is meant for, but on which the analysis can run. Also, different analyses could provide different results with the same module class but with different default values of parameters.
+
+== Attaching outputs and views to the analysis module ==
+
+Analyses will typically produce outputs the user can examine. Outputs can be a text dump, a .dot file, an XML file, a view, etc. All output types must implement the '''IAnalysisOutput''' interface.
+
+An output can be registered to an analysis module at any moment by calling the '''IAnalysisModule#registerOutput()''' method. Analyses themselves may know what outputs are available and may register them in the analysis constructor or after analysis completion.
+
+The various concrete output types are:
+
+* '''TmfAnalysisViewOutput''': It takes a view ID as parameter and, when selected, opens the view.
+
+=== Using the extension point to add outputs ===
+
+Analysis outputs can also be hooked to an analysis using the same extension point ''org.eclipse.linuxtools.tmf.core.analysis'' in the plugin.xml file. Outputs can be matched either to a specific analysis identified by an ID, or to all analysis modules extending or implementing a given class or interface.
+
+The following code shows how to add a view output to the analysis defined above directly in the plugin.xml file. This extension does not have to be in the same plugin as the extension defining the analysis. Typically, an analysis module can be defined in a core plugin, along with some outputs that do not require UI elements. Other outputs, like views, who need UI elements, will be defined in a ui plugin.
+
+<pre>
+<extension
+         point="org.eclipse.linuxtools.tmf.core.analysis">
+      <output
+            class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
+            id="my.plugin.package.ui.views.myView">
+         <analysisId
+               id="my.lttng.kernel.analysis.id">
+         </analysisId>
+      </output>
+      <output
+            class="org.eclipse.linuxtools.tmf.ui.analysis.TmfAnalysisViewOutput"
+            id="my.plugin.package.ui.views.myMoreGenericView">
+         <analysisModuleClass
+               class="my.plugin.package.core.MyAnalysisModuleClass">
+         </analysisModuleClass>
+      </output>
+</extension>
+</pre>
+
+== Providing help for the module ==
+
+For now, the only way to provide a meaningful help message to the user is by overriding the '''IAnalysisModule#getHelpText()''' method and return a string that will be displayed in a message box.
+
+What still needs to be implemented is for a way to add a full user/developer documentation with mediawiki text file for each module and automatically add it to Eclipse Help. Clicking on the Help menu item of an analysis module would open the corresponding page in the help.
+
+== Using analysis parameter providers ==
+
+An analysis may have parameters that can be used during its execution. Default values can be set when describing the analysis module in the plugin.xml file, or they can use the '''IAnalysisParameterProvider''' interface to provide values for parameters. '''TmfAbstractAnalysisParamProvider''' provides an abstract implementation of this interface, that automatically notifies the module of a parameter change.
+
+=== Example parameter provider ===
+
+The following example shows how to have a parameter provider listen to a selection in the LTTng kernel Control Flow view and send the thread id to the analysis.
+
+<pre>
+public class MyLttngKernelParameterProvider extends TmfAbstractAnalysisParamProvider {
+
+    private ControlFlowEntry fCurrentEntry = null;
+
+    private static final String NAME = "My Lttng kernel parameter provider"; //$NON-NLS-1$
+
+    private ISelectionListener selListener = new ISelectionListener() {
+        @Override
+        public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+            if (selection instanceof IStructuredSelection) {
+                Object element = ((IStructuredSelection) selection).getFirstElement();
+                if (element instanceof ControlFlowEntry) {
+                    ControlFlowEntry entry = (ControlFlowEntry) element;
+                    setCurrentThreadEntry(entry);
+                }
+            }
+        }
+    };
+
+    /*
+     * Constructor
+     */
+    public CriticalPathParameterProvider() {
+        super();
+        registerListener();
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public Object getParameter(String name) {
+        if (fCurrentEntry == null) {
+            return null;
+        }
+        if (name.equals(MyLttngKernelAnalysis.PARAM1)) {
+            return fCurrentEntry.getThreadId()
+        }
+        return null;
+    }
+
+    @Override
+    public boolean appliesToTrace(ITmfTrace trace) {
+        return (trace instanceof LttngKernelTrace);
+    }
+
+    private void setCurrentThreadEntry(ControlFlowEntry entry) {
+        if (!entry.equals(fCurrentEntry)) {
+            fCurrentEntry = entry;
+            this.notifyParameterChanged(MyLttngKernelAnalysis.PARAM1);
+        }
+    }
+
+    private void registerListener() {
+        final IWorkbench wb = PlatformUI.getWorkbench();
+
+        final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
+
+        /* Add the listener to the control flow view */
+        view = activePage.findView(ControlFlowView.ID);
+        if (view != null) {
+            view.getSite().getWorkbenchWindow().getSelectionService().addPostSelectionListener(selListener);
+            view.getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+        }
+    }
+
+}
+</pre>
+
+=== Register the parameter provider to the analysis ===
+
+To have the parameter provider class register to analysis modules, it must first register through the analysis manager. It can be done in a plugin's activator as follows:
+
+<pre>
+@Override
+public void start(BundleContext context) throws Exception {
+    /* ... */
+    TmfAnalysisManager.registerParameterProvider("my.lttng.kernel.analysis.id", MyLttngKernelParameterProvider.class)
+}
+</pre>
+
+where '''MyLttngKernelParameterProvider''' will be registered to analysis ''"my.lttng.kernel.analysis.id"''. When the analysis module is created, the new module will register automatically to the singleton parameter provider instance. Only one module is registered to a parameter provider at a given time, the one corresponding to the currently selected trace.
+
+== Providing requirements to analyses ==
+
+=== Analysis requirement provider API ===
+
+A requirement defines the needs of an analysis. For example, an analysis could need an event named ''"sched_switch"'' in order to be properly executed. The requirements are represented by the class '''TmfAnalysisRequirement'''. Since '''IAnalysisModule''' extends the '''IAnalysisRequirementProvider''' interface, all analysis modules must provide their requirements. If the analysis module extends '''TmfAbstractAnalysisModule''', it has the choice between overriding the requirements getter ('''IAnalysisRequirementProvider#getAnalysisRequirements()''') or not, since the abstract class returns an empty collection by default (no requirements).
+
+=== Requirement values ===
+
+When instantiating a requirement, the developer needs to specify a type to which all the values added to the requirement will be linked. In the earlier example, there would be an ''"event"''  or ''"eventName"'' type. The type is represented by a string, like all values added to the requirement object. With an 'event' type requirement, a trace generator like the LTTng Control could automatically enable the required events. This is possible by calling the '''TmfAnalysisRequirementHelper''' class. Another point we have to take into consideration is the priority level of each value added to the requirement object. The enum '''TmfAnalysisRequirement#ValuePriorityLevel''' gives the choice between '''ValuePriorityLevel#MANDATORY''' and '''ValuePriorityLevel#OPTIONAL'''. That way, we can tell if an analysis can run without a value or not. To add values, one must call '''TmfAnalysisRequirement#addValue()'''.
+
+Moreover, information can be added to requirements. That way, the developer can explicitly give help details at the requirement level instead of at the analysis level (which would just be a general help text). To add information to a requirement, the method '''TmfAnalysisRequirement#addInformation()''' must be called. Adding information is not mandatory.
+
+=== Example of providing requirements ===
+
+In this example, we will implement a method that initializes a requirement object and return it in the '''IAnalysisRequirementProvider#getAnalysisRequirements()''' getter. The example method will return a set with two requirements. The first one will indicate the events needed by a specific analysis and the last one will tell on what domain type the analysis applies. In the event type requirement, we will indicate that the analysis needs a mandatory event and an optional one.
+
+<pre>
+@Override
+public Iterable<TmfAnalysisRequirement> getAnalysisRequirements() {
+    Set<TmfAnalysisRequirement> requirements = new HashSet<>();
+
+    /* Create requirements of type 'event' and 'domain' */
+    TmfAnalysisRequirement eventRequirement = new TmfAnalysisRequirement("event");
+    TmfAnalysisRequirement domainRequirement = new TmfAnalysisRequirement("domain");
+
+    /* Add the values */
+    domainRequirement.addValue("kernel", TmfAnalysisRequirement.ValuePriorityLevel.MANDATORY);
+    eventRequirement.addValue("sched_switch", TmfAnalysisRequirement.ValuePriorityLevel.MANDATORY);
+    eventRequirement.addValue("sched_wakeup", TmfAnalysisRequirement.ValuePriorityLevel.OPTIONAL);
+
+    /* An information about the events */
+    eventRequirement.addInformation("The event sched_wakeup is optional because it's not properly handled by this analysis yet.");
+
+    /* Add them to the set */
+    requirements.add(domainRequirement);
+    requirements.add(eventRequirement);
+
+    return requirements;
+}
+</pre>
+
+
+== TODO ==
+
+Here's a list of features not yet implemented that would improve the analysis module user experience:
+
+* Implement help using the Eclipse Help facility (without forgetting an eventual command line request)
+* The abstract class '''TmfAbstractAnalysisModule''' executes an analysis as a job, but nothing compels a developer to do so for an analysis implementing the '''IAnalysisModule''' interface. We should force the execution of the analysis as a job, either from the trace itself or using the TmfAnalysisManager or by some other mean.
+* Views and outputs are often registered by the analysis themselves (forcing them often to be in the .ui packages because of the views), because there is no other easy way to do so. We should extend the analysis extension point so that .ui plugins or other third-party plugins can add outputs to a given analysis that resides in the core.
+* Improve the user experience with the analysis:
+** Allow the user to select which analyses should be available, per trace or per project.
+** Allow the user to view all available analyses even though he has no imported traces.
+** Allow the user to generate traces for a given analysis, or generate a template to generate the trace that can be sent as parameter to the tracer.
+** Give the user a visual status of the analysis: not executed, in progress, completed, error.
+** Give a small screenshot of the output as icon for it.
+** Allow to specify parameter values from the GUI.
+* Add the possibility for an analysis requirement to be composed of another requirement.
+* Generate a trace session from analysis requirements.
+
+
+= Performance Tests =
+
+Performance testing allows to calculate some metrics (CPU time, Memory Usage, etc) that some part of the code takes during its execution. These metrics can then be used as is for information on the system's execution, or they can be compared either with other execution scenarios, or previous runs of the same scenario, for instance, after some optimization has been done on the code.
+
+For automatic performance metric computation, we use the ''org.eclipse.test.performance'' plugin, provided by the Eclipse Test Feature.
+
+== Add performance tests ==
+
+=== Where ===
+
+Performance tests are unit tests and they are added to the corresponding unit tests plugin. To separate performance tests from unit tests, a separate source folder, typically named ''perf'', is added to the plug-in.
+
+Tests are to be added to a package under the ''perf'' directory, the package name would typically match the name of the package it is testing. For each package, a class named '''AllPerfTests''' would list all the performance tests classes inside this package. And like for unit tests, a class named '''AllPerfTests''' for the plug-in would list all the packages' '''AllPerfTests''' classes.
+
+When adding performance tests for the first time in a plug-in, the plug-in's '''AllPerfTests''' class should be added to the global list of performance tests, found in package ''org.eclipse.linuxtools.lttng.alltests'', in class '''RunAllPerfTests'''. This will ensure that performance tests for the plug-in are run along with the other performance tests
+
+=== How ===
+
+TMF is using the org.eclipse.test.performance framework for performance tests. Using this, performance metrics are automatically taken and, if many runs of the tests are run, average and standard deviation are automatically computed. Results can optionally be stored to a database for later use.
+
+Here is an example of how to use the test framework in a performance test:
+
+<pre>
+public class AnalysisBenchmark {
+
+    private static final String TEST_ID = "org.eclipse.linuxtools#LTTng kernel analysis";
+    private static final CtfTmfTestTrace testTrace = CtfTmfTestTrace.TRACE2;
+    private static final int LOOP_COUNT = 10;
+
+    /**
+     * Performance test
+     */
+    @Test
+    public void testTrace() {
+        assumeTrue(testTrace.exists());
+
+        /** Create a new performance meter for this scenario */
+        Performance perf = Performance.getDefault();
+        PerformanceMeter pm = perf.createPerformanceMeter(TEST_ID);
+
+        /** Optionally, tag this test for summary or global summary on a given dimension */
+        perf.tagAsSummary(pm, "LTTng Kernel Analysis", Dimension.CPU_TIME);
+        perf.tagAsGlobalSummary(pm, "LTTng Kernel Analysis", Dimension.CPU_TIME);
+
+        /** The test will be run LOOP_COUNT times */
+        for (int i = 0; i < LOOP_COUNT; i++) {
+
+            /** Start each run of the test with new objects to avoid different code paths */
+            try (IAnalysisModule module = new LttngKernelAnalysisModule();
+                    LttngKernelTrace trace = new LttngKernelTrace()) {
+                module.setId("test");
+                trace.initTrace(null, testTrace.getPath(), CtfTmfEvent.class);
+                module.setTrace(trace);
+
+                /** The analysis execution is being tested, so performance metrics
+                 * are taken before and after the execution */
+                pm.start();
+                TmfTestHelper.executeAnalysis(module);
+                pm.stop();
+
+                /*
+                 * Delete the supplementary files, so next iteration rebuilds
+                 * the state system.
+                 */
+                File suppDir = new File(TmfTraceManager.getSupplementaryFileDir(trace));
+                for (File file : suppDir.listFiles()) {
+                    file.delete();
+                }
+
+            } catch (TmfAnalysisException | TmfTraceException e) {
+                fail(e.getMessage());
+            }
+        }
+
+        /** Once the test has been run many times, committing the results will
+         * calculate average, standard deviation, and, if configured, save the
+         * data to a database */
+        pm.commit();
+    }
+}
+
+</pre>
+
+For more information, see [http://wiki.eclipse.org/Performance/Automated_Tests The Eclipse Performance Test How-to]
+
+Some rules to help write performance tests are explained in section [[ABC of performance testing | ABC of performance testing]].
+
+=== Run a performance test ===
+
+Performance tests are unit tests, so, just like unit tests, they can be run by right-clicking on a performance test class and selecting ''Run As'' -> ''Junit Plug-in Test''.
+
+By default, if no database has been configured, results will be displayed in the Console at the end of the test.
+
+Here is the sample output from the test described in the previous section. It shows all the metrics that have been calculated during the test.
+
+<pre>
+Scenario 'org.eclipse.linuxtools#LTTng kernel analysis' (average over 10 samples):
+  System Time:            3.04s         (95% in [2.77s, 3.3s])         Measurable effect: 464ms (1.3 SDs) (required sample size for an effect of 5% of mean: 94)
+  Used Java Heap:        -1.43M         (95% in [-33.67M, 30.81M])     Measurable effect: 57.01M (1.3 SDs) (required sample size for an effect of 5% of stdev: 6401)
+  Working Set:           14.43M         (95% in [-966.01K, 29.81M])    Measurable effect: 27.19M (1.3 SDs) (required sample size for an effect of 5% of stdev: 6400)
+  Elapsed Process:        3.04s         (95% in [2.77s, 3.3s])         Measurable effect: 464ms (1.3 SDs) (required sample size for an effect of 5% of mean: 94)
+  Kernel time:             621ms        (95% in [586ms, 655ms])        Measurable effect: 60ms (1.3 SDs) (required sample size for an effect of 5% of mean: 39)
+  CPU Time:               6.06s         (95% in [5.02s, 7.09s])        Measurable effect: 1.83s (1.3 SDs) (required sample size for an effect of 5% of mean: 365)
+  Hard Page Faults:          0          (95% in [0, 0])                Measurable effect: 0 (1.3 SDs) (required sample size for an effect of 5% of stdev: 6400)
+  Soft Page Faults:       9.27K         (95% in [3.28K, 15.27K])       Measurable effect: 10.6K (1.3 SDs) (required sample size for an effect of 5% of mean: 5224)
+  Text Size:                 0          (95% in [0, 0])
+  Data Size:                 0          (95% in [0, 0])
+  Library Size:           32.5M         (95% in [-12.69M, 77.69M])     Measurable effect: 79.91M (1.3 SDs) (required sample size for an effect of 5% of stdev: 6401)
+</pre>
+
+Results from performance tests can be saved automatically to a derby database. Derby can be run either in embedded mode, locally on a machine, or on a server. More information on setting up derby for performance tests can be found here: [http://wiki.eclipse.org/Performance/Automated_Tests The Eclipse Performance Test How-to]. The following documentation will show how to configure an Eclipse run configuration to store results on a derby database located on a server.
+
+Note that to store results in a derby database, the ''org.apache.derby'' plug-in must be available within your Eclipse. Since it is an optional dependency, it is not included in the target definition. It can be installed via the '''Orbit''' repository, in ''Help'' -> ''Install new software...''. If the '''Orbit''' repository is not listed, click on the latest one from [http://download.eclipse.org/tools/orbit/downloads/] and copy the link under ''Orbit Build Repository''.
+
+To store the data to a database, it needs to be configured in the run configuration. In ''Run'' -> ''Run configurations..'', under ''Junit Plug-in Test'', find the run configuration that corresponds to the test you wish to run, or create one if it is not present yet.
+
+In the ''Arguments'' tab, in the box under ''VM Arguments'', add on separate lines the following information
+
+<pre>
+-Declipse.perf.dbloc=//javaderby.dorsal.polymtl.ca
+-Declipse.perf.config=build=mybuild;host=myhost;config=linux;jvm=1.7
+</pre>
+
+The ''eclipse.perf.dbloc'' parameter is the url (or filename) of the derby database. The database is by default named ''perfDB'', with username and password ''guest''/''guest''. If the database does not exist, it will be created, initialized and populated.
+
+The ''eclipse.perf.config'' parameter identifies a '''variation''': It typically identifies the build on which is it run (commitId and/or build date, etc), the machine (host) on which it is run, the configuration of the system (for example Linux or Windows), the jvm etc. That parameter is a list of ';' separated key-value pairs. To be backward-compatible with the Eclipse Performance Tests Framework, the 4 keys mentioned above are mandatory, but any key-value pairs can be used.
+
+== ABC of performance testing ==
+
+Here follow some rules to help design good and meaningful performance tests.
+
+=== Determine what to test ===
+
+For tests to be significant, it is important to choose what exactly is to be tested and make sure it is reproducible every run. To limit the amount of noise caused by the TMF framework, the performance test code should be tweaked so that only the method under test is run. For instance, a trace should not be "opened" (by calling the ''traceOpened()'' method) to test an analysis, since the ''traceOpened'' method will also trigger the indexing and the execution of all applicable automatic analysis.
+
+For each code path to test, multiple scenarios can be defined. For instance, an analysis could be run on different traces, with different sizes. The results will show how the system scales and/or varies depending on the objects it is executed on.
+
+The number of '''samples''' used to compute the results is also important. The code to test will typically be inside a '''for''' loop that runs exactly the same code each time for a given number of times. All objects used for the test must start in the same state at each iteration of the loop. For instance, any trace used during an execution should be disposed of at the end of the loop, and any supplementary file that may have been generated in the run should be deleted.
+
+Before submitting a performance test to the code review, you should run it a few times (with results in the Console) and see if the standard deviation is not too large and if the results are reproducible.
+
+=== Metrics descriptions and considerations ===
+
+CPU time: CPU time represent the total time spent on CPU by the current process, for the time of the test execution. It is the sum of the time spent by all threads. On one hand, it is more significant than the elapsed time, since it should be the same no matter how many CPU cores the computer has. But since it calculates the time of every thread, one has to make sure that only threads related to what is being tested are executed during that time, or else the results will include the times of those other threads. For an application like TMF, it is hard to control all the threads, and empirically, it is found to vary a lot more than the system time from one run to the other.
+
+System time (Elapsed time): The time between the start and the end of the execution. It will vary depending on the parallelisation of the threads and the load of the machine.
+
+Kernel time: Time spent in kernel mode
+
+Used Java Heap: It is the difference between the memory used at the beginning of the execution and at the end. This metric may be useful to calculate the overall size occupied by the data generated by the test run, by forcing a garbage collection before taking the metrics at the beginning and at the end of the execution. But it will not show the memory used throughout the execution.

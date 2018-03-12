@@ -71,22 +71,11 @@ public class CovView extends AbstractSTDataView {
     private Action fileAction;
     private Action functionAction;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataView#createAbstractSTViewer
-     * (org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected AbstractSTViewer createAbstractSTViewer(Composite parent) {
         return new CovViewer(parent);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataViewer#contributeToToolbar(org.eclipse.jface.action
-     * .IToolBarManager)
-     */
     @Override
     protected void contributeToToolbar(IToolBarManager manager) {
         manager.add(new Separator());
@@ -98,10 +87,6 @@ public class CovView extends AbstractSTDataView {
         manager.add(new ChartAction(getViewSite().getShell(), getSTViewer()));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.linuxtools.dataviewers.abstractview.AbstractSTDataViewer#createActions()
-     */
     @Override
     protected void createActions() {
         super.createActions();
@@ -153,7 +138,7 @@ public class CovView extends AbstractSTDataView {
         });
     }
 
-    public static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
+    private static void setCovViewTitle(CovView view, String title, String binaryPath, String timestamp) {
         String viewText = NLS.bind(Messages.CovView_view_title, new Object[] { title, binaryPath, timestamp });
         view.label.setText(viewText);
         view.label.getParent().layout(true);
@@ -164,8 +149,9 @@ public class CovView extends AbstractSTDataView {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IFile binary = root.getFileForLocation(new Path(binaryPath));
             IProject project = null;
-            if (binary != null)
+            if (binary != null) {
                 project = binary.getProject();
+            }
 
             // parse and process coverage data
             CovManager cvrgeMnger = new CovManager(binaryPath, project);
@@ -176,7 +162,7 @@ public class CovView extends AbstractSTDataView {
             cvrgeMnger.fillGcovView();
 
             for (SourceFile sf : cvrgeMnger.getSourceMap().values()) {
-                OpenSourceFileAction.sharedInstance.openAnnotatedSourceFile(project, binary, sf, 0);
+                OpenSourceFileAction.openAnnotatedSourceFile(project, binary, sf, 0);
             }
         } catch (CoreException|IOException e) {
             reportError(e);
@@ -207,8 +193,7 @@ public class CovView extends AbstractSTDataView {
                 }
             }
             String timestamp = DateFormat.getInstance().format(date);
-            CovView cvrgeView = displayCovResults(cvrgeMnger, timestamp);
-            return cvrgeView;
+            return displayCovResults(cvrgeMnger, timestamp);
         } catch (InterruptedException|IOException|CoreException e) {
             reportError(e);
         }
@@ -233,7 +218,7 @@ public class CovView extends AbstractSTDataView {
      * Used by Test engine and OpenSerAction
      * @param cvrgeMnger
      */
-    public static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
+    private static CovView displayCovResults(CovManager cvrgeMnger, String timestamp) throws PartInitException {
         // load an Eclipse view
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
@@ -261,27 +246,11 @@ public class CovView extends AbstractSTDataView {
             public void run() {
                 Object o = getSTViewer().getInput();
                 if (o instanceof CovManager) {
-                    getExporter().setFilePath(getDefaultCSVPath());
+                    getExporter().setFilePath(defaultCSVPath);
                 }
                 super.run();
             }
         };
         return action;
     }
-
-    /**
-     * @return the defaultCSVPath
-     */
-    public String getDefaultCSVPath() {
-        return defaultCSVPath;
-    }
-
-    /**
-     * @param defaultCSVPath
-     *            the defaultCSVPath to set
-     */
-    public void setDefaultCSVPath(String defaultCSVPath) {
-        this.defaultCSVPath = defaultCSVPath;
-    }
-
 }

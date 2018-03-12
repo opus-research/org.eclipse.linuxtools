@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
@@ -19,18 +19,19 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.eclipse.linuxtools.internal.tmf.core.statesystem.backends.IStateHistoryBackend;
+import org.eclipse.linuxtools.statesystem.core.ITmfStateSystem;
+import org.eclipse.linuxtools.statesystem.core.backend.IStateHistoryBackend;
+import org.eclipse.linuxtools.statesystem.core.exceptions.AttributeNotFoundException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateSystemDisposedException;
+import org.eclipse.linuxtools.statesystem.core.exceptions.TimeRangeException;
+import org.eclipse.linuxtools.statesystem.core.interval.ITmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.interval.TmfStateInterval;
+import org.eclipse.linuxtools.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
-import org.eclipse.linuxtools.tmf.core.exceptions.AttributeNotFoundException;
-import org.eclipse.linuxtools.tmf.core.exceptions.StateSystemDisposedException;
-import org.eclipse.linuxtools.tmf.core.exceptions.TimeRangeException;
-import org.eclipse.linuxtools.tmf.core.interval.ITmfStateInterval;
-import org.eclipse.linuxtools.tmf.core.interval.TmfStateInterval;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.statesystem.AbstractTmfStateProvider;
 import org.eclipse.linuxtools.tmf.core.statesystem.ITmfStateProvider;
-import org.eclipse.linuxtools.tmf.core.statevalue.ITmfStateValue;
 import org.eclipse.linuxtools.tmf.core.timestamp.ITmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
@@ -70,8 +71,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
     private final IStateHistoryBackend innerHistory;
 
     /** Checkpoints map, <Timestamp, Rank in the trace> */
-    private final TreeMap<Long, Long> checkpoints =
-            new TreeMap<Long, Long>();
+    private final TreeMap<Long, Long> checkpoints = new TreeMap<>();
 
     /** Latch tracking if the initial checkpoint registration is done */
     private final CountDownLatch checkpointsReady = new CountDownLatch(1);
@@ -235,8 +235,8 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
             for (int i = 0; i < currentStateInfo.size(); i++) {
                 long start = 0;
                 ITmfStateValue val = null;
-                start = partialSS.getOngoingStartTime(i);
-                val = partialSS.queryOngoingState(i);
+                start = ((ITmfStateSystem) partialSS).getOngoingStartTime(i);
+                val = ((ITmfStateSystem) partialSS).queryOngoingState(i);
 
                 ITmfStateInterval interval = new TmfStateInterval(start, t, i, val);
                 currentStateInfo.set(i, interval);
@@ -291,7 +291,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
                     TmfTimeRange.ETERNITY,
                     0,
                     ITmfEventRequest.ALL_DATA,
-                    ITmfEventRequest.ExecutionType.BACKGROUND);
+                    ITmfEventRequest.ExecutionType.FOREGROUND);
             checkpoints.clear();
             this.trace = input.getTrace();
             this.checkpts = checkpoints;
@@ -305,7 +305,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
+            if (event.getTrace() == trace) {
                 eventCount++;
 
                 /* Check if we need to register a new checkpoint */
@@ -340,7 +340,7 @@ public class PartialHistoryBackend implements IStateHistoryBackend {
         @Override
         public void handleData(final ITmfEvent event) {
             super.handleData(event);
-            if (event != null && event.getTrace() == trace) {
+            if (event.getTrace() == trace) {
                 sci.processEvent(event);
             }
         }

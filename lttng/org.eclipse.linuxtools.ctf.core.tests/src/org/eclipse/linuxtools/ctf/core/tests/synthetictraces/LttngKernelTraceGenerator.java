@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -199,7 +199,11 @@ public class LttngKernelTraceGenerator {
      * @return the path
      */
     public static String getPath() {
-        URL location = FileLocator.find(CtfCoreTestPlugin.getDefault().getBundle(), new Path(TRACES_DIRECTORY), null);
+        CtfCoreTestPlugin plugin = CtfCoreTestPlugin.getDefault();
+        if (plugin == null) {
+            return null;
+        }
+        URL location = FileLocator.find(plugin.getBundle(), new Path(TRACES_DIRECTORY), null);
         File file = null;
         try {
             IPath path = new Path(FileLocator.toFileURL(location).getPath()).append(TRACE_NAME);
@@ -270,7 +274,6 @@ public class LttngKernelTraceGenerator {
         File metadataFile = new File(file.getPath() + File.separator + "metadata");
         File[] streams = new File[fNbChans];
         FileChannel[] channels = new FileChannel[fNbChans];
-        FileOutputStream fos = null;
 
         try {
             for (int i = 0; i < fNbChans; i++) {
@@ -359,10 +362,8 @@ public class LttngKernelTraceGenerator {
                 e.printStackTrace();
             }
         }
-        try {
-            fos = new FileOutputStream(metadataFile);
+        try (FileOutputStream fos = new FileOutputStream(metadataFile);) {
             fos.write(metadata.getBytes());
-            fos.close();
         } catch (IOException e) {
         }
     }

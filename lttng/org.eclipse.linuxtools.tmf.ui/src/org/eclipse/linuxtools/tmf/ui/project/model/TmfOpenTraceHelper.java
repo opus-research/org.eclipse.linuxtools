@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2013 Ericsson
+ * Copyright (c) 2013, 2014 Ericsson, École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,6 +9,8 @@
  * Contributors:
  *   Matthew Khouzam - Initial API and implementation
  *   Patrick Tasse - Update open trace and add open experiment
+ *   Geneviève Bastien - Merge methods to open trace and experiments
+ *   Bernd Hufmann - Updated handling of directory traces
  **********************************************************************/
 
 package org.eclipse.linuxtools.tmf.ui.project.model;
@@ -18,25 +20,26 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.linuxtools.internal.tmf.ui.Activator;
 import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfImportHelper;
-import org.eclipse.linuxtools.internal.tmf.ui.project.model.TmfTraceImportException;
+import org.eclipse.linuxtools.tmf.core.TmfCommonConstants;
 import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceImportException;
+import org.eclipse.linuxtools.tmf.core.project.model.TmfTraceType;
+import org.eclipse.linuxtools.tmf.core.project.model.TraceTypeHelper;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEditorInput;
 import org.eclipse.linuxtools.tmf.ui.editors.TmfEventsEditor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -62,14 +65,17 @@ import org.eclipse.ui.part.FileEditorInput;
  */
 public class TmfOpenTraceHelper {
 
+    private TmfOpenTraceHelper() {
+    }
+
     private static final String ENDL = System.getProperty("line.separator"); //$NON-NLS-1$
 
     /**
-     * Opens a trace from a path while importing it to the project
-     * "projectRoot". The trace is linked as a resource.
+     * Opens a trace from a path while importing it to the destination folder.
+     * The trace is linked as a resource.
      *
-     * @param projectRoot
-     *            The project to import to
+     * @param destinationFolder
+     *            The destination trace folder
      * @param path
      *            the file to import
      * @param shell
@@ -78,17 +84,18 @@ public class TmfOpenTraceHelper {
      * @throws CoreException
      *             core exceptions if something is not well set up in the back
      *             end
+     * @since 3.0
      */
-    public IStatus openTraceFromPath(String projectRoot, String path, Shell shell) throws CoreException {
-        return openTraceFromPath(projectRoot, path, shell, null);
+    public static IStatus openTraceFromPath(TmfTraceFolder destinationFolder, String path, Shell shell) throws CoreException {
+        return openTraceFromPath(destinationFolder, path, shell, null);
     }
 
     /**
-     * Opens a trace from a path while importing it to the project
-     * "projectRoot". The trace is linked as a resource.
+     * Opens a trace from a path while importing it to the destination folder.
+     * The trace is linked as a resource.
      *
-     * @param projectRoot
-     *            The project to import to
+     * @param destinationFolder
+     *            The destination trace folder
      * @param path
      *            the file to import
      * @param shell
@@ -100,49 +107,85 @@ public class TmfOpenTraceHelper {
      *             core exceptions if something is not well set up in the back
      *             end
      *
-     * @since 2.2
+     * @since 3.0
      */
-    public IStatus openTraceFromPath(String projectRoot, String path, Shell shell, String tracetypeHint) throws CoreException {
-        TmfTraceType tt = TmfTraceType.getInstance();
+    public static IStatus openTraceFromPath(TmfTraceFolder destinationFolder, String path, Shell shell, String tracetypeHint) throws CoreException {
+        final String pathToUse = checkTracePath(path);
         TraceTypeHelper traceTypeToSet = null;
         try {
-            traceTypeToSet = tt.selectTraceType(path, shell, tracetypeHint);
+          traceTypeToSet = TmfTraceTypeUIUtils.selectTraceType(pathToUse, null, tracetypeHint);
         } catch (TmfTraceImportException e) {
             MessageBox mb = new MessageBox(shell);
             mb.setMessage(e.getMessage());
             mb.open();
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
         }
-        if (traceTypeToSet == null) {
-            return Status.CANCEL_STATUS;
+
+        IFolder folder = destinationFolder.getResource();
+        String traceName = getTraceName(pathToUse, folder);
+        if (traceExists(pathToUse, folder)) {
+            return openTraceFromFolder(destinationFolder, traceName);
         }
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectRoot);
-        IFolder folder = project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME);
-        String traceName = getTraceName(path, folder);
-        if (traceExists(path, folder)) {
-            return openTraceFromProject(projectRoot, traceName);
-        }
-        final IPath tracePath = folder.getFullPath().append(traceName);
-        final IPath pathString = Path.fromOSString(path);
+        final IPath pathString = Path.fromOSString(pathToUse);
         IResource linkedTrace = TmfImportHelper.createLink(folder, pathString, traceName);
-        if (linkedTrace != null && linkedTrace.exists()) {
-            IStatus ret = TmfTraceType.setTraceType(tracePath, traceTypeToSet);
-            if (ret.isOK()) {
-                ret = openTraceFromProject(projectRoot, traceName);
-            }
-            return ret;
+
+        if (linkedTrace == null || !linkedTrace.exists()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    Messages.TmfOpenTraceHelper_LinkFailed);
         }
-        return new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                Messages.TmfOpenTraceHelper_LinkFailed);
+
+        String sourceLocation = URIUtil.toUnencodedString(pathString.toFile().toURI());
+        linkedTrace.setPersistentProperty(TmfCommonConstants.SOURCE_LOCATION, sourceLocation);
+
+        // No trace type was determined.
+        if (traceTypeToSet == null) {
+            return Status.OK_STATUS;
+        }
+
+        IStatus ret = TmfTraceTypeUIUtils.setTraceType(linkedTrace, traceTypeToSet);
+        if (ret.isOK()) {
+            ret = openTraceFromFolder(destinationFolder, traceName);
+        }
+        return ret;
     }
 
-    private static boolean traceExists(String file, IFolder folder) {
-        String val = getTraceName(file, folder);
+    /**
+     * Checks whether the parent or grandparent of given path to a file is a
+     * valid directory trace. If it is a directory trace then return the parent
+     * or grandparent path.
+     *
+     * @param path
+     *            the path to check
+     * @return path to use for trace type validation.
+     */
+    private static String checkTracePath(String path) {
+        File file = new File(path);
+        if (file.exists() && !file.isDirectory()) {
+            // First check parent
+            File parent = file.getParentFile();
+            String pathToUse = parent.getAbsolutePath();
+            if (TmfTraceType.isDirectoryTrace(pathToUse)) {
+                return pathToUse;
+            }
+            // Second check grandparent
+            File grandParent = parent.getParentFile();
+            if (grandParent != null) {
+                pathToUse = grandParent.getAbsolutePath();
+                if (TmfTraceType.isDirectoryTrace(pathToUse)) {
+                    return pathToUse;
+                }
+            }
+        }
+        return path;
+    }
+
+    private static boolean traceExists(String path, IFolder folder) {
+        String val = getTraceName(path, folder);
         return (folder.findMember(val) != null);
     }
 
-    private static boolean isWrongMember(IFolder folder, String ret, final File traceFile) {
-        final IResource candidate = folder.findMember(ret);
+    private static boolean isWrongMember(IFolder folder, String name, final File traceFile) {
+        final IResource candidate = folder.findMember(name);
         if (candidate != null) {
             final IPath rawLocation = candidate.getRawLocation();
             final File file = rawLocation.toFile();
@@ -153,71 +196,139 @@ public class TmfOpenTraceHelper {
 
     /**
      * Gets the display name, either "filename" or "filename(n)" if there is
-     * already a filename existing where n is the next non-used integer starting
+     * already a filename existing where n is the next unused integer starting
      * from 2
      *
-     * @param file
-     *            the file with path
+     * @param path
+     *            the file path
      * @param folder
      *            the folder to import to
      * @return the filename
      */
-    private static String getTraceName(String file, IFolder folder) {
-        String ret;
-        final File traceFile = new File(file);
-        ret = traceFile.getName();
-        for (int i = 2; isWrongMember(folder, ret, traceFile); i++) {
-            ret = traceFile.getName() + '(' + i + ')';
+    private static String getTraceName(String path, IFolder folder) {
+        String name;
+        final File traceFile = new File(path);
+        name = traceFile.getName();
+        for (int i = 2; isWrongMember(folder, name, traceFile); i++) {
+            name = traceFile.getName() + '(' + i + ')';
         }
-        return ret;
+        return name;
     }
 
     /**
-     * Open a trace from a project
+     * Open a trace from a trace folder
      *
-     * @param projectRoot
-     *            the root of the project
+     * @param destinationFolder
+     *            The destination trace folder
      * @param traceName
      *            the trace name
      * @return success or error
+     * @since 3.0
      */
-    public static IStatus openTraceFromProject(String projectRoot, String traceName) {
-        final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        final IWorkspaceRoot root = workspace.getRoot();
-        IProject project = root.getProject(projectRoot);
-        TmfImportHelper.forceFolderRefresh(project.getFolder(TmfTraceFolder.TRACE_FOLDER_NAME));
-
-        final TmfProjectElement project2 = TmfProjectRegistry.getProject(project, true);
-        final TmfTraceFolder tracesFolder = project2.getTracesFolder();
-        final List<TmfTraceElement> traces = tracesFolder.getTraces();
-        TmfTraceElement found = null;
-        for (TmfTraceElement candidate : traces) {
-            if (candidate.getName().equals(traceName)) {
-                found = candidate;
+    private static IStatus openTraceFromFolder(TmfTraceFolder destinationFolder, String traceName) {
+        final List<ITmfProjectModelElement> elements = destinationFolder.getChildren();
+        TmfTraceElement traceElement = null;
+        for (ITmfProjectModelElement element : elements) {
+            if (element instanceof TmfTraceElement && element.getName().equals(traceName)) {
+                traceElement = (TmfTraceElement) element;
             }
         }
-        if (found == null) {
-            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, Messages.TmfOpenTraceHelper_ErrorOpeningTrace);
+        if (traceElement == null) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, NLS.bind(Messages.TmfOpenTraceHelper_TraceNotFound, traceName));
         }
-        openTraceFromElement(found);
+        openTraceFromElement(traceElement);
         return Status.OK_STATUS;
     }
 
+    private static ITmfTrace openTraceElement(final TmfTraceElement traceElement) {
+        final ITmfTrace trace = traceElement.instantiateTrace();
+        final ITmfEvent traceEvent = traceElement.instantiateEvent();
+        if ((trace == null) || (traceEvent == null)) {
+            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, traceElement.getTypeName()),
+                    Messages.TmfOpenTraceHelper_NoTraceType);
+            if (trace != null) {
+                trace.dispose();
+            }
+            return null;
+        }
+
+        try {
+            trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass(), traceElement.getElementPath());
+        } catch (final TmfTraceException e) {
+            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, traceElement.getTypeName()),
+                    Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
+            trace.dispose();
+            return null;
+        }
+        return trace;
+    }
+
+    private static ITmfTrace openExperimentElement(final TmfExperimentElement experimentElement) {
+        /* Experiment element now has an experiment type associated with it */
+        final TmfExperiment experiment = experimentElement.instantiateTrace();
+        if (experiment == null) {
+            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, experimentElement.getTypeName()),
+                    NLS.bind(Messages.TmfOpenTraceHelper_NoTraceOrExperimentType, experimentElement.getTypeName()));
+            return null;
+        }
+
+        // Instantiate the experiment's traces
+        final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
+        int cacheSize = Integer.MAX_VALUE;
+        final ITmfTrace[] traces = new ITmfTrace[traceEntries.size()];
+        for (int i = 0; i < traceEntries.size(); i++) {
+            TmfTraceElement element = traceEntries.get(i);
+
+            // Since trace is under an experiment, use the original trace from
+            // the traces folder
+            element = element.getElementUnderTraceFolder();
+
+            ITmfTrace trace = openTraceElement(element);
+
+            if (trace == null) {
+                for (int j = 0; j < i; j++) {
+                    traces[j].dispose();
+                }
+                return null;
+            }
+            cacheSize = Math.min(cacheSize, trace.getCacheSize());
+
+            traces[i] = trace;
+        }
+
+        // Create the experiment
+        experiment.initExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
+
+        return experiment;
+    }
+
+    private static ITmfTrace openProjectElement(final TmfCommonProjectElement element) {
+        ITmfTrace trace = null;
+        if (element instanceof TmfTraceElement) {
+            trace = openTraceElement((TmfTraceElement) element);
+        } else if (element instanceof TmfExperimentElement) {
+            trace = openExperimentElement((TmfExperimentElement) element);
+        }
+        return trace;
+    }
+
     /**
-     * Open a trace from a trace element. If the trace is already opened, its
+     * Open a trace (or experiment) from a project element. If the trace is already opened, its
      * editor is activated and brought to top.
      *
      * @param traceElement
      *            the {@link TmfTraceElement} to open
+     * @since 3.0
      */
-    public static void openTraceFromElement(final TmfTraceElement traceElement) {
+    public static void openTraceFromElement(final TmfCommonProjectElement traceElement) {
 
         final IFile file;
         try {
             file = traceElement.createBookmarksFile();
         } catch (final CoreException e) {
-            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ' ' + traceElement.getName());
-            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorTrace + ENDL + ENDL + e.getMessage());
+            Activator.getDefault().logError(NLS.bind(Messages.TmfOpenTraceHelper_ErrorOpeningElement, traceElement.getTypeName()) + ' ' + traceElement.getName());
+            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, traceElement.getTypeName()),
+                    NLS.bind(Messages.TmfOpenTraceHelper_ErrorElement, traceElement.getTypeName()) + ENDL + ENDL + e.getMessage());
             return;
         }
 
@@ -233,21 +344,8 @@ public class TmfOpenTraceHelper {
             @Override
             public void run() {
 
-                final ITmfTrace trace = traceElement.instantiateTrace();
-                final ITmfEvent traceEvent = traceElement.instantiateEvent();
-                if ((trace == null) || (traceEvent == null)) {
-                    TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
-                    if (trace != null) {
-                        trace.dispose();
-                    }
-                    return;
-                }
-
-                try {
-                    trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
-                } catch (final TmfTraceException e) {
-                    TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
-                    trace.dispose();
+                final ITmfTrace trace = openProjectElement(traceElement);
+                if (trace == null) {
                     return;
                 }
 
@@ -264,123 +362,10 @@ public class TmfOpenTraceHelper {
                             IDE.setDefaultEditor(file, editorId);
                             // editor should dispose the trace on close
                         } catch (final PartInitException e) {
-                            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ENDL + ENDL + e.getMessage());
-                            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ' ' + traceElement.getName());
+                            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, traceElement.getTypeName()),
+                                    NLS.bind(Messages.TmfOpenTraceHelper_ErrorOpeningElement, traceElement.getTypeName()) + ENDL + ENDL + e.getMessage());
+                            Activator.getDefault().logError(NLS.bind(Messages.TmfOpenTraceHelper_ErrorOpeningElement, traceElement.getTypeName()) + ' ' + traceElement.getName());
                             trace.dispose();
-                        }
-                    }
-                });
-            }
-        };
-        thread.start();
-    }
-
-    /**
-     * Open an experiment from an experiment element. If the experiment is
-     * already opened, its editor is activated and brought to top.
-     *
-     * @param experimentElement
-     *            the {@link TmfExperimentElement} to open
-     */
-    public static void openExperimentFromElement(final TmfExperimentElement experimentElement) {
-
-        final IFile file;
-        try {
-            file = experimentElement.createBookmarksFile();
-        } catch (final CoreException e) {
-            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningExperiment + ' ' + experimentElement.getName());
-            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment, Messages.TmfOpenTraceHelper_ErrorExperiment + ENDL + ENDL + e.getMessage());
-            return;
-        }
-
-        final IWorkbench wb = PlatformUI.getWorkbench();
-        final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
-        final IEditorPart editor = findEditor(new FileEditorInput(file), true);
-        if (editor != null) {
-            activePage.activate(editor);
-            return;
-        }
-
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-
-                /*
-                 * Unlike traces, there is no instanceExperiment, so we call
-                 * this function here alone. Maybe it would be better to do this
-                 * on experiment's element constructor?
-                 */
-                experimentElement.refreshSupplementaryFolder();
-
-                // Instantiate the experiment's traces
-                final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
-                final int nbTraces = traceEntries.size();
-                int cacheSize = Integer.MAX_VALUE;
-                String commonEditorId = null;
-                final ITmfTrace[] traces = new ITmfTrace[nbTraces];
-                for (int i = 0; i < nbTraces; i++) {
-                    TmfTraceElement element = traceEntries.get(i);
-
-                    // Since trace is under an experiment, use the original
-                    // trace from the traces folder
-                    element = element.getElementUnderTraceFolder();
-
-                    final ITmfTrace trace = element.instantiateTrace();
-                    final ITmfEvent traceEvent = element.instantiateEvent();
-                    if ((trace == null) || (traceEvent == null)) {
-                        TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment,
-                                Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ' ' + element.getName() +
-                                        ENDL + Messages.TmfOpenTraceHelper_NoTraceType);
-                        for (int j = 0; j < i; j++) {
-                            traces[j].dispose();
-                        }
-                        if (trace != null) {
-                            trace.dispose();
-                        }
-                        return;
-                    }
-                    try {
-                        trace.initTrace(element.getResource(), element.getLocation().getPath(), traceEvent.getClass());
-                    } catch (final TmfTraceException e) {
-                        TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment,
-                                element.getName() + ':' + ' ' + Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
-                        for (int j = 0; j < i; j++) {
-                            traces[j].dispose();
-                        }
-                        trace.dispose();
-                        return;
-                    }
-                    cacheSize = Math.min(cacheSize, trace.getCacheSize());
-
-                    // If all traces use the same editorId, use it, otherwise
-                    // use the default
-                    final String editorId = element.getEditorId();
-                    if (commonEditorId == null) {
-                        commonEditorId = (editorId != null) ? editorId : TmfEventsEditor.ID;
-                    } else if (!commonEditorId.equals(editorId)) {
-                        commonEditorId = TmfEventsEditor.ID;
-                    }
-                    traces[i] = trace;
-                }
-
-                // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
-                experiment.setBookmarksFile(file);
-
-                final String editorId = commonEditorId;
-                final IEditorInput editorInput = new TmfEditorInput(file, experiment);
-
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            activePage.openEditor(editorInput, editorId);
-                            IDE.setDefaultEditor(file, editorId);
-                            // editor should dispose the trace on close
-                        } catch (final PartInitException e) {
-                            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment, Messages.TmfOpenTraceHelper_ErrorOpeningExperiment + ENDL + ENDL + e.getMessage());
-                            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningExperiment + ' ' + experimentElement.getName());
-                            experiment.dispose();
                         }
                     }
                 });
@@ -416,21 +401,24 @@ public class TmfOpenTraceHelper {
     }
 
     /**
-     * Reopen a trace from a trace element in the provided editor
+     * Reopen a trace or experiment from a project element in the provided
+     * editor
      *
      * @param traceElement
      *            the {@link TmfTraceElement} to open
      * @param editor
      *            the reusable editor
+     * @since 3.0
      */
-    public static void reopenTraceFromElement(final TmfTraceElement traceElement, final IReusableEditor editor) {
+    public static void reopenTraceFromElement(final TmfCommonProjectElement traceElement, final IReusableEditor editor) {
 
         final IFile file;
         try {
             file = traceElement.createBookmarksFile();
         } catch (final CoreException e) {
-            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ' ' + traceElement.getName());
-            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_ErrorTrace + ENDL + ENDL + e.getMessage());
+            Activator.getDefault().logError(NLS.bind(Messages.TmfOpenTraceHelper_ErrorOpeningElement, traceElement.getTypeName()) + ' ' + traceElement.getName());
+            TraceUtils.displayErrorMsg(NLS.bind(Messages.TmfOpenTraceHelper_OpenElement, traceElement.getTypeName()),
+                    NLS.bind(Messages.TmfOpenTraceHelper_ErrorElement, traceElement.getTypeName()) + ENDL + ENDL + e.getMessage());
             return;
         }
 
@@ -438,117 +426,12 @@ public class TmfOpenTraceHelper {
             @Override
             public void run() {
 
-                final ITmfTrace trace = traceElement.instantiateTrace();
-                final ITmfEvent traceEvent = traceElement.instantiateEvent();
-                if ((trace == null) || (traceEvent == null)) {
-                    TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_NoTraceType);
-                    if (trace != null) {
-                        trace.dispose();
-                    }
-                    return;
-                }
-
-                try {
-                    trace.initTrace(traceElement.getResource(), traceElement.getLocation().getPath(), traceEvent.getClass());
-                } catch (final TmfTraceException e) {
-                    TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenTrace, Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
-                    trace.dispose();
+                final ITmfTrace trace = openProjectElement(traceElement);
+                if (trace == null) {
                     return;
                 }
 
                 final IEditorInput editorInput = new TmfEditorInput(file, trace);
-
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        final IWorkbench wb = PlatformUI.getWorkbench();
-                        final IWorkbenchPage activePage = wb.getActiveWorkbenchWindow().getActivePage();
-                        activePage.reuseEditor(editor, editorInput);
-                        activePage.activate(editor);
-                    }
-                });
-            }
-        };
-        thread.start();
-    }
-
-    /**
-     * Reopen an experiment from an experiment element in the provided editor
-     *
-     * @param experimentElement
-     *            the {@link TmfExperimentElement} to open
-     * @param editor
-     *            the reusable editor
-     */
-    public static void reopenExperimentFromElement(final TmfExperimentElement experimentElement, final IReusableEditor editor) {
-
-        final IFile file;
-        try {
-            file = experimentElement.createBookmarksFile();
-        } catch (final CoreException e) {
-            Activator.getDefault().logError(Messages.TmfOpenTraceHelper_ErrorOpeningExperiment + ' ' + experimentElement.getName());
-            TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment, Messages.TmfOpenTraceHelper_ErrorExperiment + ENDL + ENDL + e.getMessage());
-            return;
-        }
-
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-
-                /*
-                 * Unlike traces, there is no instanceExperiment, so we call
-                 * this function here alone. Maybe it would be better to do this
-                 * on experiment's element constructor?
-                 */
-                experimentElement.refreshSupplementaryFolder();
-
-                // Instantiate the experiment's traces
-                final List<TmfTraceElement> traceEntries = experimentElement.getTraces();
-                final int nbTraces = traceEntries.size();
-                int cacheSize = Integer.MAX_VALUE;
-                final ITmfTrace[] traces = new ITmfTrace[nbTraces];
-                for (int i = 0; i < nbTraces; i++) {
-                    TmfTraceElement element = traceEntries.get(i);
-
-                    // Since trace is under an experiment, use the original
-                    // trace from the traces folder
-                    element = element.getElementUnderTraceFolder();
-
-                    final ITmfTrace trace = element.instantiateTrace();
-                    final ITmfEvent traceEvent = element.instantiateEvent();
-                    if ((trace == null) || (traceEvent == null)) {
-                        TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment,
-                                Messages.TmfOpenTraceHelper_ErrorOpeningTrace + ' ' + element.getName() +
-                                        ENDL + Messages.TmfOpenTraceHelper_NoTraceType);
-                        for (int j = 0; j < i; j++) {
-                            traces[j].dispose();
-                        }
-                        if (trace != null) {
-                            trace.dispose();
-                        }
-                        return;
-                    }
-                    try {
-                        trace.initTrace(element.getResource(), element.getLocation().getPath(), traceEvent.getClass());
-                    } catch (final TmfTraceException e) {
-                        TraceUtils.displayErrorMsg(Messages.TmfOpenTraceHelper_OpenExperiment,
-                                element.getName() + ':' + ' ' + Messages.TmfOpenTraceHelper_InitError + ENDL + ENDL + e);
-                        for (int j = 0; j < i; j++) {
-                            traces[j].dispose();
-                        }
-                        trace.dispose();
-                        return;
-                    }
-                    cacheSize = Math.min(cacheSize, trace.getCacheSize());
-
-                    traces[i] = trace;
-                }
-
-                // Create the experiment
-                final TmfExperiment experiment = new TmfExperiment(ITmfEvent.class, experimentElement.getName(), traces, cacheSize, experimentElement.getResource());
-                experiment.setBookmarksFile(file);
-
-                final IEditorInput editorInput = new TmfEditorInput(file, experiment);
 
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override

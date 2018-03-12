@@ -47,8 +47,7 @@ public class GmonDecoder {
 
     // header
     private String cookie;
-    private int gmon_version;
-    private byte[] spare;
+    private int gmonVersion;
 
     private final IBinaryObject program;
     final boolean _32_bit_platform;
@@ -59,7 +58,7 @@ public class GmonDecoder {
     private String file;
     private int tag = -1;
 
-    private final HashMap<ISymbol, String> filenames = new HashMap<ISymbol, String>();
+    private final HashMap<ISymbol, String> filenames = new HashMap<>();
     private final IProject project;
 
     // for dump
@@ -88,8 +87,8 @@ public class GmonDecoder {
         program.getBinaryParser().getFormat();
         String cpu = program.getCPU();
         if (Platform.ARCH_X86_64.equals(cpu) || "ppc64".equals(cpu)) { //$NON-NLS-1$
-            histo = new HistogramDecoder_64(this);
-            callGraph = new CallGraphDecoder_64(this);
+            histo = new HistogramDecoder64(this);
+            callGraph = new CallGraphDecoder64(this);
             _32_bit_platform = false;
         } else {
             _32_bit_platform = true;
@@ -105,56 +104,53 @@ public class GmonDecoder {
      * @throws IOException
      */
     public void read(String file) throws IOException {
-    	this.file = file;
-    	DataInputStream beStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-    	if (program.isLittleEndian()) {
-    		LEDataInputStream leStream = new LEDataInputStream(beStream);
-    		try {
-    			leStream.mark(1000);
-    			boolean gmonType = readHeader(leStream);
-    			if (gmonType)
-    				ReadGmonContent(leStream);
-    			else {
-    				leStream.reset();
-    				histo.decodeOldHeader(leStream);
-    				histo.decodeHistRecord(leStream);
-    				try {
-    					do {
-    						this.callGraph.decodeCallGraphRecord(leStream, true);
-    					} while (true);
-    				} catch (EOFException _) {
-    					// normal. End of file reached.
-    				}
-    				this.callGraph.populate(rootNode);
-    				this.histo.AssignSamplesSymbol();
-    			}
-    		} finally {
-    			leStream.close();
-    		}
-    	} else {
-    		try {
-    			beStream.mark(1000);
-    			boolean gmonType = readHeader(beStream);
-    			if (gmonType)
-    				ReadGmonContent(beStream);
-    			else {
-    				beStream.reset();
-    				histo.decodeOldHeader(beStream);
-    				histo.decodeHistRecord(beStream);
-    				try {
-    					do {
-    						this.callGraph.decodeCallGraphRecord(beStream, true);
-    					} while (true);
-    				} catch (EOFException _) {
-    					// normal. End of file reached.
-    				}
-    				this.callGraph.populate(rootNode);
-    				this.histo.AssignSamplesSymbol();
-    			}
-    		} finally {
-    			beStream.close();
-    		}
-    	}
+        this.file = file;
+        DataInputStream beStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+        if (program.isLittleEndian()) {
+            try (LEDataInputStream leStream = new LEDataInputStream(beStream)) {
+                leStream.mark(1000);
+                boolean gmonType = readHeader(leStream);
+                if (gmonType)
+                    readGmonContent(leStream);
+                else {
+                    leStream.reset();
+                    histo.decodeOldHeader(leStream);
+                    histo.decodeHistRecord(leStream);
+                    try {
+                        do {
+                            this.callGraph.decodeCallGraphRecord(leStream, true);
+                        } while (true);
+                    } catch (EOFException e) {
+                        // normal. End of file reached.
+                    }
+                    this.callGraph.populate(rootNode);
+                    this.histo.assignSamplesSymbol();
+                }
+            }
+        } else {
+            try {
+                beStream.mark(1000);
+                boolean gmonType = readHeader(beStream);
+                if (gmonType) {
+                    readGmonContent(beStream);
+                } else {
+                    beStream.reset();
+                    histo.decodeOldHeader(beStream);
+                    histo.decodeHistRecord(beStream);
+                    try {
+                        do {
+                            this.callGraph.decodeCallGraphRecord(beStream, true);
+                        } while (true);
+                    } catch (EOFException e) {
+                        // normal. End of file reached.
+                    }
+                    this.callGraph.populate(rootNode);
+                    this.histo.assignSamplesSymbol();
+                }
+            } finally {
+                beStream.close();
+            }
+        }
     }
 
     /**
@@ -165,12 +161,12 @@ public class GmonDecoder {
      * @throws IOException
      *             if an IO error occurs or if the stream is not a gmon file.
      */
-    public boolean readHeader(DataInput stream) throws IOException {
+    private boolean readHeader(DataInput stream) throws IOException {
         byte[] _cookie = new byte[4];
         stream.readFully(_cookie);
         cookie = new String(_cookie);
-        gmon_version = stream.readInt();
-        spare = new byte[12];
+        gmonVersion = stream.readInt();
+        byte[] spare = new byte[12];
         stream.readFully(spare);
         return "gmon".equals(cookie); //$NON-NLS-1$
     }
@@ -181,7 +177,7 @@ public class GmonDecoder {
      * @param stream
      * @throws IOException
      */
-    public void ReadGmonContent(DataInput stream) throws IOException {
+    private void readGmonContent(DataInput stream) throws IOException {
         do {
             // int tag = -1;
             tag = -1;
@@ -203,13 +199,14 @@ public class GmonDecoder {
                 throw new IOException(Messages.GmonDecoder_BAD_TAG_ERROR);
             }
 
-            if (shouldDump == true)
+            if (shouldDump == true) {
                 dumpGmonResult(ps == null ? System.out : ps);
+            }
 
         } while (true);
 
         this.callGraph.populate(rootNode);
-        this.histo.AssignSamplesSymbol();
+        this.histo.assignSamplesSymbol();
 
     }
 
@@ -217,7 +214,7 @@ public class GmonDecoder {
 
         ps.println("-- gmon Results --"); //$NON-NLS-1$
         ps.println("cookie " + cookie); //$NON-NLS-1$
-        ps.println("gmon_version " + gmon_version); //$NON-NLS-1$
+        ps.println("gmon_version " + gmonVersion); //$NON-NLS-1$
         // ps.println("spare "+new String(spare));
         ps.println("tag " + tag); //$NON-NLS-1$
 
@@ -239,13 +236,6 @@ public class GmonDecoder {
     }
 
     /**
-     * @return the call graph decoder
-     */
-    public CallGraphDecoder getCallGraphDecoder() {
-        return callGraph;
-    }
-
-    /**
      * @return the program
      */
     public IBinaryObject getProgram() {
@@ -260,15 +250,6 @@ public class GmonDecoder {
     }
 
     /**
-     * Gets the version number parsed in the gmon file
-     *
-     * @return a gmon version
-     */
-    public int getGmonVersion() {
-        return gmon_version;
-    }
-
-    /**
      * @return the (last) parsed gmon file
      */
     public String getGmonFile() {
@@ -278,16 +259,17 @@ public class GmonDecoder {
     /**
      * @return the modification timestamp of (last) parsed gmon file
      */
-	public String getGmonFileTimeStamp() {
-		return DateFormat.getInstance().format(new Date(new File(file).lastModified()));
-	}
+    public String getGmonFileTimeStamp() {
+        return DateFormat.getInstance().format(new Date(new File(file).lastModified()));
+    }
 
     public String getFileName(ISymbol s) {
         String ret = filenames.get(s);
         if (ret == null) {
             ret = STSymbolManager.sharedInstance.getFilename(s, project);
-            if (ret == null)
+            if (ret == null) {
                 ret = "??"; //$NON-NLS-1$
+            }
             filenames.put(s, ret);
         }
         return ret;
