@@ -52,7 +52,10 @@ public class ShellConnectionSettingsProvider implements IDockerConnectionSetting
 				final Properties dockerSettings = new Properties();
 				dockerSettings.load(processInputStream);
 				IDockerConnectionSettings setting = createDockerConnectionSettings(dockerSettings);
-				return Arrays.asList(new IDockerConnectionSettings [] { setting });
+				if (setting == null) {
+					return null;
+				}
+				return Arrays.asList(new IDockerConnectionSettings[] { setting });
 			} else {
 				// log what happened if the process did not end as expected
 				// an exit value of 1 should indicate no connection found
