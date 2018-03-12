@@ -495,13 +495,11 @@ public abstract class AbstractTimeGraphView extends TmfView {
                 }
             }
             redraw();
-            for (ITimeGraphEntry child : entry.getChildren()) {
+            for (TimeGraphEntry child : entry.getChildren()) {
                 if (fMonitor.isCanceled()) {
                     return;
                 }
-                if (child instanceof TimeGraphEntry) {
-                    zoom((TimeGraphEntry) child, monitor);
-                }
+                zoom(child, monitor);
             }
         }
 
