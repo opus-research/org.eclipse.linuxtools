@@ -42,8 +42,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.spotify.docker.client.DockerCertificateException;
-
 /**
  * @author xcoulon
  *
@@ -210,7 +208,7 @@ public class NewDockerConnectionPage extends WizardPage {
 		try {
 			getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
 				@Override
-						public void run(final IProgressMonitor monitor) {
+				public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					monitor.beginTask("Retrieving Docker connection settings...", 1);
 					try {
 						final DockerConnection.Defaults defaults = new DockerConnection.Defaults();
@@ -360,7 +358,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onConnectionNameModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.connectionName = ((Text) evt.widget).getText();
 			}
@@ -369,7 +366,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onUnixSocketModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.unixSocketPath = ((Text) evt.widget).getText();
 			}
@@ -378,7 +374,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onTcpHostModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.tcpHost = ((Text) evt.widget).getText();
 			}
@@ -387,7 +382,6 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private ModifyListener onTcpCertPathModification() {
 		return new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				NewDockerConnectionPage.this.tcpCertPath = ((Text) evt.widget).getText();
 			}
@@ -408,7 +402,7 @@ public class NewDockerConnectionPage extends WizardPage {
 				try {
 					getWizard().getContainer().run(true, false, new IRunnableWithProgress() {
 						@Override
-						public void run(final IProgressMonitor monitor) {
+						public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							monitor.beginTask("Pinging Docker daemon...", IProgressMonitor.UNKNOWN);
 							try {
 								final DockerConnection dockerConnection = getDockerConnection();
