@@ -14,7 +14,6 @@
 package org.eclipse.linuxtools.internal.lttng2.control.ui.views.remote;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,7 +86,7 @@ public class CommandShell implements ICommandShell {
     }
 
     @Override
-    public ICommandResult executeCommand(final List<String> command, final IProgressMonitor monitor) throws ExecutionException {
+    public ICommandResult executeCommand(final String command, final IProgressMonitor monitor) throws ExecutionException {
         if (fConnection.isOpen()) {
             FutureTask<CommandResult> future = new FutureTask<>(new Callable<CommandResult>() {
                 @Override
@@ -136,21 +135,20 @@ public class CommandShell implements ICommandShell {
         throw new ExecutionException(Messages.TraceControl_ShellNotConnected, null);
     }
 
-    private IRemoteProcess startRemoteProcess(boolean wrapCommand, List<String> command) throws IOException {
+    private IRemoteProcess startRemoteProcess(boolean wrapCommand, String command) throws IOException {
+        String outputCommand = command;
         if (wrapCommand) {
             StringBuilder formattedCommand = new StringBuilder();
             formattedCommand.append(SHELL_ECHO_CMD).append(BEGIN_TAG);
             formattedCommand.append(CMD_SEPARATOR);
-            for(String cmd : command) {
-                formattedCommand.append(cmd).append(' ');
-            }
+            formattedCommand.append(command);
             formattedCommand.append(CMD_SEPARATOR);
             formattedCommand.append(SHELL_ECHO_CMD).append(END_TAG).append(CMD_RESULT_VAR);
-            String[] args = formattedCommand.toString().trim().split("\\s+"); //$NON-NLS-1$
-            return fConnection.getProcessBuilder(args).start();
+            outputCommand = formattedCommand.toString();
         }
 
-        return fConnection.getProcessBuilder(command).start();
+        String[] args = outputCommand.trim().split("\\s+"); //$NON-NLS-1$
+        return fConnection.getProcessBuilder(args).start();
     }
 
     private boolean isBackedByShell() throws InterruptedException {
