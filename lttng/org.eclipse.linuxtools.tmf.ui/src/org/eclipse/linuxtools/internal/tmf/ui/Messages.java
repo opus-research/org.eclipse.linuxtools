@@ -19,9 +19,6 @@ public class Messages extends NLS {
 
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.tmf.ui.messages"; //$NON-NLS-1$
 
-    public static String ManageCustomParsersDialog_ConflictMessage;
-    public static String ManageCustomParsersDialog_ConflictRenameButtonLabel;
-    public static String ManageCustomParsersDialog_ConflictSkipButtonLabel;
     public static String ManageCustomParsersDialog_DeleteButtonLabel;
     public static String ManageCustomParsersDialog_DeleteConfirmation;
     public static String ManageCustomParsersDialog_DeleteParserDialogHeader;
@@ -141,7 +138,6 @@ public class Messages extends NLS {
     public static String CustomTxtParserInputWizardPage_appendWith;
     public static String CustomTxtParserInputWizardPage_capturedGroup;
     public static String CustomTxtParserInputWizardPage_cardinality;
-    public static String CustomTxtParserInputWizardPage_category;
     public static String CustomTxtParserInputWizardPage_desccriptionEdit;
     public static String CustomTxtParserInputWizardPage_descriptionNew;
     public static String CustomTxtParserInputWizardPage_format;
@@ -182,10 +178,7 @@ public class Messages extends NLS {
     public static String CustomTxtParserOutputWizardPage_moveAfter;
     public static String CustomTxtParserOutputWizardPage_moveBefore;
     public static String CustomTxtParserOutputWizardPage_visible;
-    public static String CustomXmlParserInputWizardPage_emptyCategoryError;
     public static String CustomXmlParserInputWizardPage_emptyLogTypeError;
-    public static String CustomXmlParserInputWizardPage_invalidCategoryError;
-    public static String CustomXmlParserInputWizardPage_invalidLogTypeError;
     public static String CustomXmlParserInputWizardPage_duplicatelogTypeError;
     public static String CustomXmlParserInputWizardPage_noDocumentError;
     public static String CustomXmlParserInputWizardPage_missingLogEntryError;
@@ -212,7 +205,6 @@ public class Messages extends NLS {
     public static String CustomXmlParserInputWizardPage_append;
     public static String CustomXmlParserInputWizardPage_appendWith;
     public static String CustomXmlParserInputWizardPage_attibute;
-    public static String CustomXmlParserInputWizardPage_category;
     public static String CustomXmlParserInputWizardPage_descriptionEdit;
     public static String CustomXmlParserInputWizardPage_descriptionNew;
     public static String CustomXmlParserInputWizardPage_elementName;
