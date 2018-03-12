@@ -107,9 +107,7 @@ public class IPv4Packet extends Packet {
         fReservedFlag = isBitSet(storage, 7);
         fDontFragmentFlag = isBitSet(storage, 6);
         fMoreFragmentFlag = isBitSet(storage, 5);
-        int msb = ((storage & 0b00011111) << 8);
-        int lsb = ConversionHelper.unsignedByteToInt(packet.get());
-        fFragmentOffset = msb + lsb;
+        fFragmentOffset = ((storage & 0b00011111) << 8) | packet.get();
 
         fTimeToLive = ConversionHelper.unsignedByteToInt(packet.get());
         fIpDatagramProtocol = ConversionHelper.unsignedByteToInt(packet.get());
@@ -362,10 +360,7 @@ public class IPv4Packet extends Packet {
      * @return The source IP address, as a byte array in big-endian.
      */
     public byte[] getSourceIpAddress() {
-        @SuppressWarnings("null")
-        @NonNull
-        byte[] ip = Arrays.copyOf(fSourceIpAddress, fSourceIpAddress.length);
-        return ip;
+        return fSourceIpAddress;
     }
 
     /**
@@ -374,10 +369,7 @@ public class IPv4Packet extends Packet {
      * @return The destination IP address, as a byte array in big-endian.
      */
     public byte[] getDestinationIpAddress() {
-        @SuppressWarnings("null")
-        @NonNull
-        byte[] ip = Arrays.copyOf(fDestinationIpAddress, fDestinationIpAddress.length);
-        return ip;
+        return fDestinationIpAddress;
     }
 
     /**
