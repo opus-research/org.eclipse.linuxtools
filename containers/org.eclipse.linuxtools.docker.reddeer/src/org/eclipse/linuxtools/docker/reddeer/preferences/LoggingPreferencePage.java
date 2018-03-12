@@ -10,9 +10,8 @@
  ******************************************************************************/
 package org.eclipse.linuxtools.docker.reddeer.preferences;
 
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.jface.preference.PreferencePage;
-import org.eclipse.reddeer.swt.impl.button.CheckBox;
+import org.jboss.reddeer.jface.preference.PreferencePage;
+import org.jboss.reddeer.swt.impl.button.CheckBox;
 
 /**
  * 
@@ -22,15 +21,10 @@ import org.eclipse.reddeer.swt.impl.button.CheckBox;
 
 public class LoggingPreferencePage extends PreferencePage {
 
-	public LoggingPreferencePage(ReferencedComposite referenced) {
-		super(referenced, "Docker", "Docker Machine");
+	public LoggingPreferencePage() {
+		super("Docker", "Docker Machine");
 	}
 
-	// This constructor no longer works
-	public LoggingPreferencePage() {
-		super(null, "Docker", "Docker Machine");
-	}
-	
 	public void setAutomaticallyLog(boolean toggle) {
 		CheckBox cb = new CheckBox("Automatically log when Container starts");
 		cb.toggle(toggle);

@@ -15,23 +15,24 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.linuxtools.docker.reddeer.ui.AbstractDockerExplorerItem;
-import org.eclipse.reddeer.common.wait.TimePeriod;
-import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.jface.exception.JFaceLayerException;
-import org.eclipse.reddeer.swt.api.Combo;
-import org.eclipse.reddeer.swt.api.Shell;
-import org.eclipse.reddeer.swt.api.TreeItem;
-import org.eclipse.reddeer.swt.condition.ControlIsEnabled;
-import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.FinishButton;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
-import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
-import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
-import org.eclipse.reddeer.swt.impl.text.LabeledText;
-import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.jboss.reddeer.common.wait.TimePeriod;
+import org.jboss.reddeer.common.wait.WaitUntil;
+import org.jboss.reddeer.common.wait.WaitWhile;
+import org.jboss.reddeer.core.condition.JobIsRunning;
+import org.jboss.reddeer.core.condition.ShellWithTextIsAvailable;
+import org.jboss.reddeer.jface.exception.JFaceLayerException;
+import org.jboss.reddeer.swt.api.Combo;
+import org.jboss.reddeer.swt.api.Shell;
+import org.jboss.reddeer.swt.api.TreeItem;
+import org.jboss.reddeer.swt.condition.ShellIsAvailable;
+import org.jboss.reddeer.swt.condition.WidgetIsEnabled;
+import org.jboss.reddeer.swt.impl.button.FinishButton;
+import org.jboss.reddeer.swt.impl.button.PushButton;
+import org.jboss.reddeer.swt.impl.combo.DefaultCombo;
+import org.jboss.reddeer.swt.impl.menu.ContextMenu;
+import org.jboss.reddeer.swt.impl.shell.DefaultShell;
+import org.jboss.reddeer.swt.impl.text.LabeledText;
+import org.jboss.reddeer.swt.impl.toolbar.DefaultToolItem;
 
 /**
  * 
@@ -101,7 +102,7 @@ public class DockerConnection extends AbstractDockerExplorerItem {
 	 */
 	public void refreshImages() {
 		treeViewerHandler.getTreeItem(item, "Images").select();
-		new ContextMenu().getItem("Refresh").select();
+		new ContextMenu("Refresh").select();
 		new WaitWhile(new JobIsRunning());
 	}
 
@@ -110,7 +111,7 @@ public class DockerConnection extends AbstractDockerExplorerItem {
 	 */
 	public void refreshContainers() {
 		treeViewerHandler.getTreeItem(item, "Containers").select();
-		new ContextMenu().getItem("Refresh").select();
+		new ContextMenu("Refresh").select();
 		new WaitWhile(new JobIsRunning());
 	}
 
@@ -144,9 +145,9 @@ public class DockerConnection extends AbstractDockerExplorerItem {
 			refreshImages();
 
 			treeViewerHandler.getTreeItem(item, "Images").select();
-			new ContextMenu().getItem("Pull...").select();
+			new ContextMenu("Pull...").select();
 
-			new WaitUntil(new ShellIsAvailable("Pull Image"), TimePeriod.DEFAULT);
+			new WaitUntil(new ShellWithTextIsAvailable("Pull Image"), TimePeriod.NORMAL);
 			Shell pullShell = new DefaultShell("Pull Image");
 
 			// select register
@@ -158,8 +159,8 @@ public class DockerConnection extends AbstractDockerExplorerItem {
 			new LabeledText(IMAGE_NAME_LABEL_DIALOG).setFocus();
 			new LabeledText(IMAGE_NAME_LABEL_DIALOG).setText(imageTag == null ? imageName : imageName + ":" + imageTag);
 
-			new WaitUntil(new ControlIsEnabled(new FinishButton()));
-			new FinishButton(pullShell).click();
+			new WaitUntil(new WidgetIsEnabled(new FinishButton()));
+			new FinishButton().click();
 
 			new WaitWhile(new ShellIsAvailable(pullShell));
 			new WaitWhile(new JobIsRunning(), TimePeriod.VERY_LONG);
@@ -170,9 +171,9 @@ public class DockerConnection extends AbstractDockerExplorerItem {
 		refreshImages();
 
 		treeViewerHandler.getTreeItem(item, "Images").select();
-		new ContextMenu().getItem("Pull...").select();
+		new ContextMenu("Pull...").select();
 
-		new WaitUntil(new ShellIsAvailable("Pull Image"), TimePeriod.DEFAULT);
+		new WaitUntil(new ShellWithTextIsAvailable("Pull Image"), TimePeriod.NORMAL);
 
 		// select register
 		if (dockerRegister != null) {
