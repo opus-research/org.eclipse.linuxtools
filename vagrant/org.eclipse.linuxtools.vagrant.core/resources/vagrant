@@ -1,0 +1,2 @@
+#!/bin/sh
+exec pkexec /usr/bin/vagrant ${1+"$@"}
