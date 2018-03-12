@@ -102,6 +102,8 @@
 
     <module>org.eclipse.linuxtools.pcap.core</module>
     <module>org.eclipse.linuxtools.pcap.core.tests</module>
+    <module>org.eclipse.linuxtools.tmf.pcap.core</module>
+    <module>org.eclipse.linuxtools.tmf.pcap.ui</module>
 
     <module>org.eclipse.linuxtools.statesystem.core</module>
     <module>org.eclipse.linuxtools.statesystem.core.tests</module>
