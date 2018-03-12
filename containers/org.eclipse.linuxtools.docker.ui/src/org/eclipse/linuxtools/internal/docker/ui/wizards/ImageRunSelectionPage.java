@@ -174,6 +174,8 @@ public class ImageRunSelectionPage extends WizardPage {
 		final ImageSelectionValidator imageSelectionValidator = new ImageSelectionValidator(
 				imageSelectionObservable);
 		dbc.addValidationStatusProvider(imageSelectionValidator);
+		imageSelectionObservable
+				.addValueChangeListener(onImageSelectionChange());
 		//
 		setControl(container);
 	}
