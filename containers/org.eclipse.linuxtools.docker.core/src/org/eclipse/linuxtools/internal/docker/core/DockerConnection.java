@@ -39,9 +39,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -100,6 +97,9 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
+
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -1503,6 +1503,7 @@ public class DockerConnection implements IDockerConnection {
 							buff = new byte[1024];
 						}
 					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 			});
@@ -1568,6 +1569,7 @@ public class DockerConnection implements IDockerConnection {
 							}
 						}
 					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 			});
@@ -1640,6 +1642,31 @@ public class DockerConnection implements IDockerConnection {
 	@Override
 	public String getTcpCertPath() {
 		return tcpCertPath;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DockerConnection other = (DockerConnection) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 
 }
