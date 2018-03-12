@@ -53,6 +53,7 @@ public class FullTraceHistogram extends Histogram {
     public FullTraceHistogram(HistogramView view, Composite parent) {
         super(view, parent);
         fZoom = new HistogramZoom(this, getStartTime(), getTimeLimit());
+        addMouseWheelListener(fZoom);
     }
 
     @Override

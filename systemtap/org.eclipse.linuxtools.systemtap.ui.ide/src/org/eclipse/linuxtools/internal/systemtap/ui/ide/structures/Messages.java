@@ -17,9 +17,6 @@ import org.eclipse.osgi.util.NLS;
  */
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.eclipse.linuxtools.internal.systemtap.ui.ide.structures.messages"; //$NON-NLS-1$
-    public static String SharedParser_name;
-    public static String FunctionParser_name;
-    public static String ProbeParser_name;
     public static String ProbeParser_errorInitializingStaticProbes;
     public static String ProbeParser_staticProbes;
     public static String ProbeParser_aliasProbes;
@@ -29,6 +26,7 @@ public class Messages extends NLS {
     public static String TapsetParser_ErrorRunningSystemtap;
     public static String TapsetParser_RemoteCredentialErrorTitle;
     public static String TapsetParser_RemoteCredentialErrorMessage;
+    public static String SharedParser_NoOutput;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
