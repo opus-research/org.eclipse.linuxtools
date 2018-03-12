@@ -24,11 +24,11 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.linuxtools.internal.vagrant.core.VagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBox;
 import org.eclipse.linuxtools.vagrant.core.IVagrantBoxListener;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.IVagrantVM;
-import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -46,7 +46,7 @@ import org.eclipse.ui.part.ViewPart;
 
 public class VagrantBoxView extends ViewPart implements IVagrantBoxListener {
 
-	public static final String VIEW_ID = "org.eclipse.linuxtools.vagrant.ui.vagrantBoxView"; //$NON-NLS-1$
+	public static final String VIEW_ID = "org.eclipse.linuxtools.vagrant.ui.vagrantBoxView";
 
 	private final static String DaemonMissing = "ViewerDaemonMissing.msg"; //$NON-NLS-1$
 
@@ -150,7 +150,7 @@ public class VagrantBoxView extends ViewPart implements IVagrantBoxListener {
 		viewer.setComparator(comparator);
 		// apply search filter
 		this.viewer.addFilter(getImagesFilter());
-		setConnection(VagrantService.getInstance());
+		setConnection(VagrantConnection.getInstance());
 		connection.addBoxListener(this);
 		// get the current selection in the tableviewer
 		getSite().setSelectionProvider(viewer);
@@ -230,7 +230,7 @@ public class VagrantBoxView extends ViewPart implements IVagrantBoxListener {
 			form.setText(connection.getName());
 		} else {
 			this.form.setText(DVMessages.getFormattedString(
-					"VagrantBoxViewTitle.all.msg", connection.getName(), //$NON-NLS-1$
+					"VagrantBoxViewTitle.all.msg", connection.getName(),
 					Integer.toString(connection.getBoxes().size())));
 		}
 	}
