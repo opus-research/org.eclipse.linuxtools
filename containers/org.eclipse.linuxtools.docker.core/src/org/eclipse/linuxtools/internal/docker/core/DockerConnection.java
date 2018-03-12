@@ -40,6 +40,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
@@ -98,9 +101,6 @@ import com.spotify.docker.client.messages.ImageSearchResult;
 import com.spotify.docker.client.messages.Info;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.Version;
-
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * A connection to a Docker daemon. The connection may rely on Unix Socket or TCP connection (using the REST API). 
@@ -294,7 +294,10 @@ public class DockerConnection implements IDockerConnection {
 				final String scriptName) {
 			final File script = Activator.getDefault().getBundle()
 					.getDataFile(scriptName);
-			if (script != null && !script.exists()) {
+			// if the script file does not exist or is outdated.
+			if (script != null
+					&& (!script.exists() || script.lastModified() < Activator
+							.getDefault().getBundle().getLastModified())) {
 				try (final FileOutputStream output = new FileOutputStream(
 						script);
 						final InputStream is = DockerConnection.class
@@ -707,51 +710,23 @@ public class DockerConnection implements IDockerConnection {
 
 	@Override
 	public List<IDockerContainer> getContainers(final boolean force) {
+		List<IDockerContainer> latestContainers;
+		synchronized (containerLock) {
+			latestContainers = this.containers;
+		}
 		if (!isContainersLoaded() || force) {
-			synchronized (clientLock) {
-				try {
-					if (this.client != null) {
-						final List<Container> dockerContainers = client
-								.listContainers(DockerClient.ListContainersParam
-										.allContainers());
-						this.containers = new ArrayList<>();
-						// We have a list of containers. Now, we translate them
-						// to our own
-						// core format in case we decide to change the
-						// underlying engine
-						// in the future.
-						for (Container container : dockerContainers) {
-							containers
-									.add(new DockerContainer(this, container));
-							// For containers that have exited, make sure we
-							// aren't tracking
-							// them with a logging thread.
-							if (container.status()
-									.startsWith(Messages.Exited_specifier)
-									&& loggingThreads
-											.containsKey(container.id())) {
-								loggingThreads.get(container.id())
-										.requestStop();
-								loggingThreads.remove(container.id());
-							}
-						}
-						notifyContainerListeners(this.containers);
-					}
-				} catch (com.spotify.docker.client.DockerException
-						| InterruptedException e) {
+			try {
+				latestContainers = listContainers();
+			} catch (DockerException e) {
+				synchronized (containerLock) {
 					this.containers = Collections.emptyList();
-					Activator
-							.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-									NLS.bind(
-											Messages.List_Docker_Containers_Failure,
-											this.getName()),
-									e));
-				} finally {
-					this.containersLoaded = true;
 				}
+				Activator.log(e);
+			} finally {
+				this.containersLoaded = true;
 			}
 		}
-		return this.containers;
+		return latestContainers;
 	}
 
 	@Override
@@ -822,7 +797,7 @@ public class DockerConnection implements IDockerConnection {
 							outputStream.write(bytes);
 					}
 				} while (follow && !stop);
-				getContainers(true);
+				listContainers();
 			} catch (com.spotify.docker.client.DockerRequestException e) {
 				Activator.logErrorMessage(e.message());
 				throw new InterruptedException();
@@ -838,6 +813,50 @@ public class DockerConnection implements IDockerConnection {
 					outputStream.close();
 			}
 		}
+	}
+
+	private List<IDockerContainer> listContainers() throws DockerException {
+		final List<IDockerContainer> dclist = new ArrayList<>();
+		synchronized (containerLock) {
+			List<Container> list = null;
+			try {
+				synchronized (clientLock) {
+					// Check that client is not null as this connection may have
+					// been closed but there is an async request to update the
+					// containers list left in the queue
+					if (client == null)
+						return dclist;
+					list = client.listContainers(
+							DockerClient.ListContainersParam.allContainers());
+				}
+			} catch (com.spotify.docker.client.DockerException
+					| InterruptedException e) {
+				throw new DockerException(
+						NLS.bind(
+						Messages.List_Docker_Containers_Failure,
+						this.getName()), e);
+			}
+
+			// We have a list of containers. Now, we translate them to our own
+			// core format in case we decide to change the underlying engine
+			// in the future.
+			for (Container c : list) {
+				// For containers that have exited, make sure we aren't tracking
+				// them with a logging thread.
+				if (c.status().startsWith(Messages.Exited_specifier)) {
+					if (loggingThreads.containsKey(c.id())) {
+						loggingThreads.get(c.id()).requestStop();
+						loggingThreads.remove(c.id());
+					}
+				}
+				dclist.add(new DockerContainer(this, c));
+			}
+			containers = dclist;
+		}
+		// perform notification outside of containerLock so we don't have a View
+		// causing a deadlock
+		notifyContainerListeners(dclist);
+		return dclist;
 	}
 
 	@Override
@@ -993,6 +1012,20 @@ public class DockerConnection implements IDockerConnection {
 	}
 
 	@Override
+	public boolean hasImage(final String repository, final String tag) {
+		for (IDockerImage image : getImages()) {
+			if (image.repo().equals(repository)) {
+				for (String imageTag : image.tags()) {
+					if (imageTag.startsWith(tag)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public void pullImage(final String id, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
 		try {
@@ -1020,8 +1053,6 @@ public class DockerConnection implements IDockerConnection {
 		}
 	}
 	
-	
-
 	@Override
 	public void pushImage(final String name, final IDockerProgressHandler handler)
 			throws DockerException, InterruptedException {
@@ -1229,7 +1260,7 @@ public class DockerConnection implements IDockerConnection {
 					containerName);
 			final String id = creation.id();
 			// force a refresh of the current containers to include the new one
-			getContainers(true);
+			listContainers();
 			return id;
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
@@ -1253,7 +1284,7 @@ public class DockerConnection implements IDockerConnection {
 				}
 			}
 			// list of containers needs to be updated once the given container is stopped, to reflect it new state.
-			getContainers(true);
+			listContainers();
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1275,7 +1306,7 @@ public class DockerConnection implements IDockerConnection {
 					loggingThreads.remove(id);
 				}
 			}
-			getContainers(true); // update container list
+			listContainers(); // update container list
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1291,7 +1322,7 @@ public class DockerConnection implements IDockerConnection {
 		try {
 			// pause container
 			client.pauseContainer(id);
-			getContainers(true); // update container list
+			listContainers(); // update container list
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1325,7 +1356,7 @@ public class DockerConnection implements IDockerConnection {
 					}
 				}
 			}
-			getContainers(true); // update container list
+			listContainers(); // update container list
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1341,7 +1372,7 @@ public class DockerConnection implements IDockerConnection {
 		try {
 			// kill container
 			client.removeContainer(id);
-			getContainers(true); // update container list
+			listContainers(); // update container list
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1387,7 +1418,7 @@ public class DockerConnection implements IDockerConnection {
 				}
 			}
 			// list of containers needs to be refreshed once the container started, to reflect it new state.
-			getContainers(true);
+			listContainers(); 
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1423,7 +1454,7 @@ public class DockerConnection implements IDockerConnection {
 				}
 			}
 			// update container list
-			getContainers(true);
+			listContainers();
 		} catch (ContainerNotFoundException e) {
 			throw new DockerContainerNotFoundException(e);
 		} catch (com.spotify.docker.client.DockerRequestException e) {
@@ -1513,7 +1544,7 @@ public class DockerConnection implements IDockerConnection {
 			DockerClient copy = getClientCopy();
 			ContainerExit x = copy.waitContainer(id);
 			DockerContainerExit exit = new DockerContainerExit(x.statusCode());
-			getContainers(true); // update container list
+			listContainers(); // update container list
 			copy.close(); // dispose of copy now we are finished
 			return exit;
 		} catch (ContainerNotFoundException e) {
