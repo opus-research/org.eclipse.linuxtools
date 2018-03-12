@@ -33,6 +33,8 @@ import com.google.common.math.DoubleMath;
  */
 public class PacketStream {
 
+    private static final double SECOND_TO_NANOSECOND = 1000000000.0;
+    private static final double DELTA = 0.000000001;
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private final Protocol fProtocol;
     private final int fId;
@@ -91,7 +93,6 @@ public class PacketStream {
             fNbPacketsBtoA++;
             fNbBytesBtoA += packet.getOriginalLength();
         } else {
-            // This exception will be caught at a higher level.
             throw new IllegalStateException();
         }
 
@@ -240,7 +241,7 @@ public class PacketStream {
      * @return The duration of this stream.
      */
     public synchronized double getDuration() {
-        return (fEndTime - fStartTime) / 1000000000.0;
+        return (fEndTime - fStartTime) / SECOND_TO_NANOSECOND;
     }
 
     /**
@@ -250,7 +251,7 @@ public class PacketStream {
      */
     public synchronized double getBPSAtoB() {
 
-        if (DoubleMath.fuzzyEquals(getDuration(), 0, Double.MIN_VALUE)) {
+        if (DoubleMath.fuzzyEquals(getDuration(), 0, DELTA)) {
             return 0;
         }
         return fNbBytesAtoB / getDuration();
@@ -262,7 +263,7 @@ public class PacketStream {
      * @return the average byte per second from B to A.
      */
     public synchronized double getBPSBtoA() {
-        if (DoubleMath.fuzzyEquals(getDuration(), 0, Double.MIN_VALUE)) {
+        if (DoubleMath.fuzzyEquals(getDuration(), 0, DELTA)) {
             return 0;
         }
         return fNbBytesBtoA / getDuration();
