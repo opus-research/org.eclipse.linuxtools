@@ -94,7 +94,7 @@ public class DockerConnectionManager {
 	/**
 	 * @return an unmodifiable and non-null array of {@link IDockerConnection}
 	 */
-	public IDockerConnection[] getConnections() {
+	public  IDockerConnection[] getConnections() {
 		if (this.connections == null) {
 			return new IDockerConnection[0];
 		}
@@ -165,18 +165,13 @@ public class DockerConnectionManager {
 	 */
 	public List<String> getConnectionNames() {
 		return Collections.unmodifiableList(getAllConnections().stream()
-				.map(c -> c.getName())
-				// making sure that no 'null' name is returned in the list of
-				// connection names.
-				.filter(n -> n != null)
-				.collect(Collectors.toList()));
+				.map(c -> c.getName()).collect(Collectors.toList()));
 	}
 
 	public IDockerConnection findConnection(final String name) {
 		if (name != null) {
 			for (IDockerConnection connection : connections) {
-				if (connection.getName() != null
-						&& connection.getName().equals(name))
+				if (connection.getName().equals(name))
 					return connection;
 			}
 		}
