@@ -23,27 +23,27 @@ public interface IDockerNetworkContainer {
 	 * 
 	 * @return endpoint id
 	 */
-	String endpointId();
+	public String endpointId();
 
 	/**
 	 * Get mac address
 	 * 
 	 * @return mac address
 	 */
-	String macAddress();
+	public String macAddress();
 
 	/**
 	 * Get ipv4 address
 	 * 
 	 * @return ipv4 address
 	 */
-	String ipv4address();
+	public String ipv4address();
 
 	/**
 	 * Get ipv6 address
 	 * 
 	 * @return ipv6 address
 	 */
-	String ipv6address();
+	public String ipv6address();
 
 }

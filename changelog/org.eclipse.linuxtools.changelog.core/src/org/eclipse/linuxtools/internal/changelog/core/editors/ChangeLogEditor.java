@@ -26,7 +26,6 @@ import org.eclipse.linuxtools.changelog.core.IEditorChangeLogContrib;
 import org.eclipse.linuxtools.internal.changelog.core.ChangelogPlugin;
 import org.eclipse.linuxtools.internal.changelog.core.Messages;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
 
 /**
@@ -52,7 +51,7 @@ public class ChangeLogEditor extends TextEditor {
                             new Exception(Messages.getString("ChangeLogEditor.ErrConfiguration")))); // $NON-NLS-1$
         }
 
-        setDocumentProvider(new TextFileDocumentProvider());
+        setDocumentProvider(new ChangeLogDocumentProvider());
 
     }
 

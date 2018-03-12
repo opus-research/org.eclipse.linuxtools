@@ -20,6 +20,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.core.IRegistry;
+import org.eclipse.linuxtools.internal.docker.core.RegistryAccountInfo;
 import org.eclipse.linuxtools.internal.docker.core.RegistryAccountManager;
 import org.eclipse.linuxtools.internal.docker.core.RegistryInfo;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
@@ -79,17 +80,17 @@ public class ImagePushPage extends WizardPage {
 		}
 		if (accountCombo != null) {
 			String account = accountCombo.getText();
-			final String pattern = "(.*)@(.*)"; //$NON-NLS-1$
+			final String pattern = "(.*)@(.*) \\( (.*) \\)"; //$NON-NLS-1$
 			Matcher m = Pattern.compile(pattern).matcher(account);
 			if (m.matches()) {
-				info = RegistryAccountManager.getInstance().getAccount(m.group(2), m.group(1));
+				info = new RegistryAccountInfo(m.group(2), m.group(1), m.group(3), null);
 			} else {
 				info = new RegistryInfo(account);
 			}
 		} else {
 			complete = false;
 			error = true;
-			setErrorMessage(WizardMessages.getString("ImagePushPage.empty.registry.account")); //$NON-NLS-1$
+			setErrorMessage("A registry is necessary to push.");
 		}
 
 		if (name.length() == 0) {
@@ -132,17 +133,19 @@ public class ImagePushPage extends WizardPage {
 		}
 
 		final Label accountLabel = new Label(container, SWT.NULL);
-		accountLabel.setText(WizardMessages.getString("ImagePushPage.registry.account.label")); //$NON-NLS-1$
+		accountLabel.setText("Registry Account");
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
 				.grab(false, false).applyTo(accountLabel);
 
 		accountCombo = new Combo(container, SWT.DROP_DOWN);
 		accountCombo.addModifyListener(Listener);
-		accountCombo.setToolTipText(WizardMessages.getString("ImagePushPage.registry.account.desc")); //$NON-NLS-1$
+		accountCombo.setToolTipText("Select a specific registry account to use");
 		List<String> items = RegistryAccountManager.getInstance()
 				.getAccounts()
 				.stream()
-				.map(e -> e.getUsername() + "@" + e.getServerAddress()) //$NON-NLS-1$
+				.map(e -> e.getUsername() + "@" + e.getServerAddress() //$NON-NLS-1$
+						+ (e.getEmail().isEmpty() ? "" //$NON-NLS-1$
+								: " ( " + e.getEmail() + " )")) //$NON-NLS-1$ //$NON-NLS-2$
 				.collect(Collectors.toList());
 		accountCombo.setItems(items.toArray(new String[0]));
 		if (items.size() > 0) {

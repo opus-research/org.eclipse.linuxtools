@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Red Hat.
+ * Copyright (c) 2016 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,17 +10,42 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.docker.core;
 
-public interface IDockerConnectionManagerListener2
-		extends IDockerConnectionManagerListener {
+/**
+ * Docker Authorization Config
+ * 
+ * Used to authorize actions for a registry
+ * 
+ * @author jjohnstn
+ *
+ */
+public interface IDockerAuthConfig {
 
 	/**
-	 * Notifies the listener that the given {@link IDockerConnection} changed.
+	 * Get username
 	 * 
-	 * @param connection
-	 *            the connection that changed
-	 * @param type
-	 *            the type of change
+	 * @return user name
 	 */
-	public void changeEvent(IDockerConnection connection, int type);
+	public char[] username();
+
+	/**
+	 * Get password
+	 * 
+	 * @return password
+	 */
+	public char[] password();
+
+	/**
+	 * Get email
+	 * 
+	 * @return email
+	 */
+	public char[] email();
+
+	/**
+	 * Get server address
+	 * 
+	 * @return server address
+	 */
+	public char[] serverAddress();
 
 }

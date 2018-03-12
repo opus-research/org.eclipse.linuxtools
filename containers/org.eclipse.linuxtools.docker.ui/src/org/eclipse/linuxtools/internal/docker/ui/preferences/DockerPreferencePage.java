@@ -65,6 +65,11 @@ public class DockerPreferencePage extends PreferencePage implements
 	}
 	
 	@Override
+	protected void performDefaults() {
+		super.performDefaults();
+	}
+
+	@Override
 	protected Control createContents(final Composite parent) {
 		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(container);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,15 +14,15 @@ import java.util.Date;
 
 public interface IDockerContainerState {
 
-	Boolean running();
+	public Boolean running();
 
-	Integer pid();
+	public Integer pid();
 
-	Integer exitCode();
+	public Integer exitCode();
 
-	Date startDate();
+	public Date startDate();
 
-	Date finishDate();
+	public Date finishDate();
 
 	Boolean restarting();
 
