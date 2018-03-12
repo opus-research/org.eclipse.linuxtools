@@ -14,9 +14,8 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.trace;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ListIterator;
+import java.util.Vector;
 
 import org.eclipse.linuxtools.ctf.core.trace.CTFReaderException;
 
@@ -35,8 +34,7 @@ public class StreamInputPacketIndex {
      * Entries of the index. They are sorted by increasing begin timestamp.
      * index builder.
      */
-    private final List<StreamInputPacketIndexEntry> fEntries = new ArrayList<>();
-    private transient StreamInputPacketIndexEntry fLastElement;
+    private final Vector<StreamInputPacketIndexEntry> entries = new Vector<>();
 
     // ------------------------------------------------------------------------
     // Getters/Setters/Predicates
@@ -47,8 +45,8 @@ public class StreamInputPacketIndex {
      *
      * @return the entries
      */
-    public List<StreamInputPacketIndexEntry> getEntries() {
-        return fEntries;
+    public Vector<StreamInputPacketIndexEntry> getEntries() {
+        return this.entries;
     }
 
     /**
@@ -57,7 +55,7 @@ public class StreamInputPacketIndex {
      * @return an iterator to the entries
      */
     public ListIterator<StreamInputPacketIndexEntry> listIterator() {
-        return fEntries.listIterator();
+        return this.entries.listIterator();
     }
 
     /**
@@ -68,7 +66,7 @@ public class StreamInputPacketIndex {
      * @return the iterator
      */
     public ListIterator<StreamInputPacketIndexEntry> listIterator(int n) {
-        return fEntries.listIterator(n);
+        return this.entries.listIterator(n);
     }
 
     // ------------------------------------------------------------------------
@@ -92,23 +90,19 @@ public class StreamInputPacketIndex {
             throw new CTFReaderException("Packet begin timestamp is after end timestamp"); //$NON-NLS-1$
         }
 
-        /*
-         * Validate entries are inserted in monotonic increasing timestamp
-         * order.
-         */
-        if (!fEntries.isEmpty()) {
-            if (entry.getTimestampBegin() < fLastElement.getTimestampBegin()) {
+        /* Validate entries are inserted in monotonic increasing timestamp order. */
+        if (!this.entries.isEmpty()) {
+            if (entry.getTimestampBegin() < this.entries.lastElement()
+                    .getTimestampBegin()) {
                 throw new CTFReaderException("Packets begin timestamp decreasing"); //$NON-NLS-1$
             }
         }
-        fEntries.add(entry);
-        fLastElement = fEntries.get(fEntries.size() - 1);
+        this.entries.add(entry);
     }
 
     /**
-     * Returns the first PacketIndexEntry that could include the timestamp, that
-     * is the last packet with a begin timestamp smaller than the given
-     * timestamp.
+     * Returns the first PacketIndexEntry that could include the timestamp,
+     * that is the last packet with a begin timestamp smaller than the given timestamp.
      *
      * @param timestamp
      *            The timestamp to look for.
@@ -119,7 +113,7 @@ public class StreamInputPacketIndex {
         /*
          * Start with min and max covering all the elements.
          */
-        int max = fEntries.size() - 1;
+        int max = this.entries.size() - 1;
         int min = 0;
 
         int guessI;
@@ -128,8 +122,8 @@ public class StreamInputPacketIndex {
         /*
          * If the index is empty, return the iterator at the very beginning.
          */
-        if (getEntries().isEmpty()) {
-            return getEntries().listIterator();
+        if (this.getEntries().isEmpty()) {
+            return this.getEntries().listIterator();
         }
 
         if (timestamp < 0) {
@@ -142,7 +136,7 @@ public class StreamInputPacketIndex {
              * Guess in the middle of min and max.
              */
             guessI = min + ((max - min) / 2);
-            guessEntry = fEntries.get(guessI);
+            guessEntry = this.entries.get(guessI);
 
             /*
              * If we reached the point where we focus on a single packet, our
@@ -154,39 +148,19 @@ public class StreamInputPacketIndex {
 
             if (timestamp <= guessEntry.getTimestampEnd()) {
                 /*
-                 * If the timestamp is lower or equal to the end of the guess
-                 * packet, then the guess packet becomes the new inclusive max.
+                 * If the timestamp is lower or equal to the end of the guess packet,
+                 * then the guess packet becomes the new inclusive max.
                  */
                 max = guessI;
             } else {
                 /*
-                 * If the timestamp is greater than the end of the guess packet,
-                 * then the new inclusive min is the packet after the guess
-                 * packet.
+                 * If the timestamp is greater than the end of the guess packet, then
+                 * the new inclusive min is the packet after the guess packet.
                  */
                 min = guessI + 1;
             }
         }
 
-        return fEntries.listIterator(guessI);
-    }
-
-    /**
-     * Get the last element of the index
-     *
-     * @return the last element in the index
-     */
-    public StreamInputPacketIndexEntry lastElement() {
-        return fLastElement;
-    }
-
-    /**
-     * isEmpty
-     *
-     * @return true if this index contains no elements.
-     *
-     */
-    public boolean isEmpty() {
-        return fEntries.isEmpty();
+        return this.entries.listIterator(guessI);
     }
 }
