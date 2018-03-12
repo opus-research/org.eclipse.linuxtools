@@ -759,8 +759,7 @@ public class ImageRunSelectionPage extends WizardPage {
 								.getSelectedConnection(),
 						ImageRunSelectionPage.this.model
 								.getSelectedImageName(),
-						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY,
-								true));
+						new RegistryInfo(AbstractRegistry.DOCKERHUB_REGISTRY));
 				final boolean completed = CommandUtils
 						.openWizard(imageSearchWizard, getShell());
 				if (completed) {

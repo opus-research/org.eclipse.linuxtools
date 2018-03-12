@@ -171,8 +171,6 @@ public abstract class BasePropertySection extends AbstractPropertySection {
 	@Override
 	public void dispose() {
 		super.dispose();
-		if (this.clipboard != null) {
-			this.clipboard.dispose();
-		}
+		this.clipboard.dispose();
 	}
 }

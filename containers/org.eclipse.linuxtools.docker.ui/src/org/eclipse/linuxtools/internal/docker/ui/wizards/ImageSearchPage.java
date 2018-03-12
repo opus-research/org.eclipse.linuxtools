@@ -13,6 +13,7 @@ package org.eclipse.linuxtools.internal.docker.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -293,11 +294,8 @@ public class ImageSearchPage extends WizardPage {
 							 * results over HTTP so if we're dealing with
 							 * DockerHub, we use the API.
 							 */
-							// TODO: remove cast once AbstractRegistry methods
-							// are
-							// part of the IRegistry interface
-							if (((AbstractRegistry) registry)
-									.isDockerHubRegistry()) {
+							List<String> dockerHubAliases = Arrays.asList(AbstractRegistry.DOCKERHUB_REGISTRY_ALIASES);
+							if (dockerHubAliases.stream().anyMatch(a -> registry.getServerAddress().contains(a))) {
 								searchResults = ImageSearchPage.this.model
 										.getSelectedConnection().searchImages(term);
 							} else {
