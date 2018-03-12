@@ -66,6 +66,7 @@ public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
      *
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void canAddChangeLogEntryUsingShortCutIfSourceIsActive() throws Exception {
         // Add a Java source file
@@ -96,12 +97,12 @@ public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
         // Open JavaTest.java in an editor
         projectExplorerViewTree.expandNode(PROJECT_NAME).expandNode("src").expandNode("JavaTest.java").doubleClick();
 
-        Matcher<IEditorReference> editorMatcher = allOf(
+        Matcher<?> editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("JavaTest.java")
                 );
         // Wait for Java editor to open
-        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
         SWTBotEditor swtBoteditor = bot.editorByTitle("JavaTest.java");
         SWTBotEclipseEditor eclipseEditor = swtBoteditor.toTextEditor();
         eclipseEditor.selectLine(getLineOfOffsetMarker(sourceCode));
@@ -113,13 +114,13 @@ public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("ChangeLog")
                 );
-        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
         swtBoteditor = bot.activeEditor();
         swtBoteditor.save(); // save to avoid "save changes"-pop-up
         assertEquals("ChangeLog", swtBoteditor.getTitle());
         eclipseEditor = swtBoteditor.toTextEditor();
         // make sure expected entry has been added.
-		assertTrue(eclipseEditor.getText().contains("* src/JavaTest.java (main):"));
+        assertTrue(eclipseEditor.getText().contains("\t* src/JavaTest.java (main):"));
     }
 
     /**
@@ -129,6 +130,7 @@ public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
      *
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void canAddChangeLogEntryUsingEditMenuIfSourceIsActive() throws Exception {
         // Add a Java source file
@@ -160,30 +162,30 @@ public class AddChangelogEntrySWTBotTest extends AbstractSWTBotTest {
         SWTBotTreeItem projectItem = projectExplorerViewTree.expandNode(PROJECT_NAME);
         projectItem.expandNode("src").expandNode("JavaTest.java").doubleClick();
 
-        Matcher<IEditorReference> editorMatcher = allOf(
+        Matcher<?> editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("JavaTest.java")
                 );
         // Wait for editor to open
-        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
         SWTBotEditor swtBoteditor = bot.editorByTitle("JavaTest.java");
         SWTBotEclipseEditor eclipseEditor = swtBoteditor.toTextEditor();
         eclipseEditor.selectLine(getLineOfOffsetMarker(sourceCode));
 
         // Click menu item.
-        bot.menu("Edit").menu("Insert ChangeLog entry").click();
+        bot.menu("Edit").menu("ChangeLog Entry").click();
         // Wait for ChangeLog editor to open
         editorMatcher = allOf(
                 IsInstanceOf.instanceOf(IEditorReference.class),
                 withPartName("ChangeLog")
                 );
-        bot.waitUntil(Conditions.waitForEditor(editorMatcher));
+        bot.waitUntil(Conditions.waitForEditor((Matcher<IEditorReference>) editorMatcher));
         swtBoteditor = bot.activeEditor();
         swtBoteditor.save(); // save to avoid "save changes"-pop-up
         assertEquals("ChangeLog", swtBoteditor.getTitle());
         eclipseEditor = swtBoteditor.toTextEditor();
         // make sure expected entry has been added.
-		assertTrue(eclipseEditor.getText().contains("* src/JavaTest.java (main):"));
+        assertTrue(eclipseEditor.getText().contains("\t* src/JavaTest.java (main):"));
     }
 
     /**

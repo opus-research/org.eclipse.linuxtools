@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.linuxtools.changelog.ui.tests.swtbot;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.eclipse.linuxtools.changelog.ui.tests.utils.ProjectExplorer;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
@@ -21,6 +24,7 @@ import org.junit.runner.RunWith;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class AbstractSWTBotTest {
 
+    private static final Logger fLogger = Logger.getRootLogger();
     protected static SWTWorkbenchBot bot;
     protected static SWTBotTree projectExplorerViewTree;
 
@@ -28,6 +32,7 @@ public abstract class AbstractSWTBotTest {
     public static void beforeClass() throws Exception {
         // delay click speed
         //System.setProperty("org.eclipse.swtbot.playback.delay", "200");
+        fLogger.addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
         bot = new SWTWorkbenchBot();
         try {
             bot.viewByTitle("Welcome").close();
