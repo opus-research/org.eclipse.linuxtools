@@ -240,7 +240,7 @@ public class ValgrindLaunchConfigurationDelegate extends AbstractCLaunchDelegate
                 if (children[i] instanceof ValgrindStackFrame && marker == null) {
                     ValgrindStackFrame frame = (ValgrindStackFrame) children[i];
                     if (frame.getLine() > 0) {
-                        ISourceLocator locator = frame.getSourceLocator();
+                        ISourceLocator locator = frame.getLaunch().getSourceLocator();
                         ISourceLookupResult result = DebugUITools.lookupSource(frame.getFile(), locator);
                         Object sourceElement = result.getSourceElement();
 
