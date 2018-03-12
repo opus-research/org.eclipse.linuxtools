@@ -18,9 +18,9 @@ import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeExceptio
  * This is the interface for using state values and reading their contents.
  *
  * @author Alexandre Montplaisir
- * @since 3.0
+ * @since 4.0
  */
-public interface ITmfStateValue {
+public interface ITmfStateValue extends Comparable<ITmfStateValue>{
 
     /**
      * The supported types of state values
@@ -95,4 +95,5 @@ public interface ITmfStateValue {
      *             If the contained value cannot be read as a String
      */
     String unboxStr();
+
 }
