@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2012, 2013 Ericsson
+ * Copyright (c) 2012, 2014 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -9,19 +9,18 @@
  * Contributors:
  *   Bernd Hufmann - Initial API and implementation
  **********************************************************************/
+
 package org.eclipse.linuxtools.internal.lttng2.control.core.model.impl;
 
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IEventInfo;
 import org.eclipse.linuxtools.internal.lttng2.control.core.model.IProbeEventInfo;
 
 /**
-* <p>
-* Implementation of the trace event interface (IProbeEventInfo) to store probe event
-* related data.
-* </p>
-*
-* @author Bernd Hufmann
-*/
+ * Implementation of the trace event interface (IProbeEventInfo) to store probe
+ * event related data.
+ *
+ * @author Bernd Hufmann
+ */
 public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
 
     // ------------------------------------------------------------------------
@@ -41,13 +40,14 @@ public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
      */
     private String fSymbol;
 
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
     /**
      * Constructor
-     * @param name - name of event
+     *
+     * @param name
+     *            - name of event
      */
     public ProbeEventInfo(String name) {
         super(name);
@@ -55,7 +55,9 @@ public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
 
     /**
      * Copy constructor
-     * @param other - the instance to copy
+     *
+     * @param other
+     *            - the instance to copy
      */
     public ProbeEventInfo(ProbeEventInfo other) {
         super(other);
@@ -66,7 +68,9 @@ public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
 
     /**
      * Constructor from a {@link IEventInfo}
-     * @param eventInfo - the instance to copy
+     *
+     * @param eventInfo
+     *            - the instance to copy
      */
     public ProbeEventInfo(IEventInfo eventInfo) {
         super(eventInfo.getName());
@@ -164,19 +168,19 @@ public class ProbeEventInfo extends EventInfo implements IProbeEventInfo {
     @Override
     public String toString() {
         StringBuffer output = new StringBuffer();
-            output.append("[ProbeEventInfo(");
-            output.append(super.toString());
-            if (fAddress != null) {
-                output.append(",fAddress=");
-                output.append(fAddress);
-            } else {
-                output.append(",fOffset=");
-                output.append(fOffset);
-                output.append(",fSymbol=");
-                output.append(fSymbol);
-            }
-            output.append(")]");
-            return output.toString();
+        output.append("[ProbeEventInfo(");
+        output.append(super.toString());
+        if (fAddress != null) {
+            output.append(",fAddress=");
+            output.append(fAddress);
+        } else {
+            output.append(",fOffset=");
+            output.append(fOffset);
+            output.append(",fSymbol=");
+            output.append(fSymbol);
+        }
+        output.append(")]");
+        return output.toString();
     }
 
 }

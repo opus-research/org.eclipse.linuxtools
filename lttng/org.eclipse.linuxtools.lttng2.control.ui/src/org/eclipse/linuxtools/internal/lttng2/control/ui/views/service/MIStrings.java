@@ -18,7 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Non-externalized strings for use with the LTTng Control services. This
  * nformation is extracted from mi_lttng.xsd from lttng-tool libmi.
  *
- * @author Jonathan Rajotte Julien
+ * @author Jonathan Rajotte
  */
 @SuppressWarnings("nls")
 @NonNullByDefault
@@ -537,7 +537,7 @@ public interface MIStrings {
     /**
      * Represent the snapshot_outputs xml element
      */
-     String SNAPSHOT_OUTPUTS = "snapshot";
+     String SNAPSHOT_OUTPUTS = "snapshot_outputs";
 
     /**
      * Represent the consumer_output xml element
@@ -572,6 +572,5 @@ public interface MIStrings {
     /**
      * Represent the max_size xml element
      */
-     String MAX_SIZE = "max_size";
-
+    String MAX_SIZE = "max_size";
 }
