@@ -22,9 +22,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-/**
- * A {@link WizardPage} to tag a given Docker image.
- */
 public class ImageTagPage extends WizardPage {
 
 	private final static String NAME = "ImageTag.name"; //$NON-NLS-1$
@@ -37,12 +34,6 @@ public class ImageTagPage extends WizardPage {
 
 	private String tag;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param imageName
-	 *            the name of the image
-	 */
 	public ImageTagPage(final String imageName) {
 		super(WizardMessages.getString(NAME));
 		setTitle(WizardMessages.getString(TITLE));
