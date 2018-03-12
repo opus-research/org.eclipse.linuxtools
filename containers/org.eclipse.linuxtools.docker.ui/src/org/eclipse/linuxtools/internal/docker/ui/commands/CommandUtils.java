@@ -17,10 +17,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.window.Window;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
@@ -43,17 +44,20 @@ import org.eclipse.ui.IWorkbenchPart;
 public class CommandUtils {
 
 	/**
-	 * Refreshes (async) the {@link Viewer}.
+	 * Refreshes (async) the {@link TableViewer} or {@link TreeViewer} in the
+	 * given {@link IWorkbenchPart}.
 	 * 
-	 * @param viewer
-	 *            - the {@link Viewer} to refresh
+	 * @param activePart
+	 *            - active Workbench part
 	 */
-	public static void refresh(final Viewer viewer) {
+	public static void refresh(final IWorkbenchPart activePart) {
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				if (viewer != null && !viewer.getControl().isDisposed()) {
-					viewer.refresh();
+				if (activePart instanceof DockerContainersView) {
+					((DockerContainersView) activePart).getViewer().refresh();
+				} else if (activePart instanceof DockerImagesView) {
+					((DockerImagesView) activePart).getViewer().refresh();
 				}
 			}
 		});
@@ -195,7 +199,7 @@ public class CommandUtils {
 	public static boolean openWizard(final IWizard wizard, final Shell shell) {
 		final WizardDialog wizardDialog = new WizardDialog(shell, wizard);
 		wizardDialog.create();
-		return wizardDialog.open() == Window.OK;
+		return wizardDialog.open() == Dialog.OK;
 	}
 
 }

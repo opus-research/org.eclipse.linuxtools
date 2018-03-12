@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 public class ImageBuildPage extends WizardPage {
@@ -56,7 +57,7 @@ public class ImageBuildPage extends WizardPage {
 		super(WizardMessages.getString(NAME));
 		setDescription(WizardMessages.getString(DESC));
 		setTitle(WizardMessages.getString(TITLE));
-		setImageDescriptor(SWTImagesFactory.DESC_WIZARD);
+		setImageDescriptor(SWTImagesFactory.DESC_DOCKER_LARGE);
 	}
 
 	public String getImageName() {
@@ -189,8 +190,7 @@ public class ImageBuildPage extends WizardPage {
 				String dir = directoryText.getText();
 				IFileStore fileStore = EFS.getLocalFileSystem().getStore(
 						new Path(dir).append("Dockerfile")); //$NON-NLS-1$
-				DockerfileEditDialog d = new DockerfileEditDialog(
-						container.getShell(),
+				DockerfileEditDialog d = new DockerfileEditDialog(new Shell(),
 						fileStore);
 				d.open();
 				validate();

@@ -74,7 +74,6 @@ public class DockerPreferencePage extends PreferencePage implements
 	 * 
 	 *  @see PreferenceInitializer
 	 */
-	@Override
 	public void init(final IWorkbench workbench) {
 		final IPreferenceStore preferenceStore = getPreferenceStore();
 		this.bindingMode = EnumDockerConnectionSettings.valueOf(preferenceStore.getString(BINDING_MODE.toString()));
@@ -167,7 +166,6 @@ public class DockerPreferencePage extends PreferencePage implements
 			}
 		});
 		unixSocketPathText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				unixSocketPath = ((Text)evt.widget).getText();
 			}
@@ -229,13 +227,11 @@ public class DockerPreferencePage extends PreferencePage implements
 			}
 		});
 		tcpHostText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				tcpHost = ((Text)evt.widget).getText();
 			}
 		});
 		tcpCertPathText.addModifyListener(new ModifyListener() {
-			@Override
 			public void modifyText(ModifyEvent evt) {
 				tcpCertPath = ((Text)evt.widget).getText();
 			}

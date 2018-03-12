@@ -54,13 +54,10 @@ public interface IDockerContainerInfo {
 
 	public Map<String, Boolean> volumesRW();
 
-	@Override
 	public boolean equals(Object o);
 
-	@Override
 	public int hashCode();
 
-	@Override
 	public String toString();
 
 }
