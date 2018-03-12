@@ -31,6 +31,7 @@ import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerContainersView;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider.DockerContainersCategory;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerContentProvider.DockerImagesCategory;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
 import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
@@ -83,6 +84,9 @@ public class CommandUtils {
 				return ((IDockerContainer) firstElement).getConnection();
 			} else if (firstElement instanceof IDockerImage) {
 				return ((IDockerImage) firstElement).getConnection();
+			} else if (firstElement instanceof DockerContainersCategory) {
+				return ((DockerContainersCategory) firstElement)
+						.getConnection();
 			} else if (firstElement instanceof DockerImagesCategory) {
 				return ((DockerImagesCategory) firstElement).getConnection();
 			}
@@ -189,13 +193,8 @@ public class CommandUtils {
 	 * @return the {@link RunConsole} or {@code null}
 	 */
 	public static RunConsole getRunConsole(final IDockerConnection connection, final IDockerContainer container) {
-		if (connection.getContainerInfo(container.id()).config().tty()) {
-			RunConsole.attachToTerminal(connection, container.id());
-			return null;
-		}
 		final boolean autoLogOnStart = Activator.getDefault().getPreferenceStore()
 				.getBoolean(PreferenceConstants.AUTOLOG_ON_START);
-
 		// if we are auto-logging, grab the
 		// console for the container id and get
 		// its stream.
