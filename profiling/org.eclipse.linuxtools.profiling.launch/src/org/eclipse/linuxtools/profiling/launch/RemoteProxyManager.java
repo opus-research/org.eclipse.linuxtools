@@ -56,7 +56,9 @@ public class RemoteProxyManager implements IRemoteProxyManager {
     }
 
     LocalFileProxy getLocalFileProxy(URI uri) {
-        return new LocalFileProxy(uri);
+        if (lfp == null)
+            lfp = new LocalFileProxy(uri);
+        return lfp;
     }
     /**
      * @param schemeId The protocol scheme to be used.

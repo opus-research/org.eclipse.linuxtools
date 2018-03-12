@@ -10,13 +10,9 @@
 *******************************************************************************/
 package org.eclipse.linuxtools.internal.perf.tests;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.eclipse.cdt.debug.core.ICDTLaunchConfigurationConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -78,17 +74,6 @@ public class LaunchTest extends AbstractTest {
     public void testDefaultRun() throws CoreException {
         if (PerfCore.checkPerfInPath(null)) {
             delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
-        }
-    }
-
-    @Test
-    public void testWorkingDirectory() throws CoreException {
-        File workingDir = proj.getResource().getLocation().append("tmpWorkDir").toFile(); //$NON-NLS-1$
-        assertTrue(workingDir.mkdir());
-        wc.setAttribute(ICDTLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, workingDir.getAbsolutePath());
-        if (PerfCore.checkPerfInPath(null)) {
-            delegate.launch(wc, ILaunchManager.PROFILE_MODE, launch, null);
-            assertTrue(workingDir.toPath().resolve(PerfPlugin.PERF_DEFAULT_DATA).toFile().exists());
         }
     }
 
