@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.statesystem.core.statevalue;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 
 /**
  * A state value that contains no particular value. It is sometimes needed over
@@ -44,7 +45,7 @@ final class NullStateValue extends TmfStateValue {
 
     @Override
     public int hashCode() {
-       return 0;
+        return 0;
     }
 
     @Override
@@ -75,4 +76,20 @@ final class NullStateValue extends TmfStateValue {
     public String unboxStr() {
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null) {
+            throw new StateValueTypeException("A NullStateValue cannot be compared to null."); //$NON-NLS-1$
+        }
+        if (object instanceof NullStateValue) {
+            return 0;
+        }
+        /*
+         * We assume that every non-null state value is greater than any null
+         * state value.
+         */
+        return -1;
+    }
+
 }

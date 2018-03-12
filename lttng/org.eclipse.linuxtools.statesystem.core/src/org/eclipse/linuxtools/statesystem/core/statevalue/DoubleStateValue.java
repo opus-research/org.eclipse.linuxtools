@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.statesystem.core.statevalue;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 
 /**
  * A state value containing a double primitive.
@@ -65,4 +66,34 @@ final class DoubleStateValue extends TmfStateValue {
     public double unboxDouble() {
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null) {
+            throw new StateValueTypeException("A Double state value cannot be compared to null."); //$NON-NLS-1$
+        }
+
+        switch (object.getType()) {
+        case INTEGER:
+            double otherDoubleValue = ((IntegerStateValue) object).unboxInt();
+            return Double.compare(this.value, otherDoubleValue);
+        case DOUBLE:
+            otherDoubleValue = ((DoubleStateValue) object).unboxDouble();
+            return Double.compare(this.value, otherDoubleValue);
+        case LONG:
+            otherDoubleValue = ((LongStateValue) object).unboxLong();
+            return Double.compare(this.value, otherDoubleValue);
+        case NULL:
+            /*
+             * We assume that every integer state value is greater than any null
+             * state value.
+             */
+            return 1;
+        case STRING:
+            throw new StateValueTypeException("A Double state value cannot be compared to a String state value."); //$NON-NLS-1$
+        default:
+            return 0;
+        }
+    }
+
 }

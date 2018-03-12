@@ -28,7 +28,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.tmf.core.tests.event.lookup.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.request.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.signal.AllTests.class,
-    org.eclipse.linuxtools.tmf.core.tests.statesystem.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.statesystem.mipmap.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.synchronization.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.trace.AllTests.class,

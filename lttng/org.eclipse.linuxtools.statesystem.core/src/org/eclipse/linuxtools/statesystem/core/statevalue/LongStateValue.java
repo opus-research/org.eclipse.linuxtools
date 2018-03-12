@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.statesystem.core.statevalue;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 
 /**
  * A state value containing a long integer (8 bytes).
@@ -37,6 +38,7 @@ final class LongStateValue extends TmfStateValue {
     public boolean isNull() {
         return false;
     }
+
     @Override
     public boolean equals(@Nullable Object object) {
         if (!(object instanceof LongStateValue)) {
@@ -64,4 +66,35 @@ final class LongStateValue extends TmfStateValue {
     public long unboxLong() {
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null) {
+            throw new StateValueTypeException("A Long state value cannot be compared to null."); //$NON-NLS-1$
+        }
+
+        switch (object.getType()) {
+        case INTEGER:
+            long otherLongValue = ((IntegerStateValue) object).unboxInt();
+            return Long.compare(this.value, otherLongValue);
+        case DOUBLE:
+            double otherDoubleValue = ((DoubleStateValue) object).unboxDouble();
+            return Double.compare(this.value, otherDoubleValue);
+        case LONG:
+            otherLongValue = ((LongStateValue) object).unboxLong();
+            return Long.compare(this.value, otherLongValue);
+        case NULL:
+            /*
+             * We assume that every integer state value is greater than any null
+             * state value.
+             */
+            return 1;
+        case STRING:
+            throw new StateValueTypeException("A Long state value cannot be compared to a String state value."); //$NON-NLS-1$
+        default:
+            return 0;
+        }
+
+    }
+
 }

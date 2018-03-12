@@ -13,6 +13,7 @@
 package org.eclipse.linuxtools.statesystem.core.statevalue;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.linuxtools.statesystem.core.exceptions.StateValueTypeException;
 
 /**
  * A state value containing a simple integer.
@@ -71,4 +72,35 @@ final class IntegerStateValue extends TmfStateValue {
         /* It's always safe to up-cast an int into a long */
         return value;
     }
+
+    @Override
+    public int compareTo(@Nullable ITmfStateValue object) {
+        if (object == null) {
+            throw new StateValueTypeException("An Integer state value cannot be compared to null."); //$NON-NLS-1$
+        }
+
+        switch (object.getType()) {
+        case INTEGER:
+            IntegerStateValue other = (IntegerStateValue) object;
+            return Integer.compare(this.value, other.value);
+        case DOUBLE:
+            double otherDoubleValue = ((DoubleStateValue) object).unboxDouble();
+            return Double.compare(this.value, otherDoubleValue);
+        case LONG:
+            long otherLongValue = ((LongStateValue) object).unboxLong();
+            return Long.compare(this.value, otherLongValue);
+        case NULL:
+            /*
+             * We assume that every integer state value is greater than any null
+             * state value.
+             */
+            return 1;
+        case STRING:
+            throw new StateValueTypeException("An Integer state value cannot be compared to a String state value."); //$NON-NLS-1$
+        default:
+            return 0;
+        }
+
+    }
+
 }
