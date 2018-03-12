@@ -45,8 +45,7 @@ import org.w3c.dom.Element;
  */
 public class XmlUtilsTest {
 
-    private static final Path PATH_INVALID = new Path("test_xml_files/test_invalid");
-    private static final Path PATH_VALID = new Path("test_xml_files/test_valid");
+    private static final Path PATH = new Path("test_xml_files/test_invalid");
 
     /**
      * Empty the XML directory after the test
@@ -112,7 +111,7 @@ public class XmlUtilsTest {
             // Shouldn't happen but at least throw something to get the test to fail early
             throw new IllegalStateException();
         }
-        URL location = FileLocator.find(plugin.getBundle(), PATH_INVALID, null);
+        URL location = FileLocator.find(plugin.getBundle(), PATH, null);
         File file = null;
         try {
             IPath path = new Path(FileLocator.toFileURL(location).getPath());
@@ -124,31 +123,6 @@ public class XmlUtilsTest {
         File[] validFiles = file.listFiles();
         for (File f : validFiles) {
             assertFalse("File " + f.getName(), XmlUtils.xmlValidate(f).isOK());
-        }
-    }
-
-    /**
-     * Test various valid files and make sure they are valid
-     */
-    @Test
-    public void testXmlValidateValid() {
-        Activator plugin = Activator.getDefault();
-        if (plugin == null) {
-            // Shouldn't happen but at least throw something to get the test to fail early
-            throw new IllegalStateException();
-        }
-        URL location = FileLocator.find(plugin.getBundle(), PATH_VALID, null);
-        File file = null;
-        try {
-            IPath path = new Path(FileLocator.toFileURL(location).getPath());
-            file = path.toFile();
-        } catch (IOException e) {
-            throw new IllegalStateException();
-        }
-
-        File[] validFiles = file.listFiles();
-        for (File f : validFiles) {
-            assertTrue("File " + f.getName(), XmlUtils.xmlValidate(f).isOK());
         }
     }
 
