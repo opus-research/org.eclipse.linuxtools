@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.linuxtools.ctf.core.event.IEventDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IDeclaration;
-import org.eclipse.linuxtools.ctf.core.event.types.IEventHeaderDeclaration;
 import org.eclipse.linuxtools.ctf.core.event.types.StructDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.EventDeclaration;
 import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseException;
@@ -28,7 +26,6 @@ import org.eclipse.linuxtools.internal.ctf.core.event.metadata.exceptions.ParseE
  * <b><u>Stream</u></b>
  * <p>
  * Represents a stream in a trace.
- *
  * @since 3.0
  */
 public class CTFStream {
@@ -36,6 +33,7 @@ public class CTFStream {
     // ------------------------------------------------------------------------
     // Attributes
     // ------------------------------------------------------------------------
+
 
     /**
      * The numerical ID of the stream
@@ -46,7 +44,7 @@ public class CTFStream {
      * Declarations of the stream-specific structures
      */
     private StructDeclaration fPacketContextDecl = null;
-    private IDeclaration fEventHeaderDecl = null;
+    private StructDeclaration fEventHeaderDecl = null;
     private StructDeclaration fEventContextDecl = null;
 
     /**
@@ -84,9 +82,7 @@ public class CTFStream {
 
     /**
      * Sets the id of a stream
-     *
-     * @param id
-     *            the id of a stream
+     * @param id the id of a stream
      */
     public void setId(long id) {
         fId = id;
@@ -94,7 +90,6 @@ public class CTFStream {
 
     /**
      * Gets the id of a stream
-     *
      * @return id the id of a stream
      */
     public Long getId() {
@@ -119,9 +114,9 @@ public class CTFStream {
     }
 
     /**
-     *
-     * @return is the event context set (pid and stuff) (see Ctf Spec)
-     */
+    *
+    * @return is the event context set (pid and stuff) (see Ctf Spec)
+    */
     public boolean isEventContextSet() {
         return fEventContextDecl != null;
     }
@@ -135,30 +130,16 @@ public class CTFStream {
     }
 
     /**
-     * Sets the event header
      *
-     * @param eventHeader
-     *            the current event header for all events in this stream
+     * @param eventHeader the current event header for all events in this stream
      */
     public void setEventHeader(StructDeclaration eventHeader) {
         fEventHeaderDecl = eventHeader;
     }
 
     /**
-     * Sets the event header, this typically has the id and the timestamp
      *
-     * @param eventHeader
-     *            the current event header for all events in this stream
-     * @since 3.1
-     */
-    public void setEventHeader(IEventHeaderDeclaration eventHeader) {
-        fEventHeaderDecl = eventHeader;
-    }
-
-    /**
-     *
-     * @param eventContext
-     *            the context for all events in this stream
+     * @param eventContext the context for all events in this stream
      */
     public void setEventContext(StructDeclaration eventContext) {
         fEventContextDecl = eventContext;
@@ -166,8 +147,7 @@ public class CTFStream {
 
     /**
      *
-     * @param packetContext
-     *            the packet context for all packets in this stream
+     * @param packetContext the packet context for all packets in this stream
      */
     public void setPacketContext(StructDeclaration packetContext) {
         fPacketContextDecl = packetContext;
@@ -176,20 +156,8 @@ public class CTFStream {
     /**
      *
      * @return the event header declaration in structdeclaration form
-     * @deprecated use {@link CTFStream#getEventHeaderDeclaration()}
      */
-    @Deprecated
     public StructDeclaration getEventHeaderDecl() {
-        return (StructDeclaration) ((fEventHeaderDecl instanceof StructDeclaration) ? fEventHeaderDecl : null);
-    }
-
-    /**
-     * Gets the event header declaration
-     *
-     * @return the event header declaration in declaration form
-     * @since 3.1
-     */
-    public IDeclaration getEventHeaderDeclaration() {
         return fEventHeaderDecl;
     }
 
@@ -227,8 +195,7 @@ public class CTFStream {
 
     /**
      *
-     * @return all the event declarations for this stream, using the id as a key
-     *         for the hashmap.
+     * @return all the event declarations for this stream, using the id as a key for the hashmap.
      */
     public Map<Long, IEventDeclaration> getEvents() {
         return fEvents;
@@ -259,7 +226,8 @@ public class CTFStream {
          * one
          */
         if (fEvents.get(null) != null) {
-            throw new ParseException("Event without id with multiple events in a stream"); //$NON-NLS-1$
+            throw new ParseException(
+                    "Event without id with multiple events in a stream"); //$NON-NLS-1$
         }
 
         /*
@@ -267,7 +235,8 @@ public class CTFStream {
          * one
          */
         if ((event.getId() == null) && (fEvents.size() != 0)) {
-            throw new ParseException("Event without id with multiple events in a stream"); //$NON-NLS-1$
+            throw new ParseException(
+                    "Event without id with multiple events in a stream"); //$NON-NLS-1$
         }
 
         /* Check if an event with the same ID already exists */
