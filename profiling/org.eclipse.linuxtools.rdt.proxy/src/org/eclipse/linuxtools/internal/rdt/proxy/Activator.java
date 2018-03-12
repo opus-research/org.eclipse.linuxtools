@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -31,10 +32,6 @@ public class Activator extends AbstractUIPlugin {
 
     private static ResourceBundle resourceBundle;
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-     */
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
@@ -46,10 +43,6 @@ public class Activator extends AbstractUIPlugin {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-     */
     @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
@@ -87,4 +80,17 @@ public class Activator extends AbstractUIPlugin {
     public static void log(int severity, String msg, Exception e) {
         getDefault().getLog().log(new Status(severity, PLUGIN_ID, IStatus.OK, msg, e));
     }
+
+    /**
+     * Get an OSGi service
+     *
+     * @param service the service class
+     * @return the Service implementation
+     */
+	public static <T> T getService(Class<T> service) {
+		BundleContext context = plugin.getBundle().getBundleContext();
+		ServiceReference<T> ref = context.getServiceReference(service);
+		return ref != null ? context.getService(ref) : null;
+	}
+
 }
