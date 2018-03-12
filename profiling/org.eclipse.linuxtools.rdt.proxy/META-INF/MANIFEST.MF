@@ -15,4 +15,3 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Localization: plugin
 Bundle-Vendor: %provider
 Import-Package: org.eclipse.cdt.utils.pty
-Export-Package: org.eclipse.linuxtools.internal.rdt.proxy;x-friends:="org.eclipse.linuxtools.remote.proxy.tests"

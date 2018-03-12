@@ -94,7 +94,7 @@ public abstract class AbstractProxyTest extends AbstractRemoteTest {
 
 
 	@Override
-	public ILaunchConfigurationType getLaunchConfigType() {
+	protected ILaunchConfigurationType getLaunchConfigType() {
 		// This testsuite does not care about LaunchConfig
 		return null;
 	}
@@ -125,5 +125,9 @@ public abstract class AbstractProxyTest extends AbstractRemoteTest {
 			syncProject = project;
 			assertNotNull(syncProject);
 		}
+	}
+
+	public static IRemoteConnection getConnection() {
+		return connection;
 	}
 }
