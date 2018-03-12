@@ -252,7 +252,7 @@ public class DockerImagesView extends ViewPart implements IDockerImageListener,
 			@Override
 			public String getText(final Object element) {
 				if (element instanceof IDockerImage) {
-					return LabelProviderUtils.toCreatedDate(Long
+					return LabelUtils.toCreatedDate(Long
 							.parseLong(((IDockerImage) element).created()));
 				}
 				return super.getText(element);

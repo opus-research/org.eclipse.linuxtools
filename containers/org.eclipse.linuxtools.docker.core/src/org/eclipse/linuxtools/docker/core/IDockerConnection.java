@@ -419,17 +419,4 @@ public interface IDockerConnection {
 	 */
 	boolean setSettings(IDockerConnectionSettings settings);
 
-	/**
-	 * Retrieves the whole hierarchy for the given {@link IDockerImage}. This
-	 * includes the path to all known parent images, along with all derived
-	 * images based on the given {@code image}.
-	 * 
-	 * @param image
-	 *            the {@link IDockerImage} for which the hierarchy should be
-	 *            resolved
-	 * @return the {@link IDockerImageHiearchyNode} as a node that can be
-	 *         traversed.
-	 */
-	IDockerImageHiearchyNode resolveImageHierarchy(IDockerImage image);
-
 }

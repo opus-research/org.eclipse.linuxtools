@@ -70,11 +70,6 @@ public class MockImageFactory {
 			return this;
 		}
 
-		public Builder parentId(final String parentId) {
-			Mockito.when(this.image.parentId()).thenReturn(parentId);
-			return this;
-		}
-		
 		public Image build() {
 			return image;
 		}
