@@ -20,9 +20,6 @@ public class SystemTapScriptLaunch extends Launch
     }
 
     public void setConsole(ScriptConsole console) {
-        if (this.console == console) {
-            return;
-        }
         // If another launch is using the same console, remove that launch since
         // ScriptConsole prevents two identical stap scripts from being be run at once.
         this.console = console;
@@ -92,6 +89,7 @@ public class SystemTapScriptLaunch extends Launch
     private void removeConsole() {
         if (console != null) {
             console.removeScriptConsoleObserver(this);
+            console.stop();
             console = null;
         }
     }

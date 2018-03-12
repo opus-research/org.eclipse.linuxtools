@@ -19,10 +19,10 @@ import java.util.LinkedList;
 
 import org.eclipse.linuxtools.tmf.core.event.matching.TmfEventDependency;
 import org.eclipse.linuxtools.tmf.core.synchronization.ITmfTimestampTransform;
+import org.eclipse.linuxtools.tmf.core.synchronization.SyncAlgorithmFullyIncremental;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm;
 import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithm.SyncQuality;
-import org.eclipse.linuxtools.tmf.core.synchronization.SynchronizationAlgorithmFactory;
-import org.eclipse.linuxtools.tmf.core.synchronization.TimestampTransformFactory;
+import org.eclipse.linuxtools.tmf.core.synchronization.TmfTimestampTransform;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
 import org.eclipse.linuxtools.tmf.tests.stubs.event.TmfSyncEventStub;
@@ -64,7 +64,7 @@ public class SyncTest {
     @Test
     public void testFullyIncremental() {
 
-        SynchronizationAlgorithm syncAlgo = SynchronizationAlgorithmFactory.getFullyIncrementalAlgorithm();
+        SynchronizationAlgorithm syncAlgo = new SyncAlgorithmFullyIncremental();
 
         syncAlgo.init(fTraces);
 
@@ -129,7 +129,7 @@ public class SyncTest {
         ITmfTimestampTransform tt1 = syncAlgo.getTimestampTransform(t1);
 
         assertEquals(syncAlgo.getTimestampTransform(t1.getHostId()), tt1);
-        assertEquals(TimestampTransformFactory.getDefaultTransform(), tt1);
+        assertEquals(TmfTimestampTransform.IDENTITY, tt1);
         assertEquals(syncAlgo.getTimestampTransform(t2.getHostId()), tt2);
 
         /* Make the two hulls intersect */
@@ -151,7 +151,7 @@ public class SyncTest {
     @Test
     public void testOneHull() {
 
-        SynchronizationAlgorithm syncAlgo = SynchronizationAlgorithmFactory.getFullyIncrementalAlgorithm();
+        SynchronizationAlgorithm syncAlgo = new SyncAlgorithmFullyIncremental();
 
         syncAlgo.init(fTraces);
 
@@ -193,7 +193,7 @@ public class SyncTest {
     @Test
     public void testDisjoint() {
 
-        SynchronizationAlgorithm syncAlgo = SynchronizationAlgorithmFactory.getFullyIncrementalAlgorithm();
+        SynchronizationAlgorithm syncAlgo = new SyncAlgorithmFullyIncremental();
 
         syncAlgo.init(fTraces);
 

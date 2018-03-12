@@ -14,13 +14,14 @@
 package org.eclipse.linuxtools.tmf.ctf.ui.swtbot.tests;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.NullAppender;
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -42,6 +43,7 @@ import org.eclipse.swtbot.swt.finder.results.VoidResult;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotToolbarButton;
@@ -67,13 +69,11 @@ import org.junit.runner.RunWith;
 public abstract class AbstractImportAndReadSmokeTest {
 
     /** Trace name */
-    protected static final String TRACE_NAME = "scp_dest";
-    /** Trace folder */
-    protected static final String TRACE_FOLDER = "synctraces";
+    protected static final String TRACE_NAME = "synthetic-trace";
     /** Trace type name for generic CTF traces */
     protected static final String TRACE_TYPE_NAME = "Generic CTF Trace";
     /** A Generic CTF Trace*/
-    protected static final CtfTmfTestTrace fTrace = CtfTmfTestTrace.SYNC_DEST;
+    protected static final CtfTmfTestTrace fTrace = CtfTmfTestTrace.SYNTHETIC_TRACE;
     /** SWT BOT workbench reference */
     protected static SWTWorkbenchBot fBot;
     /** Wizard to use */
@@ -85,7 +85,6 @@ public abstract class AbstractImportAndReadSmokeTest {
     /** Test Class setup */
     @BeforeClass
     public static void init() {
-        assumeTrue(fTrace.exists());
         SWTBotUtil.failIfUIThread();
 
         /* set up for swtbot */
@@ -147,29 +146,20 @@ public abstract class AbstractImportAndReadSmokeTest {
         final SWTBotTreeItem treeItem = tree.getTreeItem(getProjectName());
         treeItem.expand();
 
-        String nodeName = getFullNodeName(treeItem, "Traces");
-        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeName, treeItem));
-        SWTBotTreeItem tracesNode = treeItem.getNode(nodeName);
-        tracesNode.expand();
-
-
-        SWTBotTreeItem traceParentNode = tracesNode;
-
-        if (supportsFolderStructure()) {
-            String nodeFolderName = getFullNodeName(tracesNode, TRACE_FOLDER);
-            fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeFolderName, tracesNode));
-            SWTBotTreeItem traceFolder = tracesNode.getNode(nodeFolderName);
-            traceFolder.select();
-            traceFolder.doubleClick();
-            traceParentNode = traceFolder;
+        List<String> nodes = treeItem.getNodes();
+        String nodeName = "";
+        for (String node : nodes) {
+            if (node.startsWith("Traces")) {
+                nodeName = node;
+            }
         }
-
-        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(TRACE_NAME, traceParentNode));
-        traceParentNode.getNode(TRACE_NAME).select();
-        traceParentNode.getNode(TRACE_NAME).doubleClick();
+        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(nodeName, treeItem));
+        treeItem.getNode(nodeName).expand();
+        fBot.waitUntil(ConditionHelpers.IsTreeChildNodeAvailable(TRACE_NAME, treeItem.getNode(nodeName)));
+        treeItem.getNode(nodeName).getNode(TRACE_NAME).select();
+        treeItem.getNode(nodeName).getNode(TRACE_NAME).doubleClick();
         SWTBotUtil.delay(1000);
         SWTBotUtil.waitForJobs();
-        final String expectedTitle = supportsFolderStructure() ? TRACE_FOLDER + IPath.SEPARATOR + TRACE_NAME : TRACE_NAME;
 
         final IEditorPart iep[] = new IEditorPart[1];
         UIThreadRunnable.syncExec(new VoidResult() {
@@ -179,7 +169,7 @@ public abstract class AbstractImportAndReadSmokeTest {
                 assertNotNull(ieds);
                 iep[0] = null;
                 for (IEditorReference ied : ieds) {
-                    if (ied.getTitle().equals(expectedTitle)) {
+                    if (ied.getTitle().equals(TRACE_NAME)) {
                         iep[0] = ied.getEditor(true);
                         break;
                     }
@@ -190,15 +180,33 @@ public abstract class AbstractImportAndReadSmokeTest {
         return (TmfEventsEditor) iep[0];
     }
 
-    private static String getFullNodeName(final SWTBotTreeItem treeItem, String prefix) {
-        List<String> nodes = treeItem.getNodes();
-        String nodeName = "";
-        for (String node : nodes) {
-            if (node.startsWith(prefix)) {
-                nodeName = node;
-            }
+    /**
+     * Deletes the tracing project
+     */
+    protected void deleteProject() {
+        // Wait for any analysis to complete because it might create supplementary files
+        SWTBotUtil.waitForJobs();
+        try {
+            ResourcesPlugin.getWorkspace().getRoot().getProject(getProjectName()).refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
         }
-        return nodeName;
+
+        SWTBotUtil.waitForJobs();
+
+        final SWTBotView projectViewBot = fBot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
+        projectViewBot.setFocus();
+
+        SWTBotTree treeBot = fBot.tree();
+        SWTBotTreeItem treeItem = treeBot.getTreeItem(getProjectName());
+        SWTBotMenu contextMenu = treeItem.contextMenu("Delete");
+        contextMenu.click();
+
+        fBot.shell("Delete Resources").setFocus();
+        final SWTBotButton okButton = fBot.button("OK");
+        fBot.waitUntil(Conditions.widgetIsEnabled(okButton));
+        okButton.click();
+
+        SWTBotUtil.waitForJobs();
     }
 
     /**
@@ -217,13 +225,6 @@ public abstract class AbstractImportAndReadSmokeTest {
      * @return the project name
      */
     protected abstract String getProjectName();
-
-    /**
-     * Returns whether or not that test support folder structure
-     *
-     * @return true if the test supports folder structure, false otherwise
-     */
-    protected abstract boolean supportsFolderStructure();
 
     // ---------------------------------------------
     // Helpers for testing views
