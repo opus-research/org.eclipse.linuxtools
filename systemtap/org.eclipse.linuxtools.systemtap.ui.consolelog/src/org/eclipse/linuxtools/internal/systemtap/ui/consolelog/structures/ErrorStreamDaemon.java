@@ -12,8 +12,10 @@
 
 package org.eclipse.linuxtools.internal.systemtap.ui.consolelog.structures;
 
+import org.eclipse.linuxtools.internal.systemtap.ui.consolelog.views.ErrorView;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.internal.Localization;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ConsoleStreamDaemon;
+import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.IErrorParser;
 import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
 
 /**
@@ -21,10 +23,15 @@ import org.eclipse.linuxtools.systemtap.ui.consolelog.structures.ScriptConsole;
  * @author Ryan Morse
  */
 public class ErrorStreamDaemon extends ConsoleStreamDaemon {
-    public ErrorStreamDaemon(ScriptConsole console) {
+    public ErrorStreamDaemon(ScriptConsole console, ErrorView errorWindow, IErrorParser parser) {
         super(console);
 
         outputData = new StringBuilder();
+        this.parser = parser;
+        if (null != errorWindow) {
+            errorView = errorWindow;
+            errorView.clear();
+        }
     }
 
     /**
@@ -41,6 +48,21 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
 
         outputData.append(output);
 
+        /* Since we never know when the last set of data is comming we don't clear the
+         * errorStream in the hope of getting a more complete error message. As a result
+         * the parser will always return what we already had.  Clear removes anything
+         * that was added before.
+         */
+        if(null != errorView) {
+            String[][] errors = parser.parseOutput(outputData.toString());
+
+            if(null != errors) {
+                errorView.clear();
+                for(String[] error :errors) {
+                    errorView.add(error);
+                }
+            }
+        }
     }
 
     /**
@@ -50,10 +72,14 @@ public class ErrorStreamDaemon extends ConsoleStreamDaemon {
     public void dispose() {
         if(!isDisposed()) {
             super.dispose();
+            errorView = null;
             outputData.delete(0, outputData.length());
             outputData = null;
+            parser = null;
         }
     }
 
+    private ErrorView errorView;
     private StringBuilder outputData;
+    private IErrorParser parser;
 }
