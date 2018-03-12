@@ -142,38 +142,13 @@ public class EventHeaderDeclarationTest {
         base = new StructDeclaration(8);
         base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
         variantV = new VariantDeclaration();
-        StringDeclaration compact1 = new StringDeclaration();
-        variantV.addField("compact", compact1);
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
-        variantV.addField("extended", large);
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        compact.addField("timestamp", IntegerDeclaration.UINT_27B_DECL);
-        variantV.addField("compact", compact);
-        variantV.addField("extended", new StringDeclaration());
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
         compact = new StructDeclaration(8);
         compact.addField("timestamp", IntegerDeclaration.UINT_27B_DECL);
         variantV.addField("compact", compact);
         large = new StructDeclaration(8);
         large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
+        large.addField("timestamp1", IntegerDeclaration.UINT_64B_DECL);
         variantV.addField("extended", large);
-        variantV.addField("other", new StringDeclaration());
         base.addField("v", variantV);
         declarations.add(base);
 
@@ -234,72 +209,6 @@ public class EventHeaderDeclarationTest {
         base = new StructDeclaration(8);
         base.addField("id", new EnumDeclaration(IntegerDeclaration.INT_8_DECL));
         base.addField("timestamp", IntegerDeclaration.INT_32B_DECL);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        variantV.addField("compact", new StringDeclaration());
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
-        variantV.addField("extended", large);
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        variantV.addField("compact", compact);
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
-        variantV.addField("extended", new StringDeclaration());
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        variantV.addField("compact", compact);
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
-        variantV.addField("extended", large);
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        variantV.addField("compact", compact);
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_64B_DECL);
-        large.addField("other", IntegerDeclaration.UINT_64B_DECL);
-        variantV.addField("extended", large);
-        base.addField("v", variantV);
-        declarations.add(base);
-
-        // bad
-        base = new StructDeclaration(8);
-        base.addField("id", new EnumDeclaration(IntegerDeclaration.UINT_5B_DECL));
-        variantV = new VariantDeclaration();
-        compact = new StructDeclaration(8);
-        variantV.addField("compact", compact);
-        large = new StructDeclaration(8);
-        large.addField("id", IntegerDeclaration.UINT_32B_DECL);
-        large.addField("timestamp", IntegerDeclaration.UINT_32B_DECL);
-        variantV.addField("extended", large);
-        base.addField("v", variantV);
         declarations.add(base);
     }
 

@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -121,7 +122,21 @@ public class TestCustomTxtWizard {
     @Test
     public void testNew() throws FileNotFoundException, IOException {
         File xmlFile = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".metadata/.plugins/org.eclipse.linuxtools.tmf.core/custom_txt_parsers.xml").toFile();
-        SWTBotTreeItem treeNode = SWTBotUtil.createProject(fBot, PROJECT_NAME);
+        SWTBotUtil.createProject(PROJECT_NAME);
+        SWTBotView proejctExplorerBot = fBot.viewByTitle("Project Explorer");
+        proejctExplorerBot.show();
+        SWTBotTreeItem treeItem = proejctExplorerBot.bot().tree().getTreeItem(PROJECT_NAME);
+        treeItem.select();
+        treeItem.expand();
+        SWTBotTreeItem treeNode = null;
+        for (String node : treeItem.getNodes()) {
+            if (node.startsWith("Trace")) {
+                treeNode = treeItem.getNode(node);
+                break;
+            }
+
+        }
+        assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
         fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
 
@@ -209,7 +224,21 @@ public class TestCustomTxtWizard {
             fw.write(xmlContent);
             fw.flush();
         }
-        SWTBotTreeItem treeNode = SWTBotUtil.createProject(fBot, PROJECT_NAME);
+        SWTBotUtil.createProject(PROJECT_NAME);
+        SWTBotView proejctExplorerBot = fBot.viewByTitle("Project Explorer");
+        proejctExplorerBot.show();
+        SWTBotTreeItem treeItem = proejctExplorerBot.bot().tree().getTreeItem(PROJECT_NAME);
+        treeItem.select();
+        treeItem.expand();
+        SWTBotTreeItem treeNode = null;
+        for (String node : treeItem.getNodes()) {
+            if (node.startsWith("Trace")) {
+                treeNode = treeItem.getNode(node);
+                break;
+            }
+
+        }
+        assertNotNull(treeNode);
         treeNode.contextMenu("Manage Custom Parsers...").click();
         fBot.shell(MANAGE_CUSTOM_PARSERS_SHELL_TITLE).setFocus();
         fBot.list().select(fBot.list().getItems()[0]);

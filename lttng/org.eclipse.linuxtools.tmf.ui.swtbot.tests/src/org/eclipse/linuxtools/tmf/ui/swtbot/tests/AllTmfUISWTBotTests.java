@@ -23,7 +23,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         TestCustomTxtWizard.class,
-        TestTraceOffsetting.class,
         TracingPerspectiveChecker.class
 })
 public class AllTmfUISWTBotTests {
