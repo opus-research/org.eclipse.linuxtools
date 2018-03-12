@@ -22,6 +22,7 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEvent;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventField;
 import org.eclipse.linuxtools.tmf.core.event.TmfEventType;
+import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimestamp;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfContext;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfEventParser;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
@@ -111,7 +112,7 @@ public class TmfEventParserStub implements ITmfEventParser {
 
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(fEventStream,
-                        fEventStream.createTimestamp(ts * 1000000L),
+                        new TmfTimestamp(ts, -3, 0),     // millisecs
                         source, fTypes[typeIndex], root, String.valueOf(reference));
                 return event;
             } catch (final EOFException e) {

@@ -26,7 +26,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.tmf.core.tests.component.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.event.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.event.lookup.AllTests.class,
-    org.eclipse.linuxtools.tmf.core.tests.filter.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.request.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.signal.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.statesystem.AllTests.class,
@@ -36,7 +35,6 @@ import org.junit.runners.Suite;
     org.eclipse.linuxtools.tmf.core.tests.trace.indexer.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.trace.indexer.checkpoint.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.trace.location.AllTests.class,
-    org.eclipse.linuxtools.tmf.core.tests.trace.stub.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.trace.text.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.uml2sd.AllTests.class,
     org.eclipse.linuxtools.tmf.core.tests.util.AllTests.class

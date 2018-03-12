@@ -22,6 +22,10 @@ public class CreaterepoTreeLabelProvider extends LabelProvider {
     private static final String CATEGORY_IMAGE = "icons/library_obj.gif"; //$NON-NLS-1$
     private static final String TAG_IMAGE = "icons/templateprop_co.gif"; //$NON-NLS-1$
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.LabelProvider#getText(java.lang.Object)
+     */
     @Override
     public String getText(Object element) {
         if (element instanceof CreaterepoTreeCategory) {
@@ -31,6 +35,10 @@ public class CreaterepoTreeLabelProvider extends LabelProvider {
         return element.toString();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.LabelProvider#getImage(java.lang.Object)
+     */
     @Override
     public Image getImage(Object element) {
         if (element instanceof CreaterepoTreeCategory) {

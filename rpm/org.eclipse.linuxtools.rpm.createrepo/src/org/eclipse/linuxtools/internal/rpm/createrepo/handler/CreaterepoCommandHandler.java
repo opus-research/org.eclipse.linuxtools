@@ -33,6 +33,10 @@ import org.eclipse.ui.ide.ResourceUtil;
  */
 public class CreaterepoCommandHandler extends AbstractHandler {
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+     */
     @Override
     public Object execute(ExecutionEvent event) {
         final String executionType = event.getParameter("executionType"); //$NON-NLS-1$
