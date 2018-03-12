@@ -110,14 +110,11 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         this(true);
     }
 
-	public ValgrindOptionsTab(boolean checkVersion) {
-		this.checkVersion = checkVersion;
-		this.tools = ValgrindLaunchPlugin.getDefault().getRegisteredToolIDs();
-		if (tools != null && tools.length > 0)
-			this.tool = tools[0];
-	}
+    public ValgrindOptionsTab(boolean checkVersion) {
+        this.checkVersion = checkVersion;
+    }
 
-	private SelectionListener selectListener = new SelectionAdapter() {
+    private SelectionListener selectListener = new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
             updateLaunchConfigurationDialog();
@@ -210,6 +207,7 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
         Label toolLabel = new Label(comboTop, SWT.NONE);
         toolLabel.setText(Messages.getString("ValgrindOptionsTab.Tool_to_run")); //$NON-NLS-1$
         toolsCombo = new Combo(comboTop, SWT.READ_ONLY);
+        tools = getPlugin().getRegisteredToolIDs();
 
         String[] names = new String[tools.length];
         for (int i = 0; i < names.length; i++) {
@@ -480,12 +478,8 @@ public class ValgrindOptionsTab extends AbstractLaunchConfigurationTab {
     }
 
     private void loadDynamicTab() throws CoreException {
-         dynamicTab = getToolPage(tool);
+         dynamicTab = getPlugin().getToolPage(tool);
     }
-
-	protected IValgrindToolPage getToolPage(String tool) throws CoreException {
-		return getPlugin().getToolPage(tool);
-	}
 
     public IValgrindToolPage getDynamicTab() {
         return dynamicTab;
