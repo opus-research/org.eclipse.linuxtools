@@ -25,7 +25,6 @@ public interface TmfXmlUiStrings {
 
     /* XML generic Element attribute names */
     static final String TIME_GRAPH_VIEW = "timeGraphView";
-    static final String XY_VIEW = "xyView";
 
     /* View elements and attributes */
     static final String ENTRY_ELEMENT = "entry";
