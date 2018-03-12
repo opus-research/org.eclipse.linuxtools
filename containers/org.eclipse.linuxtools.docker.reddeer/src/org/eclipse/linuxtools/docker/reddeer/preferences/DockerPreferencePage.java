@@ -11,8 +11,9 @@
 
 package org.eclipse.linuxtools.docker.reddeer.preferences;
 
-import org.jboss.reddeer.jface.preference.PreferencePage;
-import org.jboss.reddeer.swt.impl.text.LabeledText;
+import org.eclipse.reddeer.core.reference.ReferencedComposite;
+import org.eclipse.reddeer.jface.preference.PreferencePage;
+import org.eclipse.reddeer.swt.impl.text.LabeledText;
 
 /**
  * 
@@ -22,8 +23,8 @@ import org.jboss.reddeer.swt.impl.text.LabeledText;
 
 public class DockerPreferencePage extends PreferencePage {
 
-	public DockerPreferencePage() {
-		super("Docker");
+	public DockerPreferencePage(ReferencedComposite referenced) {
+		super(referenced, "Docker");
 	}
 
 	public void setContainerRefreshRate(int seconds) {
