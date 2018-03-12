@@ -15,6 +15,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,8 +30,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.debug.core.DebugPlugin;
@@ -413,7 +416,12 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		List<String> result = new ArrayList<>();
 		try {
 			List<String> cmd = new ArrayList<>();
-			cmd.add(VG);
+			if (Platform.getOS().equals(Platform.OS_LINUX)
+					&& getLocalVagrantPath() != null) {
+				cmd.add(getLocalVagrantPath());
+			} else {
+				cmd.add(VG);
+			}
 			cmd.addAll(Arrays.asList(args));
 			Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]),
 					envp, vagrantDir);
@@ -448,8 +456,13 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType type = manager.getLaunchConfigurationType(EXTERNAL_TOOLS);
 		try {
-			// TODO: worth handling 'vagrant' (not on PATH) as an alias ?
-			String vagrantPath = findVagrantPath();
+			String vagrantPath;
+			if (Platform.getOS().equals(Platform.OS_LINUX)) {
+				vagrantPath = getLocalVagrantPath();
+			} else {
+				// TODO: worth handling 'vagrant' (not on PATH) as an alias ?
+				vagrantPath = findVagrantPath();
+			}
 			ILaunchConfigurationWorkingCopy wc = type.newInstance(null, VG);
 			wc.setAttribute(ATTR_LOCATION, vagrantPath);
 			wc.setAttribute(ATTR_TOOL_ARGUMENTS, arguments);
@@ -478,6 +491,31 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 					return vgPath.toString();
 				}
 			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get the path to a locally provided wrapper script for 'vagrant'. On some
+	 * systems, 'vagrant' might have strict access controls that mandate
+	 * elevated privileges. This can result in the user needing to authenticate
+	 * for every single command (possibly for things like status/ssh-config that
+	 * are called frequently).
+	 *
+	 * @return the String path to the local 'vagrant' wrapper script or null if
+	 *         none could be located.
+	 */
+	private static String getLocalVagrantPath() {
+		try {
+			URL vgurl = VagrantConnection.class.getResource("/resources/vagrant"); // $NON-NLS-1$
+			if (vgurl != null) {
+				URL rurl = FileLocator.resolve(vgurl);
+				File lvg = new File(rurl.getPath());
+				if (lvg.exists()) {
+					return lvg.getCanonicalPath();
+				}
+			}
+		} catch (IOException e) {
 		}
 		return null;
 	}
