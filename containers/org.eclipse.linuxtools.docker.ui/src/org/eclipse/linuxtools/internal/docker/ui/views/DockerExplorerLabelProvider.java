@@ -38,8 +38,6 @@ import org.eclipse.swt.graphics.Image;
  */
 public class DockerExplorerLabelProvider implements IStyledLabelProvider, ILabelProvider {
 
-	private static final String UNNAMED_CONNECTION = "Connection.unnamed"; //$NON-NLS-1$
-
 	@Override
 	public void addListener(ILabelProviderListener listener) {
 	}
@@ -102,13 +100,9 @@ public class DockerExplorerLabelProvider implements IStyledLabelProvider, ILabel
 		}
 		if(element instanceof IDockerConnection) {
 			final IDockerConnection connection = (IDockerConnection) element;
-			final String connectionName = (connection.getName() != null
-					&& !connection.getName().isEmpty())
-					? connection.getName()
-					: DVMessages.getString(UNNAMED_CONNECTION);
-			final String message = connectionName + " (" + connection.getUri() + ")";
+			final String message = connection.getName() + " (" + connection.getUri() + ")";
 			final StyledString styledString = new StyledString(message);
-			styledString.setStyle(connectionName.length(), message.length() - connectionName.length(), StyledString.QUALIFIER_STYLER);
+			styledString.setStyle(connection.getName().length(), message.length() - connection.getName().length(), StyledString.QUALIFIER_STYLER);
 			return styledString;
 		} else if(element instanceof DockerImagesCategory) {
 			return new StyledString("Images");
