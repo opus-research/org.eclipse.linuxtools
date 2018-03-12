@@ -42,6 +42,8 @@ public class LTTngToolsFileShell extends TestCommandShell {
     private final static String RESULT_KEY = "<COMMAND_RESULT>";
     private final static String OUTPUT_KEY = "<COMMAND_OUTPUT>";
     private final static String OUTPUT_END_KEY = "</COMMAND_OUTPUT>";
+    private final static String ERROR_OUTPUT_KEY = "<COMMAND_ERROR_OUTPUT>";
+    private final static String ERROR_OUTPUT_END_KEY = "</COMMAND_ERROR_OUTPUT>";
     private final static String COMMENT_KEY = "#.*";
 
     private final static Pattern LTTNG_LIST_SESSION_PATTERN =  Pattern.compile("lttng\\s+list\\s+(.+)");
@@ -71,6 +73,9 @@ public class LTTngToolsFileShell extends TestCommandShell {
      *
      * <COMMAND_OUTPUT>
      * CommandOutput
+     * <COMMAND_ERROR_OUTPUT>
+     * Error
+     * </COMMAND_ERROR_OUTPUT>
      * </COMMAND_OUTPUT>
      *
      * </SCENARIO>
@@ -79,6 +84,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
      *        Command - the command line string
      *        CommandResult - the result integer of the command (0 for success, 1 for failure)
      *        ComandOutput - the command output string (multi-line possible)
+     *        ComandErrorOutput - the command error output string (multi-line possible)
      *
      * Note: 1) There can be many scenarios per file
      *       2) There can be many (Command-CommandResult-CommandOutput) triples per scenario
@@ -132,8 +138,10 @@ public class LTTngToolsFileShell extends TestCommandShell {
                     Map<String, ICommandResult> commandMap = new HashMap<>();
                     fScenarioMap.put(scenario, commandMap);
                     List<String> output = null;
+                    List<String> errorOutput = null;
                     String input = null;
                     boolean inOutput = false;
+                    boolean inErrorOutput = false;
                     int result = 0;
                     tmpSessionNameMap.clear();
                     while ((strLine = br.readLine()) != null) {
@@ -172,6 +180,7 @@ public class LTTngToolsFileShell extends TestCommandShell {
                         } else if (INPUT_END_KEY.equals(strLine)) {
                             // Initialize output array
                             output = new ArrayList<>();
+                            errorOutput = new ArrayList<>();
                         } else if (RESULT_KEY.equals(strLine)) {
                             strLine = br.readLine();
                             // Ignore comments
@@ -182,25 +191,26 @@ public class LTTngToolsFileShell extends TestCommandShell {
                             result = Integer.parseInt(strLine);
                         } else if (OUTPUT_END_KEY.equals(strLine)) {
                             // Save output/result in command map
-                            if (output != null) {
-                                commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()])));
+                            if (output != null && errorOutput != null) {
+                                commandMap.put(input, new CommandResult(result, output.toArray(new String[output.size()]), errorOutput.toArray(new String[errorOutput.size()])));
                             }
                             inOutput = false;
                         } else if (OUTPUT_KEY.equals(strLine)) {
                             // first line of output
                             inOutput = true;
-                            strLine = br.readLine();
-
-                            // Ignore comments
+                        } else if (ERROR_OUTPUT_KEY.equals(strLine)) {
+                            // first line of output
+                            inErrorOutput = true;
+                        } else if (ERROR_OUTPUT_END_KEY.equals(strLine)) {
+                            inErrorOutput = false;
+                        } else if (inOutput) {
                             while (isComment(strLine)) {
                                 strLine = br.readLine();
                             }
-                            if (output != null) {
-                                output.add(strLine);
-                            }
-                        } else if (inOutput) {
-                            // subsequent lines of output
-                            if (output != null) {
+                            // lines of output/error output
+                            if (errorOutput != null && inErrorOutput) {
+                                errorOutput.add(strLine);
+                            } else if (output != null) {
                                 output.add(strLine);
                             }
                         }
@@ -247,9 +257,10 @@ public class LTTngToolsFileShell extends TestCommandShell {
 
         String[] output = new String[1];
         output[0] = String.valueOf("Command not found");
-        CommandResult result = new CommandResult(0, null);
+        CommandResult result = new CommandResult(0, null, null);
         // For verification of setters of class CommandResult
         result.setOutput(output);
+        result.setErrorOutput(output);
         result.setResult(1);
         return result;
    }
