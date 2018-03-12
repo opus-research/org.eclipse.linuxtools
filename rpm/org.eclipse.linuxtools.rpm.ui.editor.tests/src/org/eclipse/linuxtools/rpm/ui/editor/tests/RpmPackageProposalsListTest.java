@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 Alphonse Van Assche.
+ * Copyright (c) 2007 Alphonse Van Assche.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,14 +13,15 @@ package org.eclipse.linuxtools.rpm.ui.editor.tests;
 
 import static org.junit.Assert.fail;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.linuxtools.internal.rpm.ui.editor.Activator;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.RpmPackageProposalsList;
 import org.eclipse.linuxtools.internal.rpm.ui.editor.preferences.PreferenceConstants;
+import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,10 +30,15 @@ public class RpmPackageProposalsListTest {
     private RpmPackageProposalsList packageProposalsList;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         Activator.getDefault().getPreferenceStore().setValue(
                 PreferenceConstants.P_RPM_LIST_FILEPATH, "/tmp/pkglist");
-        Files.write(Paths.get("/tmp/pkglist"), "setup\ntest\nrpm\n".getBytes());
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(
+                "/tmp/pkglist"))) {
+            out.write("setup\ntest\nrpm\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         packageProposalsList = new RpmPackageProposalsList();
     }
 
@@ -46,7 +52,7 @@ public class RpmPackageProposalsListTest {
 
     @Test
     public final void testGetValue() {
-        if (Files.exists(Paths.get("/bin/rpm"))) {
+        if (Utils.fileExist("/bin/rpm")) {
             if (!packageProposalsList.getValue("rpm").startsWith(
                     "<b>Name: </b>rpm")) {
                 fail("getValue failed, rpm package info doesn't start with '<b>Name:<b> rpm'");
@@ -63,7 +69,7 @@ public class RpmPackageProposalsListTest {
 
     @Test
     public final void testGetRpmInfo() {
-        if (Files.exists(Paths.get("/bin/rpm"))) {
+        if (Utils.fileExist("/bin/rpm")) {
             if (!packageProposalsList.getRpmInfo("rpm").startsWith(
                     "<b>Name: </b>rpm")) {
                 fail("getRpmInfo failed, rpm package info doesn't start with '<b>Name:<b> rpm'");

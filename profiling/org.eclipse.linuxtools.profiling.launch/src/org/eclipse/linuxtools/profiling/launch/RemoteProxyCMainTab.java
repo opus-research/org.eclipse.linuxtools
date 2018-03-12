@@ -49,6 +49,8 @@ import org.eclipse.linuxtools.internal.profiling.launch.ProfileLaunchPlugin;
 import org.eclipse.linuxtools.profiling.launch.ui.ResourceSelectorWidget;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -376,13 +378,17 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         fProjText = new Text(projComp, SWT.SINGLE | SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         fProjText.setLayoutData(gd);
-        fProjText.addModifyListener(evt -> {
-		    // if project changes, invalidate program name cache
-		    fPreviouslyCheckedProgram = null;
+        fProjText.addModifyListener(new ModifyListener() {
 
-		    updateBuildConfigCombo(""); //$NON-NLS-1$
-		    updateLaunchConfigurationDialog();
-		});
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                // if project changes, invalidate program name cache
+                fPreviouslyCheckedProgram = null;
+
+                updateBuildConfigCombo(""); //$NON-NLS-1$
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         fProjButton = createPushButton(projComp,
                 LaunchMessages.Launch_common_Browse_1, null);
@@ -473,7 +479,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
         });
 
         copyFromExeText = copyFromExeSelector.getURIText();
-        copyFromExeText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        copyFromExeText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
 
@@ -491,7 +502,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
                 ResourceSelectorWidget.ResourceType.FILE,
                 2, "C/C++ executable", null); //$NON-NLS-1$
         fProgText = exeSelector.getURIText();
-        fProgText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        fProgText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
     protected void updateWorkingDirFromConfig(ILaunchConfiguration config) {
@@ -532,7 +548,12 @@ public class RemoteProxyCMainTab extends CAbstractMainTab {
                 ResourceSelectorWidget.ResourceType.DIRECTORY,
                 2, "Working directory", null); //$NON-NLS-1$
         workingDirText = workingDirSelector.getURIText();
-        workingDirText.addModifyListener(evt -> updateLaunchConfigurationDialog());
+        workingDirText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent evt) {
+                updateLaunchConfigurationDialog();
+            }
+        });
     }
 
     private boolean checkCopyFromExe(IProject project) {

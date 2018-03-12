@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2016 Red Hat, Inc.
+ * Copyright (c) 2009-2010 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,10 +11,14 @@
 package org.eclipse.linuxtools.rpm.core.utils;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SequenceInputStream;
+import java.nio.channels.FileChannel;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
@@ -24,6 +28,7 @@ import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.FrameworkUtil;
 /**
  * Utilities for calling system executables.
+ *
  */
 public class Utils {
 
@@ -94,18 +99,22 @@ public class Utils {
                 new SequenceInputStream(child.getInputStream(),
                         child.getErrorStream()));
 
-        Thread readinJob = new Thread(() -> {
-		    try {
-		        int i;
-		        while ((i = in.read()) != -1) {
-		            outStream.write(i);
-		        }
-		        outStream.flush();
-		        outStream.close();
-		        in.close();
-		    } catch (IOException e) {}
-		    return;
-		});
+        Thread readinJob = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int i;
+                    while ((i = in.read()) != -1) {
+                        outStream.write(i);
+                    }
+                    outStream.flush();
+                    outStream.close();
+                    in.close();
+                } catch (IOException e) {}
+                return;
+            }
+
+        });
         readinJob.start();
 
         boolean canceled = false;
@@ -181,5 +190,30 @@ public class Utils {
         }
         stream.close();
         return retStr.toString();
+    }
+
+    /**
+     * Checks whether a file exists.
+     *
+     * @param cmdPath The file path to be checked.
+     * @return <code>true</code> if the file exists, <code>false</code> otherwise.
+     */
+    public static boolean fileExist(String cmdPath) {
+        return new File(cmdPath).exists();
+    }
+
+    /**
+     * Copy file from one destination to another.
+     * @param in The source file.
+     * @param out The destination.
+     * @throws IOException If an I/O exception occurs.
+     */
+    public static void copyFile(File in, File out) throws IOException {
+        try (FileInputStream fin = new FileInputStream(in);
+                FileChannel inChannel = fin.getChannel();
+                FileOutputStream fos = new FileOutputStream(out);
+                FileChannel outChannel = fos.getChannel()) {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        }
     }
 }

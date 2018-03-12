@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Red Hat.
+ * Copyright (c) 2014, 2015 Red Hat.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,12 +59,10 @@ import org.eclipse.linuxtools.internal.docker.core.UnixSocketConnectionSettings;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.preferences.PreferenceConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -106,12 +104,7 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	@Override
 	public void createControl(final Composite parent) {
-		final ScrolledComposite scrollTop = new ScrolledComposite(parent,
-				SWT.H_SCROLL | SWT.V_SCROLL);
-		scrollTop.setExpandVertical(true);
-		scrollTop.setExpandHorizontal(true);
-
-		final Composite container = new Composite(scrollTop, SWT.NONE);
+		final Composite container = new Composite(parent, SWT.NONE);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(container);
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL)
 				.applyTo(container);
@@ -119,11 +112,6 @@ public class NewDockerConnectionPage extends WizardPage {
 		// attach the Databinding context status to this wizard page.
 		WizardPageSupport.create(this, this.dbc);
 		retrieveDefaultConnectionSettings();
-
-		scrollTop.setContent(container);
-		Point point = container.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		scrollTop.setSize(point);
-		scrollTop.setMinSize(point);
 		setControl(container);
 	}
 
@@ -271,15 +259,15 @@ public class NewDockerConnectionPage extends WizardPage {
 				.addSelectionListener(onTestConnectionButtonSelection());
 
 		// observe
-		final IObservableValue<String> connectionNameModelObservable = BeanProperties
+		final IObservableValue connectionNameModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CONNECTION_NAME)
 				.observe(model);
-		final IObservableValue<Boolean> unixSocketBindingModeModelObservable = BeanProperties
+		final IObservableValue unixSocketBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_BINDING_MODE)
 				.observe(model);
-		final IObservableValue<String> unixSocketPathModelObservable = BeanProperties
+		final IObservableValue unixSocketPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.UNIX_SOCKET_PATH)
 				.observe(model);
@@ -288,19 +276,19 @@ public class NewDockerConnectionPage extends WizardPage {
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.CUSTOM_SETTINGS)
 				.observe(model);
-		final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable = BeanProperties
+		final IObservableValue tcpConnectionBindingModeModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CONNECTION_BINDING_MODE)
 				.observe(model);
-		final IObservableValue<String> tcpCertPathModelObservable = BeanProperties
+		final IObservableValue tcpCertPathModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_CERT_PATH)
 				.observe(model);
-		final IObservableValue<Boolean> tcpTlsVerifyModelObservable = BeanProperties
+		final IObservableValue tcpTlsVerifyModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_TLS_VERIFY)
 				.observe(model);
-		final IObservableValue<String> tcpHostModelObservable = BeanProperties
+		final IObservableValue tcpHostModelObservable = BeanProperties
 				.value(NewDockerConnectionPageModel.class,
 						NewDockerConnectionPageModel.TCP_HOST)
 				.observe(model);
@@ -664,9 +652,8 @@ public class NewDockerConnectionPage extends WizardPage {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (!DockerMachine
-						.checkPathToDockerMachine(getDockerMachineInstallDir())
-						|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+				if (getDockerMachineInstallDir().equals("")
+						|| getVMDriverInstallDir().equals("")) {
 					final boolean confirm = MessageDialog.openConfirm(
 							getShell(),
 									WizardMessages.getString(
@@ -680,8 +667,8 @@ public class NewDockerConnectionPage extends WizardPage {
 										DOCKER_MACHINE_PREFERENCE_PAGE_ID },
 								null).open();
 						// after user input data, check again
-						if (getDockerMachineInstallDir().equals("") //$NON-NLS-1$
-								|| getVMDriverInstallDir().equals("")) { //$NON-NLS-1$
+						if (getDockerMachineInstallDir().equals("")
+								|| getVMDriverInstallDir().equals("")) {
 							return;
 						}
 					} else {
@@ -790,23 +777,23 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class ConnectionNameValidator extends MultiValidator {
 
-		private final IObservableValue<String> connectionNameModelObservable;
+		private final IObservableValue connectionNameModelObservable;
 
 		public ConnectionNameValidator(
-				final IObservableValue<String> connectionNameModelObservable) {
+				final IObservableValue connectionNameModelObservable) {
 			this.connectionNameModelObservable = connectionNameModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(connectionNameModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final String connectionName = this.connectionNameModelObservable
+			final String connectionName = (String) this.connectionNameModelObservable
 					.getValue();
 			if (connectionName == null || connectionName.isEmpty()) {
 				return ValidationStatus.cancel(WizardMessages.getString(
@@ -822,28 +809,28 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class UnixSocketValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> unixSocketBindingModeModelObservable;
-		private final IObservableValue<String> unixSocketPathModelObservable;
+		private final IObservableValue unixSocketBindingModeModelObservable;
+		private final IObservableValue unixSocketPathModelObservable;
 
 		public UnixSocketValidator(
-				final IObservableValue<Boolean> unixSocketBindingModeModelObservable,
-				final IObservableValue<String> unixSocketPathModelObservable) {
+				final IObservableValue unixSocketBindingModeModelObservable,
+				final IObservableValue unixSocketPathModelObservable) {
 			this.unixSocketBindingModeModelObservable = unixSocketBindingModeModelObservable;
 			this.unixSocketPathModelObservable = unixSocketPathModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(unixSocketPathModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean unixSocketBindingMode = this.unixSocketBindingModeModelObservable
+			final Boolean unixSocketBindingMode = (Boolean) this.unixSocketBindingModeModelObservable
 					.getValue();
-			final String unixSocketPath = this.unixSocketPathModelObservable
+			final String unixSocketPath = (String) this.unixSocketPathModelObservable
 					.getValue();
 			if (unixSocketBindingMode) {
 				if (unixSocketPath == null || unixSocketPath.isEmpty()) {
@@ -888,28 +875,29 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class TcpHostValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable;
-		private final IObservableValue<String> tcpHostModelObservable;
+		private final IObservableValue tcpConnectionBindingModeModelObservable;
+		private final IObservableValue tcpHostModelObservable;
 
 		public TcpHostValidator(
-				final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable,
-				final IObservableValue<String> tcpHostModelObservable) {
+				final IObservableValue tcpConnectionBindingModeModelObservable,
+				final IObservableValue tcpHostModelObservable) {
 			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
 			this.tcpHostModelObservable = tcpHostModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpHostModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = this.tcpConnectionBindingModeModelObservable
+			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
 					.getValue();
-			final String tcpHost = this.tcpHostModelObservable.getValue();
+			final String tcpHost = (String) this.tcpHostModelObservable
+					.getValue();
 			if (tcpConnectionBindingMode) {
 				if (tcpHost == null || tcpHost.isEmpty()) {
 					return ValidationStatus.error(WizardMessages.getString(
@@ -948,33 +936,33 @@ public class NewDockerConnectionPage extends WizardPage {
 
 	private static class TcpCertificatesValidator extends MultiValidator {
 
-		private final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable;
-		private final IObservableValue<Boolean> tcpTlsVerifyModelObservable;
-		private final IObservableValue<String> tcpCertPathModelObservable;
+		private final IObservableValue tcpConnectionBindingModeModelObservable;
+		private final IObservableValue tcpTlsVerifyModelObservable;
+		private final IObservableValue tcpCertPathModelObservable;
 
 		public TcpCertificatesValidator(
-				final IObservableValue<Boolean> tcpConnectionBindingModeModelObservable,
-				final IObservableValue<Boolean> tcpTlsVerifyModelObservable,
-				final IObservableValue<String> tcpCertPathModelObservable) {
+				final IObservableValue tcpConnectionBindingModeModelObservable,
+				final IObservableValue tcpTlsVerifyModelObservable,
+				final IObservableValue tcpCertPathModelObservable) {
 			this.tcpConnectionBindingModeModelObservable = tcpConnectionBindingModeModelObservable;
 			this.tcpTlsVerifyModelObservable = tcpTlsVerifyModelObservable;
 			this.tcpCertPathModelObservable = tcpCertPathModelObservable;
 		}
 
 		@Override
-		public IObservableList<IObservableValue<String>> getTargets() {
-			WritableList<IObservableValue<String>> targets = new WritableList<>();
+		public IObservableList getTargets() {
+			WritableList targets = new WritableList();
 			targets.add(tcpCertPathModelObservable);
 			return targets;
 		}
 
 		@Override
 		protected IStatus validate() {
-			final Boolean tcpConnectionBindingMode = this.tcpConnectionBindingModeModelObservable
+			final Boolean tcpConnectionBindingMode = (Boolean) this.tcpConnectionBindingModeModelObservable
 					.getValue();
-			final Boolean tcpTlsVerify = this.tcpTlsVerifyModelObservable
+			final Boolean tcpTlsVerify = (Boolean) this.tcpTlsVerifyModelObservable
 					.getValue();
-			final String tcpCertPath = this.tcpCertPathModelObservable
+			final String tcpCertPath = (String) this.tcpCertPathModelObservable
 					.getValue();
 			if (tcpConnectionBindingMode && tcpTlsVerify) {
 				if (tcpCertPath == null || tcpCertPath.isEmpty()) {

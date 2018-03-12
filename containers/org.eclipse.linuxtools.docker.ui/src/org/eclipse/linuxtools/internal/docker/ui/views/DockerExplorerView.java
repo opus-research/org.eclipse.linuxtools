@@ -348,9 +348,8 @@ public class DockerExplorerView extends CommonNavigator implements
 			@Override
 			public void run() {
 				if (getCommonViewer().getTree() != null
-						&& !getCommonViewer().getTree().isDisposed()) {
+						&& !getCommonViewer().getTree().isDisposed())
 					getCommonViewer().refresh(connection, true);
-				}
 			}
 		});
 	}
