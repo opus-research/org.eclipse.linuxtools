@@ -17,9 +17,7 @@ import org.eclipse.linuxtools.docker.core.EnumDockerStatus;
 import org.eclipse.linuxtools.docker.core.IDockerContainer;
 
 /**
- * Filters out any {@link IDockerContainer} that is not in a running or paused
- * state.
- * 
+ * Filters out any {@link IDockerContainer} that is not in a running state.
  * @author xcoulon
  *
  */
@@ -33,8 +31,7 @@ public class HideStoppedContainersViewerFilter extends ViewerFilter {
 		if(element instanceof IDockerContainer) {
 			final IDockerContainer container = (IDockerContainer) element;
 			final EnumDockerStatus containerStatus = EnumDockerStatus.fromStatusMessage(container.status());
-			if (containerStatus == EnumDockerStatus.RUNNING
-					|| containerStatus == EnumDockerStatus.PAUSED) {
+			if(containerStatus == EnumDockerStatus.RUNNING) {
 				return true;
 			}
 			return false;
