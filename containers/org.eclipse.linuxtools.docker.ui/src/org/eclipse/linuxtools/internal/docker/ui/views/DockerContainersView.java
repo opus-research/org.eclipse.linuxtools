@@ -397,8 +397,10 @@ public class DockerContainersView extends ViewPart implements
 		IAction ret = new Action(label, img) {
 			@Override
 			public void run() {
-				IStructuredSelection sel = getStructuredSelection();
-				CommandUtils.execute(id, sel);
+				ISelection sel = getSelection();
+				if (sel instanceof StructuredSelection) {
+					CommandUtils.execute(id, (StructuredSelection) sel);
+				}
 			}
 		};
 		ret.setEnabled(false);
@@ -470,8 +472,11 @@ public class DockerContainersView extends ViewPart implements
 
 	private ISelectionChangedListener onContainerSelection() {
 		return event -> {
-			IStructuredSelection s = event.getStructuredSelection();
-			updateToolBarItemEnablement(s);
+			ISelection s = event.getSelection();
+			if (s instanceof StructuredSelection) {
+				StructuredSelection ss = (StructuredSelection) s;
+				updateToolBarItemEnablement(ss);
+			}
 		};
 	}
 
@@ -590,11 +595,11 @@ public class DockerContainersView extends ViewPart implements
 	/**
 	 * @return the current selection
 	 */
-	public IStructuredSelection getStructuredSelection() {
-		if (this.viewer != null) {
-			return this.viewer.getStructuredSelection();
+	public ISelection getSelection() {
+		if(this.viewer != null) {
+			return this.viewer.getSelection();
 		}
-		return StructuredSelection.EMPTY;
+		return null;
 	}
 
 	/**

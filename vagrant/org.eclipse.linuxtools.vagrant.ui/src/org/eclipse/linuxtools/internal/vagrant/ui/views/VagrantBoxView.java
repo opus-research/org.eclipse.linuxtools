@@ -20,8 +20,6 @@ import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -257,11 +255,11 @@ public class VagrantBoxView extends ViewPart implements IVagrantBoxListener {
 	/**
 	 * @return the current selection
 	 */
-	public IStructuredSelection getStructuredSelection() {
-		if (this.viewer != null) {
-			return this.viewer.getStructuredSelection();
+	public ISelection getSelection() {
+		if(this.viewer != null) {
+			return this.viewer.getSelection();
 		}
-		return StructuredSelection.EMPTY;
+		return null;
 	}
 
 	/**

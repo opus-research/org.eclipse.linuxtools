@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Red Hat Inc. and others.
+ * Copyright (c) 2014, 2016 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
@@ -127,20 +128,20 @@ public class CommandUtils {
 	private static <T> List<T> getSelectedElements(
 			final IWorkbenchPart activePart, final Class<T> targetClass) {
 		if (activePart instanceof DockerContainersView) {
-			final IStructuredSelection selection = ((DockerContainersView) activePart)
-					.getStructuredSelection();
+			final ISelection selection = ((DockerContainersView) activePart)
+					.getSelection();
 			return castSelectionTo(selection, targetClass);
 		} else if (activePart instanceof DockerImagesView) {
-			final IStructuredSelection selection = ((DockerImagesView) activePart)
-					.getStructuredSelection();
+			final ISelection selection = ((DockerImagesView) activePart)
+					.getSelection();
 			return castSelectionTo(selection, targetClass);
 		} else if (activePart instanceof DockerExplorerView) {
-			final IStructuredSelection selection = ((DockerExplorerView) activePart)
-					.getCommonViewer().getStructuredSelection();
+			final ISelection selection = ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
 			return castSelectionTo(selection, targetClass);
 		} else if (activePart instanceof DockerImageHierarchyView) {
-			final IStructuredSelection selection = ((DockerImageHierarchyView) activePart)
-					.getCommonViewer().getStructuredSelection();
+			final ISelection selection = ((DockerImageHierarchyView) activePart)
+					.getCommonViewer().getSelection();
 			return adaptSelectionTo(selection, targetClass);
 		}
 		return Collections.emptyList();
@@ -219,13 +220,17 @@ public class CommandUtils {
 	 *         {@code targetClass}.
 	 */
 	@SuppressWarnings("unchecked")
-	private static <T> List<T> castSelectionTo(
-			final IStructuredSelection selection, final Class<T> targetClass) {
-		return (List<T>) selection.toList().stream()
-				.filter(selectedElement -> targetClass
-						.isAssignableFrom(selectedElement.getClass()))
-				.map(selectedElement -> (T) selectedElement)
-				.collect(Collectors.toList());
+	private static <T> List<T> castSelectionTo(final ISelection selection,
+			final Class<T> targetClass) {
+		if (selection instanceof IStructuredSelection) {
+			final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+			return (List<T>) structuredSelection.toList().stream()
+					.filter(selectedElement -> targetClass
+							.isAssignableFrom(selectedElement.getClass()))
+					.map(selectedElement -> (T) selectedElement)
+					.collect(Collectors.toList());
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -241,15 +246,19 @@ public class CommandUtils {
 	 *         {@code targetClass}.
 	 */
 	@SuppressWarnings("unchecked")
-	private static <T> List<T> adaptSelectionTo(
-			final IStructuredSelection selection, final Class<T> targetClass) {
-		return (List<T>) selection.toList().stream()
-				.filter(selectedElement -> selectedElement instanceof IAdaptable
-						&& ((IAdaptable) selectedElement)
-								.getAdapter(targetClass) != null)
-				.map(selectedElement -> ((IAdaptable) selectedElement)
-						.getAdapter(targetClass))
-				.collect(Collectors.toList());
+	private static <T> List<T> adaptSelectionTo(final ISelection selection,
+			final Class<T> targetClass) {
+		if (selection instanceof IStructuredSelection) {
+			final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+			return (List<T>) structuredSelection.toList().stream()
+					.filter(selectedElement -> selectedElement instanceof IAdaptable
+							&& ((IAdaptable) selectedElement)
+									.getAdapter(targetClass) != null)
+					.map(selectedElement -> ((IAdaptable) selectedElement)
+							.getAdapter(targetClass))
+					.collect(Collectors.toList());
+		}
+		return Collections.emptyList();
 	}
 
 	/**
