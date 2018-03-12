@@ -33,7 +33,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	private Map<IDockerConnection, ContainerRefreshThread> refreshThreadMap;
 
 	private DockerContainerRefreshManager() {
-		this.refreshThreadMap = new HashMap<>();
+		refreshThreadMap = new HashMap<>();
 	}
 
 	public static DockerContainerRefreshManager getInstance() {
@@ -47,7 +47,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	 *         that are monitored
 	 */
 	public Set<IDockerConnection> getConnections() {
-		return Collections.unmodifiableSet(this.refreshThreadMap.keySet());
+		return Collections.unmodifiableSet(refreshThreadMap.keySet());
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 			final IDockerConnection connection,
 			final List<IDockerContainer> dclist) {
 
-		if (!this.refreshThreadMap.containsKey(connection)) {
+		if (!refreshThreadMap.containsKey(connection)) {
 			long refreshRateInSeconds = Platform.getPreferencesService()
 					.getLong("org.eclipse.linuxtools.docker.ui", //$NON-NLS-1$ 
 							"containerRefreshTime", DEFAULT_REFRESH_TIME, null); //$NON-NLS-1$
@@ -63,7 +63,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 					connection,
 					TimeUnit.SECONDS.toMillis(refreshRateInSeconds));
 			rt.start();
-			this.refreshThreadMap.put(connection, rt);
+			refreshThreadMap.put(connection, rt);
 		}
 	}
 
@@ -76,13 +76,11 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	 */
 	public synchronized void removeContainerRefreshThread(
 			final IDockerConnection connection) {
-		if (this.refreshThreadMap.containsKey(connection)) {
+
+		if (refreshThreadMap.containsKey(connection)) {
 			final ContainerRefreshThread containerRefreshThread = refreshThreadMap.get(connection);
 			containerRefreshThread.stopMonitoring();
-			final ContainerRefreshThread removed = this.refreshThreadMap.remove(connection);
-			System.err.println("Removed connection refresher:" + removed);
-			System.err.println(
-					"Remaining connections:" + this.refreshThreadMap.keySet());
+			refreshThreadMap.remove(connection);
 		}
 	}
 
@@ -95,7 +93,7 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	public void setRefreshTime(long seconds) {
 		if (seconds >= 5) {
 			long refreshRate = TimeUnit.SECONDS.toMillis(seconds);
-			for (ContainerRefreshThread t : this.refreshThreadMap.values()) {
+			for (ContainerRefreshThread t : refreshThreadMap.values()) {
 				t.setSleepTime(refreshRate);
 			}
 		}
@@ -181,9 +179,9 @@ public class DockerContainerRefreshManager implements IDockerContainerListener {
 	 * Method to kill all threads at shutdown.
 	 */
 	public void killAllThreads() {
-		for (ContainerRefreshThread rt : this.refreshThreadMap.values()) {
+		for (ContainerRefreshThread rt : refreshThreadMap.values()) {
 			rt.kill();
-			this.refreshThreadMap.remove(rt.getConnection());
+			refreshThreadMap.remove(rt.getConnection());
 		}
 	}
 }
