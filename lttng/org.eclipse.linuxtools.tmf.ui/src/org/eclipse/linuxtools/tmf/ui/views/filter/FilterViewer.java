@@ -344,8 +344,10 @@ class FilterViewer extends Composite {
         return fViewer.getControl().setFocus();
     }
 
-    @Override
-    public boolean isFocusControl() {
+    /**
+     * @return whether the tree is in focus or not
+     */
+    boolean isTreeInFocus() {
         return fViewer.getControl().isFocusControl();
     }
 

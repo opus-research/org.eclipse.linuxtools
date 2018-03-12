@@ -67,7 +67,7 @@ public class DeleteHandler extends AbstractHandler {
         if (part instanceof FilterView) {
             FilterView tcv = (FilterView) part;
             ISelection selection = tcv.getSite().getSelectionProvider().getSelection();
-            // only execute if tree is in focus
+            // only enable if tree is in focus
             if (!selection.isEmpty() && tcv.isTreeInFocus()) {
                 return true;
             }

@@ -201,7 +201,7 @@ public class FilterView extends TmfView {
      * @return whether the tree is in focus or not
      */
     boolean isTreeInFocus() {
-        return fViewer.isFocusControl();
+        return fViewer.isTreeInFocus();
     }
 
     /**
