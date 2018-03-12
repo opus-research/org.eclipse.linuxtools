@@ -41,6 +41,7 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	private static final String JSCH_ID = "org.eclipse.jsch.core";
 	private static final String KEY = "PRIVATEKEY";
 	private static final String VG = "vagrant"; //$NON-NLS-1$
+	private static VagrantConnection client;
 	private final Object imageLock = new Object();
 	private final Object containerLock = new Object();
 
@@ -53,12 +54,19 @@ public class VagrantConnection implements IVagrantConnection, Closeable {
 	ListenerList vmListeners;
 	ListenerList boxListeners;
 
-	public VagrantConnection() {
+	private VagrantConnection() {
 		// Add the box/vm refresh manager to watch the containers list
 		VagrantBoxRefreshManager vbrm = VagrantBoxRefreshManager.getInstance();
 		VagrantVMRefreshManager vvrm = VagrantVMRefreshManager.getInstance();
 		addBoxListener(vbrm);
 		addVMListener(vvrm);
+	}
+
+	public static IVagrantConnection getInstance() {
+		if (client == null) {
+			client = new VagrantConnection();
+		}
+		return client;
 	}
 
 	@Override

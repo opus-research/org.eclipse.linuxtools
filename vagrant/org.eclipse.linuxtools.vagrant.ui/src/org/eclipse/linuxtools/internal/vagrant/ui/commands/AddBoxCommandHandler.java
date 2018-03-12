@@ -22,7 +22,6 @@ import org.eclipse.linuxtools.internal.vagrant.ui.views.DVMessages;
 import org.eclipse.linuxtools.internal.vagrant.ui.wizards.AddBoxWizard;
 import org.eclipse.linuxtools.vagrant.core.IVagrantConnection;
 import org.eclipse.linuxtools.vagrant.core.VagrantException;
-import org.eclipse.linuxtools.vagrant.core.VagrantService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -54,7 +53,7 @@ public class AddBoxCommandHandler extends AbstractHandler {
 				// pull the image and let the progress
 				// handler refresh the images when done
 				try {
-					IVagrantConnection connection = VagrantService.getInstance();
+					IVagrantConnection connection = VagrantConnection.getInstance();
 					connection.addBox(boxName, boxLoc);
 					connection.getBoxes(true);
 				} catch (final VagrantException e) {
