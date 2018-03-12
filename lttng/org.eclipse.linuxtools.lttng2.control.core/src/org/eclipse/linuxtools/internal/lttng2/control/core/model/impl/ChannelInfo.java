@@ -192,12 +192,7 @@ public class ChannelInfo extends TraceInfo implements IChannelInfo {
 
     @Override
     public void setState(String stateName) {
-        fState = TraceEnablement.ENABLED;
-        if (TraceEnablement.DISABLED.getInName().equals(stateName)) {
-            fState = TraceEnablement.DISABLED;
-        } else if (TraceEnablement.ENABLED.getInName().equals(stateName)) {
-            fState = TraceEnablement.ENABLED;
-        }
+        this.setState(TraceEnablement.valueOfString(stateName));
     }
 
     @Override
