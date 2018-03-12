@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.databinding.DataBindingContext;
@@ -31,11 +30,10 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
+import org.eclipse.linuxtools.docker.core.IRegistry;
 import org.eclipse.linuxtools.docker.core.IRepositoryTag;
 import org.eclipse.linuxtools.docker.ui.Activator;
-import org.eclipse.linuxtools.internal.docker.core.DockerHubRegistry;
 import org.eclipse.linuxtools.internal.docker.ui.SWTImagesFactory;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageSearchPage.IconColumnLabelProvider;
 import org.eclipse.swt.SWT;
@@ -53,6 +51,7 @@ public class ImageTagSelectionPage extends WizardPage {
 
 	private final ImageSearchModel model;
 	private final DataBindingContext ctx = new DataBindingContext();
+	private IRegistry registry;
 
 	/**
 	 * Default constructor.
@@ -60,12 +59,13 @@ public class ImageTagSelectionPage extends WizardPage {
 	 * @param model
 	 *            the model associated to this page
 	 */
-	public ImageTagSelectionPage(final ImageSearchModel model) {
+	public ImageTagSelectionPage(final ImageSearchModel model, final IRegistry registry) {
 		super("ImageTagSelectionPage", //$NON-NLS-1$
 				WizardMessages.getString("ImageTagSelectionPage.title"), //$NON-NLS-1$
 				SWTImagesFactory.DESC_BANNER_REPOSITORY);
 		setMessage(WizardMessages.getString("ImageTagSelectionPage.title")); //$NON-NLS-1$
 		this.model = model;
+		this.registry = registry;
 	}
 
 	@Override
@@ -82,35 +82,28 @@ public class ImageTagSelectionPage extends WizardPage {
 					1);
 			ImageTagSelectionPage.this.getContainer().run(true, true,
 					monitor -> {
-						try {
-							monitor.beginTask(
-									WizardMessages.getString(
-											"ImageTagSelectionPage.searchTask"), //$NON-NLS-1$
-									2);
-							final String selectedImageName = ImageTagSelectionPage.this.model
-									.getSelectedImage().getName();
-							final List<IRepositoryTag> repositoryTags = new DockerHubRegistry()
-									.getTags(selectedImageName);
-							monitor.worked(1);
-							final List<DockerImageTagSearchResult> searchResults = new ArrayList<>();
-							final IDockerConnection connection = model
-									.getSelectedConnection();
-							for (IRepositoryTag repositoryTag : repositoryTags) {
-								searchResults
-										.add(new DockerImageTagSearchResult(
-												selectedImageName,
-												repositoryTag,
-												connection.hasImage(
-														selectedImageName,
-														repositoryTag
-																.getName())));
-							}
-							monitor.worked(1);
-							searchResultQueue.offer(searchResults);
-						} catch (DockerException | InterruptedException
-								| ExecutionException e) {
-							Activator.log(e);
+						monitor.beginTask(
+								WizardMessages.getString(
+										"ImageTagSelectionPage.searchTask"), //$NON-NLS-1$
+								2);
+						final String selectedImageName = ImageTagSelectionPage.this.model
+								.getSelectedImage().getName();
+						final List<IRepositoryTag> repositoryTags = registry
+								.getTags(selectedImageName);
+						monitor.worked(1);
+						final List<DockerImageTagSearchResult> searchResults = new ArrayList<>();
+						final IDockerConnection connection = model
+								.getSelectedConnection();
+						for (IRepositoryTag repositoryTag : repositoryTags) {
+							searchResults
+									.add(new DockerImageTagSearchResult(
+											selectedImageName, repositoryTag,
+											connection.hasImage(
+													selectedImageName,
+													repositoryTag.getName())));
 						}
+						monitor.worked(1);
+						searchResultQueue.offer(searchResults);
 						monitor.done();
 					});
 			List<DockerImageTagSearchResult> res = searchResultQueue.poll(10,
