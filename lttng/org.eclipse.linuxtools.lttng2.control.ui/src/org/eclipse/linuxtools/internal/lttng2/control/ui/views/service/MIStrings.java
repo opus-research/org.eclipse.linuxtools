@@ -537,7 +537,7 @@ public interface MIStrings {
     /**
      * Represent the snapshot_outputs xml element
      */
-     String SNAPSHOT_OUTPUTS = "snapshot";
+     String SNAPSHOT_OUTPUTS = "snapshot_outputs";
 
     /**
      * Represent the consumer_output xml element
