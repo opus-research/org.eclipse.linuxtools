@@ -29,6 +29,7 @@ import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.ClearConnectionMa
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.CloseWelcomePageRule;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerConnectionManagerUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.DockerExplorerViewAssertion;
+import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.MenuAssertion;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTBotTreeItemAssertions;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.SWTUtils;
 import org.eclipse.linuxtools.internal.docker.ui.testutils.swt.TestLoggerRule;
@@ -63,7 +64,8 @@ public class DockerExplorerViewSWTBotTest {
 	private DockerExplorerView dockerExplorerView;
 
 	@ClassRule
-	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule();
+	public static CloseWelcomePageRule closeWelcomePage = new CloseWelcomePageRule(
+			CloseWelcomePageRule.DOCKER_PERSPECTIVE_ID);
 
 	@Rule
 	public TestLoggerRule watcher = new TestLoggerRule();
@@ -308,8 +310,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Start");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
@@ -325,8 +326,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Start");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
 
 	@Test
@@ -342,8 +342,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Stop");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
@@ -359,8 +358,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Stop");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
 
 	@Test
@@ -376,8 +374,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Pause");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
@@ -393,8 +390,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Pause");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
 
 	@Test
@@ -410,8 +406,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Unpause");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
@@ -427,8 +422,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Unpause");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
 
 	@Test
@@ -444,8 +438,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Kill");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
@@ -461,8 +454,7 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Kill");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
 	}
 
 	@Test
@@ -478,12 +470,11 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Remove");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(true);
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test
-	public void shouldProvideRemoveCommandOnMultipleContainersAtOnce() {
+	public void shouldProvideDisabledRemoveCommandOnMultipleContainersAtOnce() {
 		// given
 		final DockerClient client = MockDockerClientFactory
 				.container(MockContainerFactory.name("gentle_foo").status("Running").build())
@@ -495,8 +486,22 @@ public class DockerExplorerViewSWTBotTest {
 		selectContainersInTreeView("Test", "gentle_foo", "angry_bar");
 		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Remove");
 		// then
-		assertThat(menuCommand.isVisible()).isEqualTo(true);
-		assertThat(menuCommand.isEnabled()).isEqualTo(false);
+		MenuAssertion.assertThat(menuCommand).isVisible().isNotEnabled();
+	}
+
+	@Test
+	public void shouldProvideEnabledRemoveCommandOnMultipleImagesAtOnce() {
+		// given
+		final DockerClient client = MockDockerClientFactory.image(MockImageFactory.name("angry_bar").build())
+				.image(MockImageFactory.name("gentle_foo").build()).build();
+		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client)
+				.withDefaultTCPConnectionSettings();
+		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
+		// open the context menu on one of the containers
+		selectImagesInTreeView("Test", "gentle_foo", "angry_bar");
+		final SWTBotMenu menuCommand = dockerExplorerViewBot.bot().tree().contextMenu("Remove");
+		// then
+		MenuAssertion.assertThat(menuCommand).isVisible().isEnabled();
 	}
 
 	@Test

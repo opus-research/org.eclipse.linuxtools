@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.linuxtools.docker.core.DockerException;
 import org.eclipse.linuxtools.docker.core.EnumDockerLoggingStatus;
 import org.eclipse.linuxtools.docker.core.IDockerConnection;
@@ -31,9 +33,11 @@ import org.eclipse.linuxtools.docker.core.IDockerHostConfig;
 import org.eclipse.linuxtools.docker.core.IDockerImage;
 import org.eclipse.linuxtools.docker.ui.Activator;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
-import org.eclipse.linuxtools.internal.docker.ui.RunConsole;
+import org.eclipse.linuxtools.internal.docker.ui.consoles.RunConsole;
 import org.eclipse.linuxtools.internal.docker.ui.launch.LaunchConfigurationUtils;
 import org.eclipse.linuxtools.internal.docker.ui.views.DVMessages;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerExplorerView;
+import org.eclipse.linuxtools.internal.docker.ui.views.DockerImagesView;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageRun;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -53,8 +57,7 @@ public class RunImageCommandHandler extends AbstractHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) {
 		final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-		final IDockerImage selectedImage = CommandUtils
-				.getSelectedImage(activePart);
+		final IDockerImage selectedImage = getSelectedImage(activePart);
 		if (selectedImage == null) {
 			Activator.logErrorMessage(
 					DVMessages.getString("RunImageUnableToRetrieveError.msg")); //$NON-NLS-1$
@@ -79,6 +82,15 @@ public class RunImageCommandHandler extends AbstractHandler {
 		return null;
 	}
 
+	/**
+	 * Run the given {@link IDockerImage} with the given settings
+	 * 
+	 * @param image
+	 * @param containerConfig
+	 * @param hostConfig
+	 * @param containerName
+	 * @param removeWhenExits
+	 */
 	public static void runImage(final IDockerImage image,
 			final IDockerContainerConfig containerConfig,
 			final IDockerHostConfig hostConfig, final String containerName,
@@ -212,6 +224,28 @@ public class RunImageCommandHandler extends AbstractHandler {
 		};
 		runImageJob.schedule();
 
+	}
+
+	/**
+	 * @param activePart
+	 *            the active {@link IWorkbenchPart}
+	 * @return the selected {@link IDockerImage} in the given active part of
+	 *         <code>null</code> if none was selected
+	 */
+	public static IDockerImage getSelectedImage(
+			final IWorkbenchPart activePart) {
+		if (activePart instanceof DockerExplorerView) {
+			final ITreeSelection selection = (ITreeSelection) ((DockerExplorerView) activePart)
+					.getCommonViewer().getSelection();
+			return (IDockerImage) selection.getFirstElement();
+		} else if (activePart instanceof DockerImagesView) {
+			final IStructuredSelection selection = (IStructuredSelection) (((DockerImagesView) activePart)
+					.getSelection());
+			if (!selection.isEmpty()) {
+				return (IDockerImage) selection.getFirstElement();
+			}
+		}
+		return null;
 	}
 
 }
