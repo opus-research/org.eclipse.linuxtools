@@ -146,6 +146,9 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
     }
 
     private void setupTrace(String path) throws TmfTraceException {
+        if (path == null) {
+            throw new TmfTraceException("Path was null");
+        }
         try {
             fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
             fTypes = new TmfEventType[NB_TYPES];
@@ -170,11 +173,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
 
     @Override
     public void initTrace(final IResource resource, final String path, final Class<? extends ITmfEvent> type) throws TmfTraceException {
-        try {
-            fTrace = new RandomAccessFile(path, "r"); //$NON-NLS-1$
-        } catch (FileNotFoundException e) {
-            throw new TmfTraceException(e.getMessage());
-        }
+        setupTrace(path);
         super.initTrace(resource, path, type);
     }
 
@@ -410,10 +409,11 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
             return null;
         }
 
-        //           String name = eventStream.getName();
-        //           name = name.substring(name.lastIndexOf('/') + 1);
+        // String name = eventStream.getName();
+        // name = name.substring(name.lastIndexOf('/') + 1);
 
-        // no need to use synchronized since it's already cover by the calling method
+        // no need to use synchronized since it's already cover by the calling
+        // method
 
         long location = 0;
         if (context != null && context.getLocation() != null) {
@@ -421,11 +421,11 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
             try {
                 stream.seek(location);
 
-                final long ts        = stream.readLong();
-                final String source  = stream.readUTF();
-                final String type    = stream.readUTF();
-                final int reference  = stream.readInt();
-                final int typeIndex  = Integer.parseInt(type.substring(typePrefix.length()));
+                final long ts = stream.readLong();
+                final String source = stream.readUTF();
+                final String type = stream.readUTF();
+                final int reference = stream.readInt();
+                final int typeIndex = Integer.parseInt(type.substring(typePrefix.length()));
                 final String[] fields = new String[typeIndex];
                 for (int i = 0; i < typeIndex; i++) {
                     fields[i] = stream.readUTF();
@@ -442,7 +442,7 @@ public class TmfTraceStub extends TmfTrace implements ITmfPersistentlyIndexable 
 
                 final TmfEventField root = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, content.toString(), null);
                 final ITmfEvent event = new TmfEvent(this,
-                        new TmfTimestamp(ts, -3, 0),     // millisecs
+                        new TmfTimestamp(ts, -3, 0), // millisecs
                         source, fTypes[typeIndex], root, String.valueOf(reference));
                 return event;
             } catch (final EOFException e) {
