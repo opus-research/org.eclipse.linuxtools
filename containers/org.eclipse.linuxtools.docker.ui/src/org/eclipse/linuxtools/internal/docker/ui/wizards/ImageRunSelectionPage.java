@@ -19,6 +19,8 @@ import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.ChangeEvent;
+import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
@@ -374,28 +376,9 @@ public class ImageRunSelectionPage extends WizardPage {
 						exposedPortsTableViewer, ExposedPortModel.class),
 				BeanProperties.set(ImageRunSelectionModel.SELECTED_PORTS)
 						.observe(model));
-		// disable the edit and removeButton if the table is empty
-		exposedPortsTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
 
 		togglePortMappingControls(exposedPortsTableViewer.getTable(), addButton,
 				removeButton);
-	}
-
-	private ISelectionChangedListener onSelectionChanged(
-			final Button... targetButtons) {
-		return new ISelectionChangedListener() {
-
-			@Override
-			public void selectionChanged(final SelectionChangedEvent e) {
-				if (e.getSelection().isEmpty()) {
-					setControlsEnabled(targetButtons, false);
-				} else {
-					setControlsEnabled(targetButtons, true);
-				}
-			}
-
-		};
 	}
 
 	private CheckboxTableViewer createPortSettingsTable(
@@ -469,10 +452,27 @@ public class ImageRunSelectionPage extends WizardPage {
 								new String[] {
 										ContainerLinkModel.CONTAINER_NAME,
 										ContainerLinkModel.CONTAINER_ALIAS }));
-		// disable the edit and removeButton if the table is empty
 		linksTableViewer.addSelectionChangedListener(
-				onSelectionChanged(editButton, removeButton));
+				onLinkSelected(editButton, removeButton));
+		// disable the edit and removeButton if the table is empty
+		model.getLinks()
+				.addChangeListener(onRemoveLinks(editButton, removeButton));
+	}
 
+	private ISelectionChangedListener onLinkSelected(
+			final Control... controls) {
+		return new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(final SelectionChangedEvent e) {
+				if (e.getSelection().isEmpty()) {
+					setControlsEnabled(controls, false);
+				} else {
+					setControlsEnabled(controls, true);
+				}
+			}
+
+		};
 	}
 
 	private TableViewer createLinksTable(final Composite container) {
@@ -524,6 +524,21 @@ public class ImageRunSelectionPage extends WizardPage {
 					selectedContainerLink
 							.setContainerAlias(dialog.getContainerAlias());
 					linksTableViewer.refresh();
+				}
+			}
+		};
+	}
+
+	private IChangeListener onRemoveLinks(final Button... buttons) {
+		return new IChangeListener() {
+
+			@Override
+			public void handleChange(final ChangeEvent event) {
+				@SuppressWarnings("unchecked")
+				final List<ContainerLinkModel> links = (List<ContainerLinkModel>) event
+						.getSource();
+				if (links.isEmpty()) {
+					setControlsEnabled(buttons, false);
 				}
 			}
 		};
