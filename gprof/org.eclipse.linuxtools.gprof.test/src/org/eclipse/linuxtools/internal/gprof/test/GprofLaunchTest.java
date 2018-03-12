@@ -53,6 +53,7 @@ public class GprofLaunchTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeCpp();
         proj = createProjectAndBuild(FrameworkUtil.getBundle(this.getClass()), "fibTest"); //$NON-NLS-1$
         ProjectScope ps = new ProjectScope(proj.getProject());
         ScopedPreferenceStore scoped = new ScopedPreferenceStore(ps, ProviderProfileConstants.PLUGIN_ID);
