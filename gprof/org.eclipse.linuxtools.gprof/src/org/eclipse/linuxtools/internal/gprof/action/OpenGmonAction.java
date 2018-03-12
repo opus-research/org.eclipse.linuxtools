@@ -65,7 +65,7 @@ public class OpenGmonAction implements IEditorLauncher {
                             IResource r = b[0].getResource();
                             return r.getLocation().toOSString();
                         }
-                    } catch (CModelException e) {
+                    } catch (CModelException _) {
                     }
                 }
             }

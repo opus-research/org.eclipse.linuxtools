@@ -97,7 +97,12 @@ public class ProviderLaunchConfigurationDelegate extends AbstractCLaunchDelegate
 
     // Display an information dialog to denote there are no profiling plug-ins installed.
     private void infoDialog(final String title, final String message) {
-        ProfileLaunchPlugin.getShell().getDisplay().asyncExec( () -> MessageDialog.openInformation(ProfileLaunchPlugin.getShell(), title, message));
+        ProfileLaunchPlugin.getShell().getDisplay().asyncExec( new Runnable() {
+            @Override
+            public void run() {
+                MessageDialog.openInformation(ProfileLaunchPlugin.getShell(), title, message);
+            }
+        });
     }
 
     @Override

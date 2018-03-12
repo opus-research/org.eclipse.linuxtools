@@ -66,10 +66,7 @@ public class ConnectionInfoPropertySection extends BasePropertySection {
 			protected IStatus run(final IProgressMonitor monitor) {
 				monitor.beginTask("Loading connection info...", 1);
 				try {
-					final IDockerConnectionInfo info = connection.getInfo();
-					if (info != null) {
-						result.add(info);
-					}
+					result.add(connection.getInfo());
 				} catch (DockerException e) {
 					Activator.log(e);
 				}
