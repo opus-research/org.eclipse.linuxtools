@@ -10,13 +10,12 @@
  ******************************************************************************/
 package org.eclipse.linuxtools.docker.reddeer.preferences;
 
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.jface.preference.PreferencePage;
-import org.eclipse.reddeer.swt.api.Table;
-import org.eclipse.reddeer.swt.impl.button.OkButton;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
-import org.eclipse.reddeer.swt.impl.table.DefaultTable;
-import org.eclipse.reddeer.swt.impl.text.LabeledText;
+import org.jboss.reddeer.jface.preference.PreferencePage;
+import org.jboss.reddeer.swt.api.Table;
+import org.jboss.reddeer.swt.impl.button.OkButton;
+import org.jboss.reddeer.swt.impl.button.PushButton;
+import org.jboss.reddeer.swt.impl.table.DefaultTable;
+import org.jboss.reddeer.swt.impl.text.LabeledText;
 
 /**
  * 
@@ -31,13 +30,8 @@ public class RegistryAccountsPreferencePage extends PreferencePage {
 	public static final String EMAIL = "Email:";
 	public static final String PASSWORD = "Password:";
 
-	public RegistryAccountsPreferencePage(ReferencedComposite referenced) {
-		super(referenced, "Docker", "Registry Accounts");
-	}
-
-	// Following constructor no longer works
 	public RegistryAccountsPreferencePage() {
-		super(null, "Docker", "Registry Accounts");
+		super("Docker", "Registry Accounts");
 	}
 
 	public void addRegistry(String serverAddress, String email, String userName, String password) {
