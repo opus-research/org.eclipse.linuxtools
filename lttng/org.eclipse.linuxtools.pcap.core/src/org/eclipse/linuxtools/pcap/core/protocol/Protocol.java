@@ -151,20 +151,4 @@ public enum Protocol {
     public static List<Protocol> getAllProtocols() {
         return new ArrayList<>(Arrays.asList(Protocol.values()));
     }
-
-    /**
-     * Lookup a protocol by name
-     *
-     * @param protocolName
-     *            the name of the protocol
-     * @return the protocol or UNKNOWN if it is not found
-     */
-    public static Protocol lookupName(String protocolName) {
-        for (Protocol protocol : Protocol.values()) {
-            if (protocol.getName().equals(protocolName)) {
-                return protocol;
-            }
-        }
-        return UNKNOWN;
-    }
 }

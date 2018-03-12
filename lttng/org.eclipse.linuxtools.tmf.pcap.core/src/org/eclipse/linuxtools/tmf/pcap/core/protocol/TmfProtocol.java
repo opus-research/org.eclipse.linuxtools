@@ -133,29 +133,4 @@ public enum TmfProtocol {
         return new ArrayList<>(Arrays.asList(TmfProtocol.values()));
     }
 
-    /**
-     * Get a {@link TmfProtocol} with a matching name to the {@link Protocol}
-     *
-     * @param protocol
-     *            The {@link Protocol} to match
-     * @return The TmfProtocol, Unknown if not found
-     */
-    public static TmfProtocol getProtocol(Protocol protocol) {
-        switch (protocol) {
-        case ETHERNET_II:
-            return TmfProtocol.ETHERNET_II;
-        case IPV4:
-            return TmfProtocol.IPV4;
-        case PCAP:
-            return TmfProtocol.PCAP;
-        case TCP:
-            return TmfProtocol.TCP;
-        case UDP:
-            return TmfProtocol.UDP;
-        case UNKNOWN:
-        default:
-            return TmfProtocol.UNKNOWN;
-        }
-    }
-
 }
