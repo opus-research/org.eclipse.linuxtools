@@ -16,11 +16,8 @@ public class ImageTag extends Wizard {
 
 	private ImageTagPage mainPage;
 
-	private final String imageName;
-
-	public ImageTag(final String imageName) {
+	public ImageTag() {
 		super();
-		this.imageName = imageName;
 	}
 
 	public String getTag() {
@@ -32,7 +29,7 @@ public class ImageTag extends Wizard {
 
 	@Override
 	public void addPages() {
-		this.mainPage = new ImageTagPage(this.imageName);
+		this.mainPage = new ImageTagPage();
 		addPage(mainPage);
 	}
 
