@@ -15,10 +15,8 @@ package org.eclipse.linuxtools.tmf.core.parsers.custom;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,7 +143,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
      *            The list of output columns
      * @param timeStampOutputFormat
      *            The timestamp format to use
-     * @since 3.2
+     * @since 3.1
      */
     public CustomXmlTraceDefinition(String category, String traceType, InputElement rootElement,
             List<OutputColumn> outputs, String timeStampOutputFormat) {
@@ -479,7 +477,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
      *            if true, the default (built-in) parsers are included
      *
      * @return The loaded trace definitions
-     * @since 3.2
+     * @since 3.1
      */
     public static CustomXmlTraceDefinition[] loadAll(boolean includeDefaults) {
         File defaultFile = new File(CUSTOM_XML_TRACE_DEFINITIONS_PATH_NAME);
@@ -522,27 +520,6 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
      * @return The loaded trace definitions
      */
     public static CustomXmlTraceDefinition[] loadAll(String path) {
-        File file = new File(path);
-        if (!file.canRead()) {
-            return new CustomXmlTraceDefinition[0];
-        }
-        try (FileInputStream fis = new FileInputStream(file);) {
-            return loadAll(fis);
-        } catch (IOException e) {
-            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
-        }
-        return new CustomXmlTraceDefinition[0];
-    }
-
-    /**
-     * Load all the XML trace definitions from the given stream
-     *
-     * @param stream
-     *            An input stream from which to read the definitions
-     * @return The loaded trace definitions
-     * @since 3.2
-     */
-    public static CustomXmlTraceDefinition[] loadAll(InputStream stream) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
@@ -553,7 +530,12 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             // The following catches xml parsing exceptions
             db.setErrorHandler(createErrorHandler());
 
-            Document doc = db.parse(stream);
+            File file = new File(path);
+            if (!file.canRead()) {
+                return new CustomXmlTraceDefinition[0];
+            }
+            Document doc = db.parse(file);
+
             Element root = doc.getDocumentElement();
             if (!root.getNodeName().equals(CUSTOM_XML_TRACE_DEFINITION_ROOT_ELEMENT)) {
                 return new CustomXmlTraceDefinition[0];
@@ -572,7 +554,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
             }
             return defList.toArray(new CustomXmlTraceDefinition[0]);
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + stream, e); //$NON-NLS-1$
+            Activator.logError("Error loading all in CustomXmlTraceDefinition: path=" + path, e); //$NON-NLS-1$
         }
         return new CustomXmlTraceDefinition[0];
     }
@@ -598,7 +580,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
      * @param definitionName
      *            Name of the XML trace definition to load
      * @return The loaded trace definition
-     * @since 3.2
+     * @since 3.1
      */
     public static CustomXmlTraceDefinition load(String categoryName, String definitionName) {
         try {
@@ -787,7 +769,7 @@ public class CustomXmlTraceDefinition extends CustomTraceDefinition {
      *            The category of the definition to delete
      * @param definitionName
      *            The name of the definition to delete
-     * @since 3.2
+     * @since 3.1
      */
     public static void delete(String categoryName, String definitionName) {
         try {

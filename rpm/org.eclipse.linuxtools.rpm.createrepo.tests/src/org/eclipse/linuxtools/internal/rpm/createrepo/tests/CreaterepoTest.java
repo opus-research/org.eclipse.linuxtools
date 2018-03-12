@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.eclipse.core.runtime.CoreException;
@@ -24,10 +25,11 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.linuxtools.internal.rpm.createrepo.Createrepo;
 import org.eclipse.linuxtools.internal.rpm.createrepo.CreaterepoProject;
 import org.eclipse.linuxtools.internal.rpm.createrepo.form.tests.TestCreaterepoProject;
+import org.eclipse.linuxtools.rpm.core.utils.BufferedProcessInputStream;
+import org.eclipse.linuxtools.rpm.core.utils.Utils;
 import org.eclipse.ui.console.MessageConsole;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,10 +50,15 @@ public class CreaterepoTest {
      * the createrepo command.
      *
      * @throws CoreException
+     * @throws IOException
+     * @throws InterruptedException
      */
     @BeforeClass
-    public static void setUpBeforeClass() throws CoreException {
-        Assume.assumeTrue(Createrepo.isCorrectVersion().isOK());
+    public static void setUpBeforeClass() throws CoreException, IOException, InterruptedException {
+        BufferedProcessInputStream bpis = Utils.runCommandToInputStream("which", "createrepo"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (bpis.getExitValue() == 1) {
+            fail("Failed due to system not having the 'createrepo' command, or it cannot be found."); //$NON-NLS-1$
+        }
         testProject = new TestCreaterepoProject();
         assertTrue(testProject.getProject().exists());
     }
@@ -96,16 +103,18 @@ public class CreaterepoTest {
 
     /**
      * Test a simple createrepo execution taking in no extra commands.
+     *
+     * @throws CoreException
      */
     @Test
-    public void testSimpleCreaterepoExecution() {
+    public void testSimpleCreaterepoExecution() throws CoreException {
         Createrepo command = new Createrepo();
         IStatus status = command.execute(console.newMessageStream(),
                 project, new ArrayList<String>());
         if (status.getCode() == IStatus.ERROR) {
             fail("Possibly failed due to system not having the 'createrepo' command, or it cannot be found."); //$NON-NLS-1$
         }
-        assertTrue(status.isOK());
+        assertEquals(IStatus.OK, status.getCode());
     }
 
 }

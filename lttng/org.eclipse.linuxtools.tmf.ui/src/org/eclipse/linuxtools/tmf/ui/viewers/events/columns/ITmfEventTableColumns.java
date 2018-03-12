@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNull;
  * is defined in each {@link TmfEventTableColumn}.
  *
  * @author Alexandre Montplaisir
- * @since 3.2
+ * @since 3.1
  */
 public interface ITmfEventTableColumns {
 

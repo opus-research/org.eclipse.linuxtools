@@ -39,7 +39,6 @@ public class Messages extends NLS {
     public static String TmfEventsTable_AddBookmarkDialogTitle;
     public static String TmfEventsTable_ApplyPresetFilterMenuName;
     public static String TmfEventsTable_ClearFiltersActionText;
-    public static String TmfEventsTable_CollapseFilterMenuName;
     public static String TmfEventsTable_ContentColumnHeader;
     public static String TmfEventsTable_Export_to_text;
     public static String TmfEventsTable_FilterHint;
