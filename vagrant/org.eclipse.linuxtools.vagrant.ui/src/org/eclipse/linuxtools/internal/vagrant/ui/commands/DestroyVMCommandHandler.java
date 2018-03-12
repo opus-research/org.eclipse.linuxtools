@@ -37,7 +37,7 @@ public class DestroyVMCommandHandler extends BaseVMCommandHandler {
 	void executeInJob(IVagrantVM vm, IProgressMonitor monitor) {
 		IVagrantConnection connection = VagrantService.getInstance();
 		try {
-			connection.destroyVM(vm);
+			connection.destroyVM(vm.id());
 			String stateLoc = Activator.getDefault().getStateLocation().toOSString();
 			File vagrantDir = Paths.get(stateLoc, vm.name()).toFile();
 			CommandUtils.delete(vagrantDir);
