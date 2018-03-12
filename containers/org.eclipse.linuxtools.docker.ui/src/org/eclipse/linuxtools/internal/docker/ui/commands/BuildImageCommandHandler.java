@@ -74,7 +74,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			if (connections.length > 0)
 				connection = connections[0];
 		}
-		if (connection == null || !connection.isActive()) {
+		if (connection == null || !connection.isOpen()) {
 			// if no active connection, issue error message dialog and return
 			Display.getDefault().syncExec(() -> MessageDialog.openError(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
@@ -97,6 +97,7 @@ public class BuildImageCommandHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final String id = wizard.getImageName();
+				@SuppressWarnings("unused")
 				final int lines = wizard.getNumberOfLines();
 				final IPath path = wizard.getDirectory();
 
