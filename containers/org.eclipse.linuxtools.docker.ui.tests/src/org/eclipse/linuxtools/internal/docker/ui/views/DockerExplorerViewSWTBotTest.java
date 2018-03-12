@@ -11,8 +11,6 @@
 
 package org.eclipse.linuxtools.internal.docker.ui.views;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.assertj.core.api.Assertions;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.linuxtools.internal.docker.core.DockerConnection;
@@ -283,27 +281,6 @@ public class DockerExplorerViewSWTBotTest {
 			SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containerTreeItem, "Links")).isExpanded();
 			SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containerTreeItem, "Ports")).isExpanded();
 			SWTBotTreeItemAssertions.assertThat(SWTUtils.getTreeItem(containerTreeItem, "Volumes")).isExpanded();
-		});
-	}
-	
-	@Test
-	public void shouldShowAllImageVariants() throws InterruptedException {
-		// given
-		final DockerClient client = MockDockerClientFactory.image(MockDockerImageFactory.id("1a2b3c4d5e6f7g")
-				.name("foo:1.0", "foo:latest", "bar:1.0", "bar:latest").build()).build();
-		final DockerConnection dockerConnection = MockDockerConnectionFactory.from("Test", client).get();
-		DockerConnectionManagerUtils.configureConnectionManager(dockerConnection);
-		SWTUtils.asyncExec(() -> dockerExplorerView.getCommonViewer().expandAll());
-		final SWTBotTreeItem imagesTreeItem = SWTUtils.getTreeItem(dockerExplorerViewBot, "Test (null)",
-				"Images");
-		// when
-		SWTUtils.asyncExec(() -> imagesTreeItem.expand());
-		// then 2 images should be displayed
-		SWTUtils.syncAssert(() -> {
-			final SWTBotTreeItem[] images = imagesTreeItem.getItems();
-			assertThat(images).hasSize(2);
-			assertThat(images[0].getText()).startsWith("bar: 1.0, latest");
-			assertThat(images[1].getText()).startsWith("foo: 1.0, latest");
 		});
 	}
 
