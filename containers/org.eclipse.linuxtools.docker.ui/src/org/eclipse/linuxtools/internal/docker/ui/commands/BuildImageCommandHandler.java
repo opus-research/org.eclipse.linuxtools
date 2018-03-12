@@ -37,9 +37,7 @@ import org.eclipse.linuxtools.internal.docker.ui.views.ImageBuildProgressHandler
 import org.eclipse.linuxtools.internal.docker.ui.wizards.ImageBuild;
 import org.eclipse.linuxtools.internal.docker.ui.wizards.WizardMessages;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -145,47 +143,11 @@ public class BuildImageCommandHandler extends AbstractHandler {
 
 						@Override
 						public void run() {
-							// We are running in a non-modal shell to handle the
-							// editor.
-							// To put up a modal error dialog, we need a new
-							// Shell. To
-							// keep the Shell from displaying behind the dialog,
-							// we create it
-							// with a minimal size and use SWT.SHEET. To ensure
-							// that the dialog
-							// appears in any task window properly, we need to
-							// give it the default
-							// Eclipse dialog image and set the text to be the
-							// error message.
-							final Shell shell = new Shell(Display.getCurrent(),
-									SWT.SHEET);
-							shell.setText(DVMessages.getFormattedString(
-									ERROR_BUILDING_IMAGE, id));
-							shell.setImage(Window.getDefaultImage());
-							shell.setSize(1, 1);
-							// We attempt to do some centering of the error
-							// dialog so it isn't
-							// placed in the top left-hand corner. We just use a
-							// rectangle of
-							// 100 x 100 as a default.
-							Monitor primary = Display.getCurrent()
-									.getPrimaryMonitor();
-							Rectangle bounds = primary.getBounds();
-							Rectangle rect = new Rectangle(100, 100, 100, 100);
-
-							int x = bounds.x + (bounds.width - rect.width) / 2;
-							int y = bounds.y
-									+ (bounds.height - rect.height) / 2;
-
-							shell.setLocation(x, y);
-
-							shell.setLocation(x, y);
-							MessageDialog.openError(
-									shell,
-									DVMessages
+							MessageDialog.openError(Display.getCurrent()
+									.getActiveShell(), DVMessages
 									.getFormattedString(ERROR_BUILDING_IMAGE,
 											id), e.getMessage());
-							shell.close();
+
 						}
 
 					});
