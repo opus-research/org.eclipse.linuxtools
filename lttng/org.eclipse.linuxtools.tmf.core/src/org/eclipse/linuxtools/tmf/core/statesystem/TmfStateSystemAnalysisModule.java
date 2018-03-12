@@ -38,11 +38,8 @@ import org.eclipse.linuxtools.tmf.core.event.ITmfEvent;
 import org.eclipse.linuxtools.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.linuxtools.tmf.core.request.ITmfEventRequest;
 import org.eclipse.linuxtools.tmf.core.request.TmfEventRequest;
-import org.eclipse.linuxtools.tmf.core.signal.TmfSignalHandler;
-import org.eclipse.linuxtools.tmf.core.signal.TmfTraceRangeUpdatedSignal;
 import org.eclipse.linuxtools.tmf.core.timestamp.TmfTimeRange;
 import org.eclipse.linuxtools.tmf.core.trace.ITmfTrace;
-import org.eclipse.linuxtools.tmf.core.trace.ITmfTraceCompleteness;
 import org.eclipse.linuxtools.tmf.core.trace.TmfExperiment;
 import org.eclipse.linuxtools.tmf.core.trace.TmfTraceManager;
 
@@ -65,15 +62,11 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
     private static final String EXTENSION = ".ht"; //$NON-NLS-1$
 
     private final CountDownLatch fInitialized = new CountDownLatch(1);
-    private final Object fRequestSyncObj = new Object();
 
     @Nullable private ITmfStateSystemBuilder fStateSystem;
     @Nullable private ITmfStateProvider fStateProvider;
     @Nullable private IStateHistoryBackend fHtBackend;
     @Nullable private ITmfEventRequest fRequest;
-    @Nullable private TmfTimeRange fTimeRange = null;
-
-    private int fNbRead = 0;
 
     /**
      * State system backend types
@@ -403,15 +396,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
             request.cancel();
         }
 
-        @NonNull TmfTimeRange timeRange = TmfTimeRange.ETERNITY;
-        final ITmfTrace trace = provider.getTrace();
-        if (trace != null && !isCompleteTrace(trace)) {
-            TmfTimeRange traceTimeRange = trace.getTimeRange();
-            if (traceTimeRange != null) {
-                timeRange = traceTimeRange;
-            }
-        }
-        request = new StateSystemEventRequest(provider, timeRange, 0);
+        request = new StateSystemEventRequest(provider);
         provider.getTrace().sendRequest(request);
 
         /*
@@ -419,9 +404,7 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
          * class fields, so that they become visible for other callers.
          */
         fStateProvider = provider;
-        synchronized (fRequestSyncObj) {
-            fRequest = request;
-        }
+        fRequest = request;
 
         /*
          * The state system object is now created, we can consider this module
@@ -444,10 +427,10 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         private final ITmfStateProvider sci;
         private final ITmfTrace trace;
 
-        public StateSystemEventRequest(ITmfStateProvider sp, TmfTimeRange timeRange, int index) {
+        public StateSystemEventRequest(ITmfStateProvider sp) {
             super(sp.getExpectedEventType(),
-                    timeRange,
-                    index,
+                    TmfTimeRange.ETERNITY,
+                    0,
                     ITmfEventRequest.ALL_DATA,
                     ITmfEventRequest.ExecutionType.BACKGROUND);
             this.sci = sp;
@@ -480,24 +463,13 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         @Override
         public void handleSuccess() {
             super.handleSuccess();
-            if (isCompleteTrace(trace)) {
-                disposeProvider(false);
-            } else {
-                fNbRead += getNbRead();
-                synchronized (fRequestSyncObj) {
-                    if (!getRange().equals(fTimeRange)) {
-                        startRequest();
-                    }
-                }
-            }
+            disposeProvider(false);
         }
 
         @Override
         public void handleCancel() {
             super.handleCancel();
-            if (isCompleteTrace(trace)) {
-                disposeProvider(true);
-            }
+            disposeProvider(true);
         }
 
         @Override
@@ -525,40 +497,5 @@ public abstract class TmfStateSystemAnalysisModule extends TmfAbstractAnalysisMo
         @SuppressWarnings("null")
         @NonNull Iterable<ITmfStateSystem> ret = Collections.singleton((ITmfStateSystem) fStateSystem);
         return ret;
-    }
-
-    /**
-     * Signal handler for the TmfTraceRangeUpdatedSignal signal
-     *
-     * @param signal The incoming signal
-     * @since 3.2
-     */
-    @TmfSignalHandler
-    public void traceRangeUpdated(final TmfTraceRangeUpdatedSignal signal) {
-        fTimeRange = signal.getRange();
-        ITmfStateProvider stateProvider = fStateProvider;
-        synchronized (fRequestSyncObj) {
-            if (signal.getTrace() == getTrace() && stateProvider != null && stateProvider.getAssignedStateSystem() != null) {
-                ITmfEventRequest request = fRequest;
-                if ((request == null) || request.isCompleted()) {
-                    startRequest();
-                }
-            }
-        }
-    }
-
-    private void startRequest() {
-        ITmfStateProvider stateProvider = fStateProvider;
-        TmfTimeRange timeRange = fTimeRange;
-        if (stateProvider == null || timeRange == null) {
-            return;
-        }
-        ITmfEventRequest request = new StateSystemEventRequest(stateProvider, timeRange, fNbRead);
-        stateProvider.getTrace().sendRequest(request);
-        fRequest = request;
-    }
-
-    private static boolean isCompleteTrace(ITmfTrace trace) {
-        return !(trace instanceof ITmfTraceCompleteness) || ((ITmfTraceCompleteness)trace).isComplete();
     }
 }
