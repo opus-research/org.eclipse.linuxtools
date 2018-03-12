@@ -172,19 +172,17 @@ public class StructDeclaration extends Declaration {
     }
 
     /**
-     * Create a definition from this declaration. This is a faster constructor
-     * as it has a lexical scope and this does not need to look it up.
+     * Accelerated create definition
      *
      * @param definitionScope
-     *            the definition scope, the parent where the definition will be
-     *            placed
+     *            the definition scope
      * @param fieldScope
-     *            the scope of the definition
+     *            the lexical scope of this element
      * @param input
-     *            a bitbuffer to read from
-     * @return a reference to the definition
+     *            the {@Link BitBuffer} to read
+     * @return the Struct definition
      * @throws CTFReaderException
-     *             error in reading
+     *             read error and such
      * @since 3.1
      */
     public StructDefinition createDefinition(IDefinitionScope definitionScope,

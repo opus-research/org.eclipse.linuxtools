@@ -12,10 +12,9 @@
 
 package org.eclipse.linuxtools.tmf.pcap.core.trace;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -93,14 +92,17 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
 
     @Override
     public synchronized void initTrace(@Nullable IResource resource, @Nullable String path, @Nullable Class<? extends ITmfEvent> type) throws TmfTraceException {
-        super.initTrace(resource, path, type);
         if (path == null) {
             throw new TmfTraceException("No path has been specified."); //$NON-NLS-1$
         }
-        @SuppressWarnings("null")
-        @NonNull Path filePath = FileSystems.getDefault().getPath(path);
+        File f = new File(path);
+        String absPath = f.getAbsolutePath();
+        if (absPath == null) {
+            throw new TmfTraceException("No path has been specified."); //$NON-NLS-1$
+        }
+        super.initTrace(resource, absPath, type);
         try {
-            fPcapFile = new PcapFile(filePath);
+            fPcapFile = new PcapFile(absPath);
         } catch (IOException | BadPcapFileException e) {
             throw new TmfTraceException(e.getMessage(), e);
         }
@@ -189,9 +191,7 @@ public class PcapTrace extends TmfTrace implements ITmfEventParser, ITmfTracePro
         if (path == null) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, EMPTY_STRING);
         }
-        @SuppressWarnings("null")
-        @NonNull Path filePath = FileSystems.getDefault().getPath(path);
-        try (PcapFile file = new PcapFile(filePath)) {
+        try (PcapFile file = new PcapFile(path)) {
         } catch (IOException | BadPcapFileException e) {
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.toString());
         }
