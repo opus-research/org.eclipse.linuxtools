@@ -11,6 +11,8 @@
 
 package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Strings generated from the TSDL grammar. Note that they are static final so
  * they get quarked. See CTF specs for more details
@@ -18,10 +20,10 @@ package org.eclipse.linuxtools.internal.ctf.core.event.metadata;
  * @author Matthew Khouzam and All
  */
 @SuppressWarnings("nls")
+@NonNullByDefault
 public interface MetadataStrings {
 
     /** None */
-
     static final String NONE = "none";
     /** Ascii */
     static final String ASCII = "ASCII";
@@ -73,8 +75,6 @@ public interface MetadataStrings {
     static final String EXP_DIG = "exp_dig";
     /** Loglevel */
     static final String LOGLEVEL2 = "loglevel";
-    /** Name */
-    static final String NAME2 = "name";
     /** Event context */
     static final String EVENT_CONTEXT = "event.context";
     /** Fields */
@@ -107,5 +107,27 @@ public interface MetadataStrings {
     static final String MINOR = "minor";
     /** Major (Version)*/
     static final String MAJOR = "major";
+    /** Map */
+    static final String MAP = "map";
+    /** base of a number */
+    static final String BASE = "base";
+    /** size in bits */
+    static final  String SIZE = "size";
+    /** signedness */
+    static final String SIGNED = "signed";
+    /** line number */
+    static final String LINE = "line";
+    /** file name */
+    static final String FILE = "file";
+    /** instruction pointer */
+    static final String IP = "ip";
+    /** function name */
+    static final String FUNC = "func";
+    /** Name */
+    static final String NAME = "name";
+    /** Encoding utf8, ascii or none */
+    static final String ENCODING = "encoding";
+    /** "" string */
+    static final String EMPTY_STRING = "";
 
 }
