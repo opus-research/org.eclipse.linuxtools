@@ -118,18 +118,18 @@ public class LaunchConfigurationUtils {
 		try {
 			final ILaunchManager manager = DebugPlugin.getDefault()
 					.getLaunchManager();
-			final String configurationName = manager
-					.generateLaunchConfigurationName(containerName);
 			final ILaunchConfigurationType type = manager
 					.getLaunchConfigurationType(RUN_IMAGE_CONFIGURATION_TYPE);
-			final ILaunchConfigurationWorkingCopy workingCopy = type
-					.newInstance(null, configurationName);
-			workingCopy.setAttribute(CREATION_DATE,
-					DATE_FORMAT.format(new Date()));
+			final String imageName = image.repoTags().get(0);
+			// using the image repo + first tag
+			final ILaunchConfigurationWorkingCopy workingCopy = getLaunchConfigurationworkingCopy(
+					type, imageName);
 			workingCopy.setAttribute(CONNECTION_NAME,
 					image.getConnection().getName());
 			workingCopy.setAttribute(IMAGE_ID, image.id());
-			workingCopy.setAttribute(IMAGE_NAME, image.repoTags().get(0));
+			workingCopy.setAttribute(IMAGE_NAME, imageName);
+			workingCopy.setAttribute(CREATION_DATE,
+					DATE_FORMAT.format(new Date()));
 			workingCopy.setAttribute(CONTAINER_NAME, containerName);
 			workingCopy.setAttribute(COMMAND, toString(containerConfig.cmd()));
 			workingCopy.setAttribute(ENTRYPOINT,
@@ -315,6 +315,37 @@ public class LaunchConfigurationUtils {
 			}
 		}
 		return lastLaunchConfiguration;
+	}
+	
+
+	/**
+	 * Returns the {@link ILaunchConfigurationWorkingCopy} with the given type
+	 * and <strong>IDockerImage's name</strong>.
+	 * 
+	 * @param type
+	 *            the configuration type
+	 * @param imageName
+	 *            the associated {@link IDockerImage} name
+	 * @param createIfNotFound
+	 *            flag to indicate if a new {@link ILaunchConfiguration} should
+	 *            be created if none was found.
+	 * @return the ILaunchConfigurationWorkingCopy for the matching
+	 *         {@link ILaunchConfiguration} or a new instance if none was found.
+	 * @throws CoreException
+	 */
+	private static ILaunchConfigurationWorkingCopy getLaunchConfigurationworkingCopy(
+			final ILaunchConfigurationType type, final String imageName)
+					throws CoreException {
+		final ILaunchConfiguration existingLaunchConfiguration = getLaunchConfigurationByImageName(
+				type, imageName);
+		if (existingLaunchConfiguration != null) {
+			return existingLaunchConfiguration.getWorkingCopy();
+		}
+		final ILaunchManager manager = DebugPlugin.getDefault()
+				.getLaunchManager();
+		final String configurationName = manager
+				.generateLaunchConfigurationName(imageName);
+		return type.newInstance(null, configurationName);
 	}
 	
 	/**
